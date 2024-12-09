@@ -9,22 +9,21 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 
 import swervelib.parser.SwerveParser;
 import swervelib.SwerveDrive;
 
 public class SwerveSubsystem extends SubsystemBase {
-  double maximumSpeed = Units.feetToMeters(4.5);
   File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
   SwerveDrive swerveDrive;
 
   /** Creates a new SwerveSubsystem. */
   public SwerveSubsystem() {
     try {
-      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(maximumSpeed);
+      swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(Constants.MAX_SPEED);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
