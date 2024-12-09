@@ -19,10 +19,13 @@ public final class Constants {
   public static final double MAX_SPEED  = Units.feetToMeters(4.5);
 
   public static class DriverJoystickConstants {
+    public static final int kDriverControllerPort = 0;
+
+    public static final double kTurnMultiplier = 0.8;
+
     // Joystick deadbands for driving
-    public static final double LEFT_X_DEADBAND  = 0.1;
-    public static final double LEFT_Y_DEADBAND  = 0.1;
-    public static final double RIGHT_X_DEADBAND = 0.1;
-    public static final double TURN_CONSTANT    = 6;
+    public static final double kLeftXDeadband  = 0.1;
+    public static final double kLeftYDeadband  = 0.1;
+    public static final double kRightXDeadband = 0.1;
   }
 }
