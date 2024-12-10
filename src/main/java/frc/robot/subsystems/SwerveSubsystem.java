@@ -52,6 +52,14 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+  /**
+   * Resets the gyro angle to zero and resets odometry to the same position, but facing toward 0.
+   */
+  public void zeroGyro()
+  {
+    swerveDrive.zeroGyro();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

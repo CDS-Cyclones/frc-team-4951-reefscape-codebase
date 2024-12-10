@@ -33,7 +33,10 @@ public class RobotContainer {
     m_Swerve.setDefaultCommand(driveFieldOrientedAnglularVelocity);
   }
 
-  private void configureBindings() {}
+  private void configureBindings() {
+    m_DriverController.a().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
+
+  }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
