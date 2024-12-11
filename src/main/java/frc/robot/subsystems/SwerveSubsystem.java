@@ -27,6 +27,9 @@ public class SwerveSubsystem extends SubsystemBase {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    // Set motors to brake mode
+    setMotorBrake(true);
   }
 
   /**
@@ -58,6 +61,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public void zeroGyro()
   {
     swerveDrive.zeroGyro();
+  }
+
+  /**
+   * Sets the drive motors to brake/coast mode.
+   *
+   * @param brake True to set motors to brake mode, false for coast.
+   */
+  public void setMotorBrake(boolean brake)
+  {
+    swerveDrive.setMotorIdleMode(brake);
   }
 
   @Override
