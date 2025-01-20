@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
+import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import swervelib.SwerveDrive;
 
 import frc.robot.Constants;
@@ -28,6 +30,7 @@ public class SwerveSubsystem extends SubsystemBase {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    SwerveDriveTelemetry.verbosity=TelemetryVerbosity.HIGH;
 
     // Set motors to brake mode
     setMotorBrake(true);
