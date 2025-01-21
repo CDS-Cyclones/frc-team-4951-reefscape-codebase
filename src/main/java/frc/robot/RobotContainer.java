@@ -22,8 +22,8 @@ public class RobotContainer {
   // left stick controls translation
   // right stick controls the angular velocity of the robot
   Command driveFieldOrientedAnglularVelocity = m_Swerve.driveCommand(
-    () -> MathUtil.applyDeadband(m_DriverController.getLeftX() * -1, DriverJoystickConstants.kLeftXDeadband),
-    () -> MathUtil.applyDeadband(m_DriverController.getLeftY() * -1, DriverJoystickConstants.kLeftYDeadband),
+    () -> MathUtil.applyDeadband(m_DriverController.getLeftY() * -1, DriverJoystickConstants.kLeftXDeadband),
+    () -> MathUtil.applyDeadband(m_DriverController.getLeftX() * -1, DriverJoystickConstants.kLeftYDeadband),
     () -> MathUtil.applyDeadband(m_DriverController.getRightX() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier,
     false,
     false
