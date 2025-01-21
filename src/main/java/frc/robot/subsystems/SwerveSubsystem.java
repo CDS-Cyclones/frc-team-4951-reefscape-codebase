@@ -11,26 +11,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.math.geometry.Translation2d;
-
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import swervelib.SwerveDrive;
-
 import frc.robot.Constants;
 
 public class SwerveSubsystem extends SubsystemBase {
-  File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
-  SwerveDrive swerveDrive;
+  private final File                      swerveJsonDirectory;
+  private final SwerveDrive               swerveDrive;
 
   /** Creates a new SwerveSubsystem. */
   public SwerveSubsystem() {
+    // Load config from JSOn files
+    swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
+
+    // Initialize swerve drive
     try {
       swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(Constants.MAX_SPEED);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    // Enable high telemetry (allows to see more data in ShuffleBoard)
     SwerveDriveTelemetry.verbosity=TelemetryVerbosity.HIGH;
+
+    // Pushes the absolute encoder offsets to motor controllers
+    swerveDrive.pushOffsetsToEncoders();
 
     // Set motors to brake mode
     setMotorBrake(true);
@@ -39,8 +46,8 @@ public class SwerveSubsystem extends SubsystemBase {
   /**
    * Command to drive the robot using translative values and heading as angular velocity.
    *
-   * @param translationX     Translation in the X direction.
-   * @param translationY     Translation in the Y direction.
+   * @param translationX     Translation in the X direction (forward).
+   * @param translationY     Translation in the Y direction (left).
    * @param angularRotationX Rotation of the robot to set
    * @param fieldRelative    If true, robot will drive in field-oriented mode, else in robot-oriented mode.
    * @param inAuton          If in autonomous will use close-loop velocity(higher precision), in teleop will use open-loop velocity(higher responsiveness).
