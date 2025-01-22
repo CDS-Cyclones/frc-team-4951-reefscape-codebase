@@ -23,6 +23,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /** Creates a new SwerveSubsystem. */
   public SwerveSubsystem() {
+    // Enable high telemetry (allows to see more data in ShuffleBoard)
+    SwerveDriveTelemetry.verbosity=TelemetryVerbosity.HIGH;
+
     // Load config from JSOn files
     swerveJsonDirectory = new File(Filesystem.getDeployDirectory(),"swerve");
 
@@ -32,9 +35,6 @@ public class SwerveSubsystem extends SubsystemBase {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    // Enable high telemetry (allows to see more data in ShuffleBoard)
-    SwerveDriveTelemetry.verbosity=TelemetryVerbosity.HIGH;
 
     // Pushes the absolute encoder offsets to motor controllers
     swerveDrive.pushOffsetsToEncoders();
