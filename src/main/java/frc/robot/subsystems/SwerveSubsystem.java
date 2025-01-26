@@ -7,6 +7,11 @@ package frc.robot.subsystems;
 import java.io.File;
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,6 +34,9 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrive swerveDrive;
+
+  // Load the RobotConfig from the GUI settings.
+  private final RobotConfig PPconfig;
 
   /** 
    * Creates a new SwerveSubsystem.
@@ -59,6 +67,51 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Set motors to brake mode
     setMotorBrake(true);
+
+    try
+    {
+      // Load PathPlanner config
+      PPconfig = RobotConfig.fromGUISettings();
+
+      // Configure AutoBuilder (for PathPlanner)
+      AutoBuilder.configure(
+        this::getPose, // Robot pose supplier
+        this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+        this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) -> swerveDrive.drive(speeds, swerveDrive.kinematics.toSwerveModuleStates(speeds), feedforwards.linearForces()), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+        new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+          // Translation PID constants  
+          new PIDConstants(
+            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().p,
+            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().i,
+            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().d
+          ),
+          // Rotation PID constants
+          new PIDConstants(
+            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().p,
+            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().i,
+            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().d
+          )
+        ),
+        PPconfig, // The robot configuration
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent())
+          {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this // Reference to this subsystem to set requirements
+);
+    } catch (Exception e)
+    {
+      throw new RuntimeException(e);
+    }
   }
 
 
@@ -67,7 +120,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-
+  
   /**
    * Command to drive the robot using translative values and heading as angular velocity.
    *
