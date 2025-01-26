@@ -127,11 +127,10 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param translationX     Translation in the X direction (forward).
    * @param translationY     Translation in the Y direction (left).
    * @param angularRotationX Rotation of the robot to set
-   * @param fieldRelative    If true, robot will drive in field-oriented mode, else in robot-oriented mode.
-   * @param inAuton          If in autonomous will use close-loop velocity(higher precision), in teleop will use open-loop velocity(higher responsiveness).
+   * @param openLoop         If true will use open-loop velocity(higher responsiveness - better for auton), else will use close-loop velocity(higher precision - better for teleop).
    * @return Drive command.
    */
-  public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX, boolean fieldRelative, boolean inAuton)
+  public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX, boolean fieldRelative, boolean openLoop)
   {
     return run(() -> {
       // Make the robot drive
@@ -142,7 +141,7 @@ public class SwerveSubsystem extends SubsystemBase {
         ),
         angularRotationX.getAsDouble() * swerveDrive.getMaximumChassisAngularVelocity(),
         fieldRelative,
-        !inAuton);
+        openLoop);
     });
   }
 
