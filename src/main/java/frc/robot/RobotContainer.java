@@ -4,7 +4,11 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -15,6 +19,8 @@ public class RobotContainer {
   private final SwerveSubsystem m_Swerve = new SwerveSubsystem();
 
   private final CommandXboxController m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
+
+  private final SendableChooser<Command> autoChooser;
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -33,6 +39,10 @@ public class RobotContainer {
     configureBindings();
 
     m_Swerve.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+    // Auto chooser for selection PP trajectories
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -41,6 +51,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return autoChooser.getSelected();
   }
 }
