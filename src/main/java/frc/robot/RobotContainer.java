@@ -59,8 +59,9 @@ public class RobotContainer {
   private void configureBindings() {
     m_DriverController.a().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
 
-    m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
-    m_DriverController.b().onTrue(m_Swerve.sysIdAngleMotorCommand());
+    // SysId Routines for Swerve
+    // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
+    // m_DriverController.b().onTrue(m_Swerve.sysIdAngleMotorCommand());
   }
 
   public Command getAutonomousCommand() {
