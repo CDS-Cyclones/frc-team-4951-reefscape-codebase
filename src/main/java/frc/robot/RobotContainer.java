@@ -25,18 +25,14 @@ import frc.robot.subsystems.vision.VisionCamera;
 public class RobotContainer {
   private final SwerveSubsystem m_Swerve;
 
-  private final VisionCamera m_Camera;
-
   private final CommandXboxController m_DriverController;
 
   private final SendableChooser<Command> autoChooser;
 
 
-
   public RobotContainer() {
     // Initialize
     m_Swerve = new SwerveSubsystem();
-    m_Camera = new VisionCamera("cds_cam", new Transform3d());
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
 
     // Set default driving command
@@ -70,7 +66,7 @@ public class RobotContainer {
     m_DriverController.a().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
     // m_DriverController.x().whileTrue(new AimWhileDriveCommand(m_Swerve, m_Camera, m_DriverController).repeatedly());
     // m_DriverController.y().whileTrue(new AimAndGetInRangeCommand(m_Swerve, m_Camera, m_DriverController).repeatedly());
-  
+
 
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());

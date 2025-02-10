@@ -44,13 +44,9 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase {
   public final SwerveDrive swerveDrive;
+  public final VisionCamera photonCamera;
 
-  private final VisionCamera photonCamera;
-
-  // Load the RobotConfig from the GUI settings.
-  private final RobotConfig  PPconfig;
-
-  /** 
+    /**
    * Creates a new SwerveSubsystem.
    */
   public SwerveSubsystem() {
@@ -83,7 +79,8 @@ public class SwerveSubsystem extends SubsystemBase {
     try
     {
       // Load PathPlanner config
-      PPconfig = RobotConfig.fromGUISettings();
+      // Load the RobotConfig from the GUI settings.
+      RobotConfig PPconfig = RobotConfig.fromGUISettings();
 
       // Configure AutoBuilder (for PathPlanner)
       AutoBuilder.configure(
@@ -92,7 +89,7 @@ public class SwerveSubsystem extends SubsystemBase {
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         (speeds, feedforwards) -> swerveDrive.drive(speeds, swerveDrive.kinematics.toSwerveModuleStates(speeds), feedforwards.linearForces()), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-          // Translation PID constants  
+          // Translation PID constants
           new PIDConstants(
             swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().p,
             swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().i,
@@ -105,18 +102,14 @@ public class SwerveSubsystem extends SubsystemBase {
             swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().d
           )
         ),
-        PPconfig, // The robot configuration
+              PPconfig, // The robot configuration
         () -> {
           // Boolean supplier that controls when the path will be mirrored for the red alliance
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
           var alliance = DriverStation.getAlliance();
-          if (alliance.isPresent())
-          {
-            return alliance.get() == DriverStation.Alliance.Red;
-          }
-          return false;
+            return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
         },
         this // Reference to this subsystem to set requirements
       );
@@ -141,7 +134,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
-  
+
   /**
    * Command to drive the robot using translative values and heading as angular velocity.
    *
@@ -247,7 +240,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * This will zero (calibrate) the robot to assume the current position is facing forward
-   * 
+   *
    * If red alliance rotate the robot 180 after the drivebase zero command
    */
   public void zeroGyroWithAlliance()
@@ -303,7 +296,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(), scaledInputs.getY(), headingX, headingY, getHeading().getRadians(), Constants.MAX_SPEED);
   }
 
-  
+
   /**
    * Get the chassis speeds based on controller input of 1 joystick and one angle. Control the robot at an offset of
    * 90deg.

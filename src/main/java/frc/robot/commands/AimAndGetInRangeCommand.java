@@ -18,7 +18,6 @@ import frc.robot.subsystems.vision.VisionCamera;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AimAndGetInRangeCommand extends Command {
   private final SwerveSubsystem m_Swerve;
-  private final VisionCamera m_VisionCamera;
   private final CommandXboxController m_DriverController;
 
   double forward, strafe, turn, targetRange;
@@ -27,12 +26,11 @@ public class AimAndGetInRangeCommand extends Command {
 
 
   /** Creates a new AimAndGetInRangeCommand. */
-  public AimAndGetInRangeCommand(SwerveSubsystem swerve, VisionCamera cam, CommandXboxController controller) {
+  public AimAndGetInRangeCommand(SwerveSubsystem swerve, CommandXboxController controller) {
     m_Swerve = swerve;
-    m_VisionCamera = cam;
     m_DriverController = controller;
 
-    addRequirements(m_Swerve, m_VisionCamera);
+    addRequirements(m_Swerve);
   }
 
 
@@ -48,8 +46,8 @@ public class AimAndGetInRangeCommand extends Command {
     forward = 0; // MathUtil.applyDeadband(m_DriverController.getLeftY() * -1, DriverJoystickConstants.kLeftXDeadband) * m_Swerve.swerveDrive.getMaximumChassisVelocity();
     strafe = MathUtil.applyDeadband(m_DriverController.getLeftX() * -1, DriverJoystickConstants.kLeftYDeadband) * m_Swerve.swerveDrive.getMaximumChassisVelocity();
     turn = MathUtil.applyDeadband(m_DriverController.getRightX() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier * m_Swerve.swerveDrive.getMaximumChassisAngularVelocity();
-  
-    var latestResultOptional = m_VisionCamera.getLatestResult();
+
+    var latestResultOptional = m_Swerve.photonCamera.getLatestResult();
     if(latestResultOptional.isPresent()) {
       var latestResult = latestResultOptional.get();
       if(latestResult.hasTargets()) {
