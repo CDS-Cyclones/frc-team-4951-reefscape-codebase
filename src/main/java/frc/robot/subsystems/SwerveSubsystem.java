@@ -5,7 +5,10 @@
 package frc.robot.subsystems;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+
+import org.photonvision.EstimatedRobotPose;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -14,7 +17,10 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -26,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.VisionCamera;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
@@ -36,10 +43,12 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase {
-  private final SwerveDrive swerveDrive;
+  public final SwerveDrive swerveDrive;
+
+  private final VisionCamera photonCamera;
 
   // Load the RobotConfig from the GUI settings.
-  private final RobotConfig PPconfig;
+  private final RobotConfig  PPconfig;
 
   /** 
    * Creates a new SwerveSubsystem.
@@ -110,17 +119,26 @@ public class SwerveSubsystem extends SubsystemBase {
           return false;
         },
         this // Reference to this subsystem to set requirements
-);
+      );
     } catch (Exception e)
     {
       throw new RuntimeException(e);
     }
+
+    photonCamera = new VisionCamera("cds_cam", new Transform3d());
   }
 
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    swerveDrive.updateOdometry();
+    Optional<EstimatedRobotPose> poseEst = photonCamera.getEstimatedGlobalPose();
+    if (poseEst.isPresent())
+    {
+
+      var pose = poseEst.get();
+      swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(), pose.timestampSeconds, photonCamera.getEstimationStdDevs());
+    }
   }
 
   

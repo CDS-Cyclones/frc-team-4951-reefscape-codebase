@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriverJoystickConstants;
 import frc.robot.commands.AimAndGetInRangeCommand;
+import frc.robot.commands.AimWhileDriveCommand;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.vision.VisionCamera;
 
@@ -34,7 +36,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Initialize
     m_Swerve = new SwerveSubsystem();
-    m_Camera = new VisionCamera("cds_cam");
+    m_Camera = new VisionCamera("cds_cam", new Transform3d());
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
 
     // Set default driving command
@@ -53,6 +55,7 @@ public class RobotContainer {
       )
     );
 
+
     // Register Named Commands for PP autons
     // ex. NamedCommands.registerCommand("autoBalance", swerve.autoBalanceCommand());
 
@@ -65,7 +68,8 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_DriverController.a().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
-    m_DriverController.x().onTrue(new AimAndGetInRangeCommand(m_Swerve, m_Camera));
+    // m_DriverController.x().whileTrue(new AimWhileDriveCommand(m_Swerve, m_Camera, m_DriverController).repeatedly());
+    // m_DriverController.y().whileTrue(new AimAndGetInRangeCommand(m_Swerve, m_Camera, m_DriverController).repeatedly());
   
 
     // SysId Routines for Swerve
