@@ -28,4 +28,18 @@ public final class Constants {
     public static final double kLeftYDeadband  = 0.1;
     public static final double kRightXDeadband = 0.1;
   }
+
+  public enum Pipelines {
+    TWO_D_APRIL_TAG_PIPELINE(0, "2d_apriltag_pipeline"),
+    THREE_D_APRIL_TAG_PIPELINE(1, "3d_apriltag_pipeline");
+
+    public final int pipelineId;
+    public final String pipelineName;
+
+    Pipelines(int pipelineId, String pipelineName) {
+        this.pipelineId = pipelineId;
+        this.pipelineName = pipelineName;
+    }
+}
+
 }
