@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -348,6 +349,36 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public SwerveDrive getSwerveDrive() {
     return swerveDrive;
+  }
+
+
+  /**
+   * Return the vision subsystem.
+   *
+   * @return {@link VisionSubsystem}
+   */
+  public VisionSubsystem getVisionSubsystem() {
+    return vision;
+  }
+
+
+  /**
+   * Return the maximum velocity of drive motors.
+   *
+   * @return maximum velocity of drive motors as a double in m/s.
+   */
+  public double getMaximumDriveVelocity() {
+    return swerveDrive.getMaximumModuleDriveVelocity();
+  }
+
+
+  /**
+   * Return the maximum velocity of azimuth motors.
+   *
+   * @return maximum velocity of azimuth motors as a double in rad/s.
+   */
+  public double getMaximumAzimuthVelocity() {
+    return swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond);
   }
 
 

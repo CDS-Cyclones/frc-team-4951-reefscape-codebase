@@ -31,9 +31,6 @@ public final class Constants {
 
     /** High verbosity allows to see more data in ShuffleBoard */
     public static final TelemetryVerbosity TELEMETRY_VERBOSITY = TelemetryVerbosity.HIGH;
-
-
-
   }
 
 
@@ -49,6 +46,10 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
+    public static final double VISION_YAW_DEADBAND = 1.5; // degrees // TODO tune
+
+    public static final double VISION_TURN_kP = 0.01; // TODO tune
+  
     /**
      * Enum representing different vision pipelines.
      */
