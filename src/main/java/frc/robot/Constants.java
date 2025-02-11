@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean constants. This
@@ -24,19 +25,17 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-// Maximum speed of the robot in meters per second, used to limit acceleration.
-  public static final double MAX_SPEED  = Units.feetToMeters(4.5);
+  public static final class SwerveConstants {
+    /** Maximum speed of the robot in meters per second, used to limit acceleration. */
+    public static final double MAX_SPEED  = Units.feetToMeters(4.5);
 
-  public static class DriverJoystickConstants {
-    public static final int kDriverControllerPort = 0;
+    /** High verbosity allows to see more data in ShuffleBoard */
+    public static final TelemetryVerbosity TELEMETRY_VERBOSITY = TelemetryVerbosity.HIGH;
 
-    public static final double kTurnMultiplier = 0.8;
 
-    // Joystick deadbands for driving
-    public static final double kLeftXDeadband  = 0.1;
-    public static final double kLeftYDeadband  = 0.1;
-    public static final double kRightXDeadband = 0.1;
+
   }
+
 
   /**
    * VisionConstants class containing enums for Vision Pipelines and Vision Cameras.
@@ -80,5 +79,17 @@ public final class Constants {
         this.botToCam = botToCam;
       }
     }
+  }
+
+
+  public static class DriverJoystickConstants {
+    public static final int kDriverControllerPort = 0;
+
+    public static final double kTurnMultiplier = 0.8;
+
+    // Joystick deadbands for driving
+    public static final double kLeftXDeadband  = 0.1;
+    public static final double kLeftYDeadband  = 0.1;
+    public static final double kRightXDeadband = 0.1;
   }
 }
