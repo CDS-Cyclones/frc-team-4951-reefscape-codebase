@@ -4,6 +4,15 @@
 
 package frc.robot;
 
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -29,17 +38,47 @@ public final class Constants {
     public static final double kRightXDeadband = 0.1;
   }
 
-  public enum VisionPipelines {
-    TWO_D_APRIL_TAG_PIPELINE(0, "2d_apriltag_pipeline"),
-    THREE_D_APRIL_TAG_PIPELINE(1, "3d_apriltag_pipeline");
+  /**
+   * VisionConstants class containing enums for Vision Pipelines and Vision Cameras.
+   */
+  public static final class VisionConstants {
+    public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
+    
+    public static final PoseStrategy primaryMultiTagStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+    public static final PoseStrategy fallbackSingleTagStrat = PoseStrategy.LOWEST_AMBIGUITY;
 
-    public final int pipelineIndex;
-    public final String pipelineName;
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
-    VisionPipelines(int pipelineIndex, String pipelineName) {
+    /**
+     * Enum representing different vision pipelines.
+     */
+    public enum VisionPipelineInfo {
+      TWO_D_APRIL_TAG_PIPELINE(0, "2d_apriltag_pipeline"),
+      THREE_D_APRIL_TAG_PIPELINE(1, "3d_apriltag_pipeline");
+
+      public final int pipelineIndex;
+      public final String pipelineName;
+
+      VisionPipelineInfo(int pipelineIndex, String pipelineName) {
         this.pipelineIndex = pipelineIndex;
         this.pipelineName = pipelineName;
+      }
     }
-}
 
+    /**
+     * Enum representing different vision cameras.
+     */
+    public static enum VisionCameraInfo {
+      PRIMARY("cds_cam", new Transform3d());
+
+      public final String camName;
+      public final Transform3d botToCam;
+
+      VisionCameraInfo(String camName, Transform3d botToCam) {
+        this.camName = camName;
+        this.botToCam = botToCam;
+      }
+    }
+  }
 }

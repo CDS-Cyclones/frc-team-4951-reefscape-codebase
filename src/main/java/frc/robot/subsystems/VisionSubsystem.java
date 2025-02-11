@@ -10,34 +10,30 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.VisionPipelines;
+import frc.robot.Constants.VisionConstants.VisionPipelineInfo;
+
+import static frc.robot.Constants.VisionConstants.*;
 
 public class VisionSubsystem extends SubsystemBase {
-  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
   private final PhotonCamera camera;
   private final PhotonPoseEstimator photonPoseEstimator;
-  public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
-  public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
+
   private Matrix<N3, N1> curStdDevs;
 
 
   /** Creates a new Camera. */
-  public VisionSubsystem(String camName, Transform3d robotToCam) {
-    camera = new PhotonCamera(camName);
-    photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCam);
-    photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+  public VisionSubsystem() {
+    camera = new PhotonCamera(VisionCameraInfo.PRIMARY.camName);
+    photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, primaryMultiTagStrat, VisionCameraInfo.PRIMARY.botToCam);
+    photonPoseEstimator.setMultiTagFallbackStrategy(fallbackSingleTagStrat);
   }
 
   /**
@@ -51,7 +47,7 @@ public class VisionSubsystem extends SubsystemBase {
    * used for estimation.
    */
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-    camera.setPipelineIndex(VisionPipelines.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
+    camera.setPipelineIndex(VisionPipelineInfo.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
     Optional<EstimatedRobotPose> visionEst = Optional.empty();
     for (var change : camera.getAllUnreadResults()) {
       if(change.hasTargets()) {
@@ -129,7 +125,7 @@ public class VisionSubsystem extends SubsystemBase {
    * or an empty {@link Optional} if there are no unread results.
    */
   public final Optional<PhotonPipelineResult> getLatest2DResult() {
-    camera.setPipelineIndex(VisionPipelines.TWO_D_APRIL_TAG_PIPELINE.pipelineIndex);
+    camera.setPipelineIndex(VisionPipelineInfo.TWO_D_APRIL_TAG_PIPELINE.pipelineIndex);
 
     List<PhotonPipelineResult> allUnreadResults = camera.getAllUnreadResults();
 
