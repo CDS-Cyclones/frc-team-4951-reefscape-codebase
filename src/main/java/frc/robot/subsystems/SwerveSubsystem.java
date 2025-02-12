@@ -153,6 +153,19 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+  /**
+   * Drive the robot using translative values and heading as angular velocity.
+   *
+   * @param velocityX        Translation in the X direction (forward) in m/s.
+   * @param velocityY        Translation in the Y direction (left) in m/s.
+   * @param angularVelocity  Rotation of the robot to set in rad/s.
+   * @param fieldRelative    If true will drive the robot in field relative mode.
+   * @param openLoop         If true will use open-loop velocity(higher responsiveness - better for auton), else will use close-loop velocity(higher precision - better for teleop).
+   */
+  public void drive(double velocityX, double velocityY, double angularVelocity, boolean fieldRelative, boolean openLoop) {
+    swerveDrive.drive(new Translation2d(velocityX, velocityY), angularVelocity, fieldRelative, openLoop);
+  }
+
 
   /**
    * Get the swerve drive kinematics object.
