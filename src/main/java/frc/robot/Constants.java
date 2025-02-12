@@ -48,7 +48,7 @@ public final class Constants {
 
     public static final double VISION_YAW_DEADBAND = 1.5; // degrees // TODO tune
 
-    public static final double VISION_TURN_kP = 0.01; // TODO tune
+    public static final double VISION_TURN_kP = 0.00001; // TODO tune
   
     /**
      * Enum representing different vision pipelines.

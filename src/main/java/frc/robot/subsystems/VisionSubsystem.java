@@ -23,7 +23,7 @@ import frc.robot.Constants.VisionConstants.VisionPipelineInfo;
 import static frc.robot.Constants.VisionConstants.*;
 
 public class VisionSubsystem extends SubsystemBase {
-  private final PhotonCamera camera;
+  public final PhotonCamera camera;
   private final PhotonPoseEstimator photonPoseEstimator;
 
   private Matrix<N3, N1> curStdDevs;

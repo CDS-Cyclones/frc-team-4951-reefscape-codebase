@@ -46,12 +46,16 @@ public class AimWhileDriveCommand extends Command {
     turn = MathUtil.applyDeadband(m_DriverController.getRightX() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier * m_Swerve.getMaximumAzimuthVelocity();
 
     var latestResultOptional = m_Vision.getLatest2DResult();
-
+   
     if(latestResultOptional.isPresent()) {
+      System.out.println("Andrii");
       var latestResult = latestResultOptional.get();
       if(latestResult.hasTargets()) {
+        System.out.println("Jason");
         var target = latestResult.getBestTarget();
-        turn =  MathUtil.applyDeadband((target.getYaw() - 0), VISION_YAW_DEADBAND) * VISION_TURN_kP * m_Swerve.getMaximumAzimuthVelocity();
+        turn =  -MathUtil.applyDeadband((target.getYaw() - 0), VISION_YAW_DEADBAND) * VISION_TURN_kP * m_Swerve.getMaximumAzimuthVelocity();
+
+        System.out.println("turn ::::: " + turn);
       }
       m_Swerve.swerveDrive.drive(new ChassisSpeeds(forward, strafe, turn));
       System.out.println(turn);
