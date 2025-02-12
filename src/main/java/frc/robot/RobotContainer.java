@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriverJoystickConstants;
+import frc.robot.commands.AimAndGetInRangeCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -52,7 +53,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    m_DriverController.a().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
+    m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
+    m_DriverController.y().whileTrue(new AimAndGetInRangeCommand(m_Swerve));
 
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
