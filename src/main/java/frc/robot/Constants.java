@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -39,7 +41,7 @@ public final class Constants {
    */
   public static final class VisionConstants {
     public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
-    
+
     public static final PoseStrategy primaryMultiTagStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
     public static final PoseStrategy fallbackSingleTagStrat = PoseStrategy.LOWEST_AMBIGUITY;
 
@@ -49,7 +51,10 @@ public final class Constants {
     public static final double VISION_YAW_DEADBAND = 1.5; // degrees // TODO tune
 
     public static final double VISION_TURN_kP = 0.00001; // TODO tune
-  
+    public static final double VISION_FORWARD_kP = 0.00001;    // TODO tune
+
+    public static final double DESIRED_RANGE = 2; // in m TODO tune
+
     /**
      * Enum representing different vision pipelines.
      */
@@ -70,7 +75,13 @@ public final class Constants {
      * Enum representing different vision cameras.
      */
     public static enum VisionCameraInfo {
-      PRIMARY("cds_cam", new Transform3d());
+      PRIMARY(
+        "cds_cam",
+        new Transform3d(
+          new Translation3d(0, 0, 0),     // TODO first is how much forward and third is how much up
+          new Rotation3d(0, 0, 0)  // facing forward
+        )
+      );
 
       public final String camName;
       public final Transform3d botToCam;
