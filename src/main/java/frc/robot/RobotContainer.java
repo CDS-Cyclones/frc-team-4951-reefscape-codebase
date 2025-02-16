@@ -12,12 +12,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriverJoystickConstants;
-import frc.robot.commands.AimAndGetInRangeCommand;
+import frc.robot.Constants.VisionConstants.PosesRelToAprilTags;
+import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
+import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 public class RobotContainer {
   private final SwerveSubsystem m_Swerve;
+
+  // Periodically estimates pose based on odometry and vision readings
+  @SuppressWarnings("unused")
+  private final PoseEstimatorSubsystem m_PoseEstimator;
 
   private final CommandXboxController m_DriverController;
 
@@ -27,6 +33,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Initialize
     m_Swerve = new SwerveSubsystem();
+    m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_Swerve.getVisionSubsystem());
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
 
     // Set default driving command
@@ -37,7 +44,7 @@ public class RobotContainer {
         m_DriverController::getLeftX,
         m_DriverController::getRightX,
         m_DriverController.getHID()::getAButton,
-        () -> !m_DriverController.getHID().getBButton()
+        m_DriverController.getHID()::getBButton
       )
     );
 
@@ -54,7 +61,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
-    m_DriverController.y().whileTrue(new AimAndGetInRangeCommand(m_Swerve));
+    m_DriverController.y().whileTrue(new ChaseTagCommand(m_Swerve.getVisionSubsystem(), m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
 
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());

@@ -8,6 +8,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
+import com.pathplanner.lib.config.PIDConstants;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -15,6 +17,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
@@ -40,7 +43,7 @@ public final class Constants {
    * VisionConstants class containing enums for Vision Pipelines and Vision Cameras.
    */
   public static final class VisionConstants {
-    public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
+    public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
 
     public static final PoseStrategy primaryMultiTagStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
     public static final PoseStrategy fallbackSingleTagStrat = PoseStrategy.LOWEST_AMBIGUITY;
@@ -48,29 +51,29 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
-    public static final double VISION_YAW_DEADBAND = 1.5; // degrees // TODO tune
+    public static final double VISION_YAW_DEADBAND = .5; // degrees // TODO tune
+    public static final double AMBIGUITY_DEADBAND = 0.2;
 
-    public static final double VISION_TURN_kP = 0.00001; // TODO tune
-    public static final double VISION_FORWARD_kP = 0.00001;    // TODO tune
+    public static final double VISION_TURN_kP = 0.01; // TODO tune
+    public static final double VISION_FORWARD_kP = 1;    // TODO tune
 
-    public static final double DESIRED_RANGE = 2; // in m TODO tune
+    public static final double DESIRED_RANGE = .25; // in m TODO tune
 
-    /**
-     * Enum representing different vision pipelines.
-     */
-    public enum VisionPipelineInfo {
-      TWO_D_APRIL_TAG_PIPELINE(0, "2d_apriltag_pipeline"),
-      THREE_D_APRIL_TAG_PIPELINE(1, "3d_apriltag_pipeline");
+    // Constraints for profiled movement of robot whilst controlled by vision
+    public static final TrapezoidProfile.Constraints X_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
+    public static final TrapezoidProfile.Constraints Y_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
+    public static final TrapezoidProfile.Constraints OMEGA_CONSTRAINTS = new TrapezoidProfile.Constraints(8, 8);
 
-      public final int pipelineIndex;
-      public final String pipelineName;
+    // PID Values for ProfiledPIDControllers used in ChaseTagCommand
+    public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(3, 0, 0);       // TODO tune
+    public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(3, 0, 0);       // TODO tune
+    public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(2, 0, 0);   // TODO tune
 
-      VisionPipelineInfo(int pipelineIndex, String pipelineName) {
-        this.pipelineIndex = pipelineIndex;
-        this.pipelineName = pipelineName;
-      }
-    }
-
+    // ProfiledPIDControllers tolerance values
+    public static final double X_TOLERANCE = 0.2; // in m
+    public static final double Y_TOLERANCE = 0.2; // in m
+    public static final double OMEGA_TOLERANCE = 3; // in deg
+    
     /**
      * Enum representing different vision cameras.
      */
@@ -78,7 +81,7 @@ public final class Constants {
       PRIMARY(
         "cds_cam",
         new Transform3d(
-          new Translation3d(0, 0, 0),     // TODO first is how much forward and third is how much up
+          new Translation3d(0.406, 0, 0.1524), // X is forward in m, z is up in m
           new Rotation3d(0, 0, 0)  // facing forward
         )
       );
@@ -91,13 +94,34 @@ public final class Constants {
         this.botToCam = botToCam;
       }
     }
+
+    /**
+     * Enum representing different desired poses relative to AprilTags on the field.
+     */
+    public static enum PosesRelToAprilTags {
+      SAMPLE_POSE(10, 1.5, 0);
+
+      /** ID of the april tag */
+      public final int aprilTagId;
+
+      /** Where the robot should be in relation to the tag */
+      public final Transform3d relativePose;
+
+      PosesRelToAprilTags(int aprilTagId, double metersInFront, double metersToTheLeft) {
+        this.aprilTagId = aprilTagId;
+        this.relativePose = new Transform3d(
+          new Translation3d(metersInFront, metersToTheLeft, 0),
+          new Rotation3d(0, 0, Math.PI) // PI rads (180 deg) means facing the tag
+        );
+      }
+    }
   }
 
 
   public static class DriverJoystickConstants {
     public static final int kDriverControllerPort = 0;
 
-    public static final double kTurnMultiplier = 0.8;
+    public static final double kTurnMultiplier = 0.0005;
 
     // Joystick deadbands for driving
     public static final double kLeftXDeadband  = 0.1;

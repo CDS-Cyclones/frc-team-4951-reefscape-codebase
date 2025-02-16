@@ -15,19 +15,23 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
+
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
-
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
@@ -130,6 +134,13 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
 
+  @Override
+  public void simulationPeriodic()
+  {
+    swerveDrive.updateOdometry();
+  }
+
+
   /**
    * Command to drive the robot using translative values and heading as angular velocity.
    *
@@ -165,6 +176,19 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public void drive(double velocityX, double velocityY, double angularVelocity, boolean fieldRelative, boolean openLoop) {
     swerveDrive.drive(new Translation2d(velocityX, velocityY), angularVelocity, fieldRelative, openLoop);
+  }
+
+    /**
+   * Drive the robot using translative values and heading as angular velocity.
+   *
+   * @param velocityX        Translation in the X direction (forward) in m/s.
+   * @param velocityY        Translation in the Y direction (left) in m/s.
+   * @param angularVelocity  Rotation of the robot to set in rad/s.
+   * @param fieldRelative    If true will drive the robot in field relative mode.
+   * @param openLoop         If true will use open-loop velocity(higher responsiveness - better for auton), else will use close-loop velocity(higher precision - better for teleop).
+   */
+  public void drive(double velocityX, double velocityY, double angularVelocity) {
+    swerveDrive.drive(new ChassisSpeeds(velocityX, velocityY, angularVelocity), false, new Translation2d(12.5, 12.5));
   }
 
 
@@ -377,22 +401,42 @@ public class SwerveSubsystem extends SubsystemBase {
 
 
   /**
-   * Return the maximum velocity of drive motors.
+   * Return the maximum translational velocity of chassis.
    *
-   * @return maximum velocity of drive motors as a double in m/s.
+   * @return maximum translational velocity of chassis in m/s.
    */
   public double getMaximumDriveVelocity() {
-    return swerveDrive.getMaximumModuleDriveVelocity();
+    return swerveDrive.getMaximumChassisVelocity();
   }
 
 
   /**
-   * Return the maximum velocity of azimuth motors.
+   * Return the maximum rotational velocity of chassis.
    *
-   * @return maximum velocity of azimuth motors as a double in rad/s.
+   * @return maximum rotational velocity of chassis as a double in rad/s.
    */
   public double getMaximumAzimuthVelocity() {
-    return swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond);
+    return swerveDrive.getMaximumChassisAngularVelocity();
+  }
+
+
+  /**
+   * Update odometry. Should be run every loop.
+   */
+  public void updateOdometry() {
+    swerveDrive.updateOdometry();
+  }
+
+
+  /**
+   * Add a vision measurement to the {@link SwerveDrivePoseEstimator} and update the SwerveIMU gyro reading with the given timestamp of the vision measurement.
+   * 
+   * @param estimatedPose Robot {@link Pose2d} as measured by vision.
+   * @param timestampSecondsTimestamp Time since startup.
+   * @param estimationStdDevs Vision measurement standard deviation that will be sent to the {@link SwerveDrivePoseEstimator}.
+   */
+  public void addVisionMeasurement(Pose2d estimatedPose, double timestampSeconds, Matrix<N3, N1> estimationStdDevs) {
+    swerveDrive.addVisionMeasurement(estimatedPose, timestampSeconds, estimationStdDevs);
   }
 
 

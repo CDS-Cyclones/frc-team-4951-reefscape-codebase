@@ -15,10 +15,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.VisionConstants.VisionPipelineInfo;
+import frc.robot.Constants.VisionConstants.VisionCameraInfo;
 
 import static frc.robot.Constants.VisionConstants.*;
 
@@ -47,7 +48,6 @@ public class VisionSubsystem extends SubsystemBase {
    * used for estimation.
    */
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-    camera.setPipelineIndex(VisionPipelineInfo.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
     Optional<EstimatedRobotPose> visionEst = Optional.empty();
     for (var change : camera.getAllUnreadResults()) {
       if(change.hasTargets()) {
@@ -116,19 +116,29 @@ public class VisionSubsystem extends SubsystemBase {
 
   
   /**
-   * Retrieves the latest 2D result from the camera.
+   * Retrieves the latest result from the camera.
    * 
-   * <p>This method fetches all unread results from 2D pipeline and returns the latest one if available.
+   * <p>This method fetches all unread results from #D april ttag pipeline and returns the latest one if available.
    * If no unread results are found, it returns an empty {@link Optional}.
    *
    * @return an {@link Optional} containing the latest {@link PhotonPipelineResult} if available,
    * or an empty {@link Optional} if there are no unread results.
    */
-  public final Optional<PhotonPipelineResult> getLatest2DResult() {
-    camera.setPipelineIndex(VisionPipelineInfo.TWO_D_APRIL_TAG_PIPELINE.pipelineIndex);
-
+  public Optional<PhotonPipelineResult> getLatestResult() {
     List<PhotonPipelineResult> allUnreadResults = camera.getAllUnreadResults();
 
     return allUnreadResults.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults.get(allUnreadResults.size() - 1));
   }
+
+
+  public PhotonCamera getCamera() {
+    return camera;
+  }
+
+
+  public Transform3d getBotToCam() {
+    return VisionCameraInfo.PRIMARY.botToCam;
+  }
+
+
 }
