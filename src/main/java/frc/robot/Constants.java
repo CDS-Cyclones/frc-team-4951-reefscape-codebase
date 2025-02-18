@@ -121,7 +121,7 @@ public final class Constants {
   public static class DriverJoystickConstants {
     public static final int kDriverControllerPort = 0;
 
-    public static final double kTurnMultiplier = 0.0005;
+    public static final double kTurnMultiplier = 0.8;
 
     // Joystick deadbands for driving
     public static final double kLeftXDeadband  = 0.1;
