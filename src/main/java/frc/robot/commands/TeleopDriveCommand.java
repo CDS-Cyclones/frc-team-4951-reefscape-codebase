@@ -16,6 +16,12 @@ import frc.robot.subsystems.SwerveSubsystem;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+/** A command that allows the driver to control the robot using a joystick.
+ * This command uses the SwerveSubsystem to drive the robot and the VisionSubsystem to aim the robot.
+ * The driver can control the forward, strafe, and turn velocity of the robot using the left and right joysticks.
+ * The driver can also switch between field relative and robot relative driving using a button.
+ * The driver can also aim the robot using the vision system using a button.
+ */
 public class TeleopDriveCommand extends Command {
   private final SwerveSubsystem swerve;
   private final VisionSubsystem vision;
@@ -25,16 +31,17 @@ public class TeleopDriveCommand extends Command {
 
   /** Creates a new TeleopDriveCommand.
    *
-   * @param swerve The SwerveSubsystem used by this command to drive the robot.
+   * @param swerve The {@link SwerveSubsystem} used by this command to drive the robot.
+   * @param vision The {@link VisionSubsystem} used by this command to aim the robot.
    * @param forwardSupplier A DoubleSupplier that supplies the forward velocity of the robot.
    * @param strafeSupplier A DoubleSupplier that supplies the strafe velocity of the robot.
    * @param turnSupplier A DoubleSupplier that supplies the turn velocity of the robot.
    * @param fieldRelativeSupplier A BooleanSupplier that supplies whether the robot should drive in field relative
    * @param visionAimSupplier A BooleanSupplier that supplies whether the robot should aim using the vision system.
    */
-  public TeleopDriveCommand(SwerveSubsystem swerve, DoubleSupplier forwardSupplier, DoubleSupplier strafeSupplier, DoubleSupplier turnSupplier, BooleanSupplier fieldRelativeSupplier, BooleanSupplier visionAimSupplier) {
+  public TeleopDriveCommand(SwerveSubsystem swerve, VisionSubsystem vision, DoubleSupplier forwardSupplier, DoubleSupplier strafeSupplier, DoubleSupplier turnSupplier, BooleanSupplier fieldRelativeSupplier, BooleanSupplier visionAimSupplier) {
     this.swerve = swerve;
-    this.vision = swerve.getVisionSubsystem();
+    this.vision = vision;
     this.forwardSupplier = forwardSupplier;
     this.strafeSupplier = strafeSupplier;
     this.turnSupplier = turnSupplier;
@@ -62,7 +69,7 @@ public class TeleopDriveCommand extends Command {
 
     // If visionAim is true, aim using the vision system
     if (visionAim) {
-      var latestResultOptional = vision.getLatestResult();
+      var latestResultOptional = vision.getLatestResult2D();
       if (latestResultOptional.isPresent()) {
         var latestResult = latestResultOptional.get();
         if(latestResult.hasTargets()) {
