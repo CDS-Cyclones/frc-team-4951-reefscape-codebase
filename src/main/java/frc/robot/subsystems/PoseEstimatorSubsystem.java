@@ -19,8 +19,6 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
   public PoseEstimatorSubsystem(SwerveSubsystem swerve, VisionSubsystem vision) {
     this.swerve = swerve;
     this.vision = vision;
-
-
   }
 
 
