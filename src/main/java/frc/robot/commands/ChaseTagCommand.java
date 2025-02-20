@@ -82,9 +82,9 @@ public class ChaseTagCommand extends Command {
         var targetOptional = photonResult.getTargets().stream().filter(t -> t.getFiducialId() == desiredPose.aprilTagId).filter(t -> t.getPoseAmbiguity() <= 2).findFirst();
         
         if(targetOptional.isPresent()) {
-          var target = targetOptional.get();
-          var goalPose = robotPose.transformBy(photonCamera.getBotToCam()).transformBy(target.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
-        
+          latestTarget = targetOptional.get();
+          var goalPose = robotPose.transformBy(photonCamera.getBotToCam()).transformBy(latestTarget.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
+          
           xController.setGoal(goalPose.getX());
           yController.setGoal(goalPose.getY());
           omegaController.setGoal(goalPose.getRotation().getRadians());
@@ -98,13 +98,13 @@ public class ChaseTagCommand extends Command {
       var xSpeed = xController.calculate(robotPose.getX());
       if(xController.atGoal()) xSpeed = 0;
 
-      var ySpeed = xController.calculate(robotPose.getY());
+      var ySpeed = yController.calculate(robotPose.getY());
       if(yController.atGoal()) ySpeed = 0;
 
-      var omegaSpeed = xController.calculate(robotPose2d.getRotation().getRadians());
+      var omegaSpeed = omegaController.calculate(robotPose2d.getRotation().getRadians());
       if(omegaController.atGoal()) omegaSpeed = 0;
 
-      swerve.drive(xSpeed, ySpeed, omegaSpeed, false, true);
+      swerve.drive(xSpeed, ySpeed, omegaSpeed, false, false);
     }
   }
 
