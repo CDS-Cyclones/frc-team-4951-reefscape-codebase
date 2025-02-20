@@ -16,10 +16,8 @@ import static frc.robot.Constants.VisionConstants.Y_CONSTRAINTS;
 import static frc.robot.Constants.VisionConstants.Y_PID_CONSTANTS;
 import static frc.robot.Constants.VisionConstants.Y_TOLERANCE;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
