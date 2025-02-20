@@ -5,10 +5,6 @@
 package frc.robot.subsystems;
 
 import java.io.File;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-
-import org.photonvision.EstimatedRobotPose;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -26,7 +22,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,14 +37,18 @@ import swervelib.telemetry.SwerveDriveTelemetry;
 
 import static frc.robot.Constants.SwerveConstants.*;
 
+
+/**
+ * The SwerveSubsystem class is a subsystem that contains the swerve drive of the robot.
+ */
 public class SwerveSubsystem extends SubsystemBase {
   public final SwerveDrive swerveDrive;
-  public final VisionSubsystem vision;
 
-    /**
+  /**
    * Creates a new SwerveSubsystem.
    */
   public SwerveSubsystem() {
+    // Set the verbosity of the telemetry to high (allows to see mroe values on ShuffleBoard)
     SwerveDriveTelemetry.verbosity = TELEMETRY_VERBOSITY;
 
     // Initialize swerve drive
@@ -101,14 +100,14 @@ public class SwerveSubsystem extends SubsystemBase {
             swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().d
           )
         ),
-              PPconfig, // The robot configuration
+        PPconfig, // The robot configuration
         () -> {
           // Boolean supplier that controls when the path will be mirrored for the red alliance
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
           var alliance = DriverStation.getAlliance();
-            return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
+          return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
         },
         this // Reference to this subsystem to set requirements
       );
@@ -116,53 +115,12 @@ public class SwerveSubsystem extends SubsystemBase {
     {
       throw new RuntimeException(e);
     }
-
-    vision = new VisionSubsystem();
   }
 
 
+  /** This method will be called once per scheduler run */
   @Override
-  public void periodic() {
-    swerveDrive.updateOdometry();
-    Optional<EstimatedRobotPose> poseEst = vision.getEstimatedGlobalPose();
-    if (poseEst.isPresent())
-    {
-
-      var pose = poseEst.get();
-      swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(), pose.timestampSeconds, vision.getEstimationStdDevs());
-    }
-  }
-
-
-  @Override
-  public void simulationPeriodic()
-  {
-    swerveDrive.updateOdometry();
-  }
-
-
-  /**
-   * Command to drive the robot using translative values and heading as angular velocity.
-   *
-   * @param translationX     Translation in the X direction (forward).
-   * @param translationY     Translation in the Y direction (left).
-   * @param angularRotationX Rotation of the robot to set
-   * @param openLoop         If true will use open-loop velocity(higher responsiveness - better for auton), else will use close-loop velocity(higher precision - better for teleop).
-   * @return Drive command.
-   */
-  public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX, boolean fieldRelative, boolean openLoop) {
-    return run(() -> {
-      // Make the robot drive
-      swerveDrive.drive(
-        new Translation2d(
-          translationX.getAsDouble() * getMaximumDriveVelocity(),
-          translationY.getAsDouble() * getMaximumDriveVelocity()
-        ),
-        angularRotationX.getAsDouble() * getMaximumAzimuthVelocity(),
-        fieldRelative,
-        openLoop);
-    });
-  }
+  public void periodic() {}
 
 
   /**
@@ -178,14 +136,12 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.drive(new Translation2d(velocityX, velocityY), angularVelocity, fieldRelative, openLoop);
   }
 
-    /**
+  /** TODO THIS COMMAND ALLOWS TO SWITCH ROTATION POINT
    * Drive the robot using translative values and heading as angular velocity.
    *
    * @param velocityX        Translation in the X direction (forward) in m/s.
    * @param velocityY        Translation in the Y direction (left) in m/s.
    * @param angularVelocity  Rotation of the robot to set in rad/s.
-   * @param fieldRelative    If true will drive the robot in field relative mode.
-   * @param openLoop         If true will use open-loop velocity(higher responsiveness - better for auton), else will use close-loop velocity(higher precision - better for teleop).
    */
   public void drive(double velocityX, double velocityY, double angularVelocity) {
     swerveDrive.drive(new ChassisSpeeds(velocityX, velocityY, angularVelocity), false, new Translation2d(12.5, 12.5));
@@ -387,16 +343,6 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public SwerveDrive getSwerveDrive() {
     return swerveDrive;
-  }
-
-
-  /**
-   * Return the vision subsystem.
-   *
-   * @return {@link VisionSubsystem}
-   */
-  public VisionSubsystem getVisionSubsystem() {
-    return vision;
   }
 
 

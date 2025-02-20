@@ -10,6 +10,8 @@ import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+
+/** A subsystem that estimates the robot's pose on the field using odometry and vision data. */
 public class PoseEstimatorSubsystem extends SubsystemBase {
   private final SwerveSubsystem swerve;
   private final VisionSubsystem vision;

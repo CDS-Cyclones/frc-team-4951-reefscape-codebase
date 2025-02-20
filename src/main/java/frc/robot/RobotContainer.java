@@ -17,10 +17,14 @@ import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
   // Swerve subsystems
   private final SwerveSubsystem m_Swerve;
+
+  // Vision subsystem
+  private final VisionSubsystem m_VisionSubsystem;
 
   // Subsystem that periodically estimates pose based on odometry and vision readings
   @SuppressWarnings("unused")
@@ -39,7 +43,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Initialize
     m_Swerve = new SwerveSubsystem();
-    m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_Swerve.getVisionSubsystem());
+    m_VisionSubsystem = new VisionSubsystem();
+    m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_VisionSubsystem);
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
 
     // Set default driving command
@@ -66,7 +71,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
-    m_DriverController.y().whileTrue(new ChaseTagCommand(m_Swerve.getVisionSubsystem(), m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
+    m_DriverController.y().whileTrue(new ChaseTagCommand(m_VisionSubsystem, m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
     m_DriverController.a().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
     
     // SysId Routines for Swerve

@@ -23,10 +23,17 @@ import frc.robot.Constants.VisionConstants.VisionCameraInfo;
 
 import static frc.robot.Constants.VisionConstants.*;
 
+
+/**
+ * A subsystem that interfaces with the PhotonVision camera and processes vision data to estimate the
+ * robot's pose on the field.
+ */
 public class VisionSubsystem extends SubsystemBase {
   public final PhotonCamera camera;
   private final PhotonPoseEstimator photonPoseEstimator;
 
+  private List<PhotonPipelineResult> allUnreadResults3D;
+  private List<PhotonPipelineResult> allUnreadResults2D;
   private Matrix<N3, N1> curStdDevs;
 
 
@@ -35,7 +42,28 @@ public class VisionSubsystem extends SubsystemBase {
     camera = new PhotonCamera(VisionCameraInfo.PRIMARY.camName);
     photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, primaryMultiTagStrat, VisionCameraInfo.PRIMARY.botToCam);
     photonPoseEstimator.setMultiTagFallbackStrategy(fallbackSingleTagStrat);
+
+    updateResults();
   }
+
+
+  /** This method will be called once per scheduler run. */
+  @Override
+  public void periodic() {
+    updateResults();
+  }
+
+
+  /**
+   * Updates {@link allUnreadResults2D} and {@link allUnreadResults3D} for both 2D and 3D pipelines.
+   */
+  public void updateResults() {
+    camera.setPipelineIndex(VisionPipelineInfo.TWO_D_APRIL_TAG_PIPELINE.pipelineIndex);
+    allUnreadResults2D = camera.getAllUnreadResults();
+    camera.setPipelineIndex(VisionPipelineInfo.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
+    allUnreadResults3D = camera.getAllUnreadResults(); 
+  }
+
 
   /**
    * The latest estimated robot pose on the field from vision data. This may be empty. This should
@@ -49,7 +77,7 @@ public class VisionSubsystem extends SubsystemBase {
    */
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
     Optional<EstimatedRobotPose> visionEst = Optional.empty();
-    for (var change : camera.getAllUnreadResults()) {
+    for (var change : allUnreadResults3D) {
       if(change.hasTargets()) {
         visionEst = photonPoseEstimator.update(change);
         updateEstimationStdDevs(visionEst, change.getTargets());
@@ -116,7 +144,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   
   /**
-   * Retrieves the latest result from the camera.
+   * Retrieves the latest result from the camera 2D pipeline.
    * 
    * <p>This method fetches all unread results from #D april ttag pipeline and returns the latest one if available.
    * If no unread results are found, it returns an empty {@link Optional}.
@@ -124,21 +152,26 @@ public class VisionSubsystem extends SubsystemBase {
    * @return an {@link Optional} containing the latest {@link PhotonPipelineResult} if available,
    * or an empty {@link Optional} if there are no unread results.
    */
-  public Optional<PhotonPipelineResult> getLatestResult() {
-    List<PhotonPipelineResult> allUnreadResults = camera.getAllUnreadResults();
-
-    return allUnreadResults.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults.get(allUnreadResults.size() - 1));
+  public Optional<PhotonPipelineResult> getLatestResult2D() {
+    return allUnreadResults2D.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults2D.get(allUnreadResults2D.size() - 1));
   }
 
 
-  public PhotonCamera getCamera() {
-    return camera;
+  /**
+   * Retrieves the latest result from the camera 3D pipeline.
+   * 
+   * <p>This method fetches all unread results from #D april ttag pipeline and returns the latest one if available.
+   * If no unread results are found, it returns an empty {@link Optional}.
+   *
+   * @return an {@link Optional} containing the latest {@link PhotonPipelineResult} if available,
+   * or an empty {@link Optional} if there are no unread results.
+   */
+  public Optional<PhotonPipelineResult> getLatestResult3D() {
+    return allUnreadResults3D.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults3D.get(allUnreadResults3D.size() - 1));
   }
 
 
   public Transform3d getBotToCam() {
     return VisionCameraInfo.PRIMARY.botToCam;
   }
-
-
 }
