@@ -28,7 +28,11 @@ import frc.robot.Constants.VisionConstants.PosesRelToAprilTags;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+/** A command that chases a target using the swerve drive.
+ * This command uses the photon camera to track a target and then uses a PID controller to drive the robot to the target.
+ * The {@link ProfiledPIDController}s are used to control the x, y, and omega (rotation) of the robot.
+ * The command ends  the robot reaches the target pose.
+ */
 public class ChaseTagCommand extends Command {
   private final VisionSubsystem photonCamera;
   private final SwerveSubsystem swerve;
@@ -75,7 +79,7 @@ public class ChaseTagCommand extends Command {
     var robotPose2d = poseSupplier.get();
     var robotPose = new Pose3d(robotPose2d);
 
-    var photonResultOptional = photonCamera.getLatestResult();
+    var photonResultOptional = photonCamera.getLatestResult3D();
     if(photonResultOptional.isPresent()) {
       var photonResult = photonResultOptional.get();
       if(photonResult.hasTargets()) {
@@ -117,6 +121,6 @@ public class ChaseTagCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return xController.atGoal() && yController.atGoal() && omegaController.atGoal();
   }
 }
