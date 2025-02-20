@@ -17,7 +17,7 @@ import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
   // Swerve subsystems

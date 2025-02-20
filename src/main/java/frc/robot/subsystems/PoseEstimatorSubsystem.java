@@ -9,6 +9,8 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.vision.PVCamera;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 
 /** A subsystem that estimates the robot's pose on the field using odometry and vision data. */
@@ -26,12 +28,18 @@ public class PoseEstimatorSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Update the odometry of the swerve drive
     swerve.updateOdometry();
-    Optional<EstimatedRobotPose> poseEst = vision.getEstimatedGlobalPose();
-    if (poseEst.isPresent())
+
+    // Add vision measurements from all cameras to the swerve drive
+    for (PVCamera camera : vision.getCameras())
     {
-      var pose = poseEst.get();
-      swerve.addVisionMeasurement(pose.estimatedPose.toPose2d(), pose.timestampSeconds, vision.getEstimationStdDevs());
+      Optional<EstimatedRobotPose> poseEst = camera.getEstimatedGlobalPose();
+      if (poseEst.isPresent())
+      {
+        var pose = poseEst.get();
+        swerve.addVisionMeasurement(pose.estimatedPose.toPose2d(), pose.timestampSeconds, camera.getEstimationStdDevs());
+      }
     }
   }
 }

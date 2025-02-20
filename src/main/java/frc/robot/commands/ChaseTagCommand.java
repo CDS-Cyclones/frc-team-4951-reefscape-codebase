@@ -16,8 +16,10 @@ import static frc.robot.Constants.VisionConstants.Y_CONSTRAINTS;
 import static frc.robot.Constants.VisionConstants.Y_PID_CONSTANTS;
 import static frc.robot.Constants.VisionConstants.Y_TOLERANCE;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -26,7 +28,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.VisionConstants.PosesRelToAprilTags;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.vision.PVCamera;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 /** A command that chases a target using the swerve drive.
  * This command uses the photon camera to track a target and then uses a PID controller to drive the robot to the target.
@@ -34,7 +37,7 @@ import frc.robot.subsystems.VisionSubsystem;
  * The command ends  the robot reaches the target pose.
  */
 public class ChaseTagCommand extends Command {
-  private final VisionSubsystem photonCamera;
+  private final VisionSubsystem vision;
   private final SwerveSubsystem swerve;
   private final Supplier<Pose2d> poseSupplier;
   private final PosesRelToAprilTags desiredPose;
@@ -47,8 +50,8 @@ public class ChaseTagCommand extends Command {
 
 
   /** Creates a new ChaseTagCommand. */
-  public ChaseTagCommand(VisionSubsystem photonCamera, SwerveSubsystem swerve, Supplier<Pose2d> poseSupplier, PosesRelToAprilTags desiredPose) {
-    this.photonCamera = photonCamera;
+  public ChaseTagCommand(VisionSubsystem vision, SwerveSubsystem swerve, Supplier<Pose2d> poseSupplier, PosesRelToAprilTags desiredPose) {
+    this.vision = vision;
     this.swerve = swerve;
     this.poseSupplier = poseSupplier;
     this.desiredPose = desiredPose;
@@ -58,7 +61,7 @@ public class ChaseTagCommand extends Command {
     omegaController.setTolerance(OMEGA_TOLERANCE);
     omegaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    addRequirements(this.photonCamera, this.swerve);
+    addRequirements(this.vision, this.swerve);
   }
 
 
@@ -79,22 +82,26 @@ public class ChaseTagCommand extends Command {
     var robotPose2d = poseSupplier.get();
     var robotPose = new Pose3d(robotPose2d);
 
-    var photonResultOptional = photonCamera.getLatestResult3D();
-    if(photonResultOptional.isPresent()) {
-      var photonResult = photonResultOptional.get();
-      if(photonResult.hasTargets()) {
-        var targetOptional = photonResult.getTargets().stream().filter(t -> t.getFiducialId() == desiredPose.aprilTagId).filter(t -> t.getPoseAmbiguity() <= 2).findFirst();
-        
-        if(targetOptional.isPresent()) {
-          latestTarget = targetOptional.get();
-          var goalPose = robotPose.transformBy(photonCamera.getBotToCam()).transformBy(latestTarget.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
+    for (PVCamera cam : vision.getCameras()) {  
+      var photonResultOptional = cam.getLatestResult3D();
+      if(photonResultOptional.isPresent()) {
+        var photonResult = photonResultOptional.get();
+        if(photonResult.hasTargets()) {
+          var targetOptional = photonResult.getTargets().stream().filter(t -> t.getFiducialId() == desiredPose.aprilTagId).filter(t -> t.getPoseAmbiguity() <= 2).findFirst();
           
-          xController.setGoal(goalPose.getX());
-          yController.setGoal(goalPose.getY());
-          omegaController.setGoal(goalPose.getRotation().getRadians());
+          if(targetOptional.isPresent()) {
+            latestTarget = targetOptional.get();
+            var goalPose = robotPose.transformBy(cam.getBotToCam()).transformBy(latestTarget.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
+            
+            xController.setGoal(goalPose.getX());
+            yController.setGoal(goalPose.getY());
+            omegaController.setGoal(goalPose.getRotation().getRadians());
+            break;
+          }
         }
       }
     }
+  
 
     if(latestTarget == null) {
       swerve.drive(0, 0, 0, false, true);

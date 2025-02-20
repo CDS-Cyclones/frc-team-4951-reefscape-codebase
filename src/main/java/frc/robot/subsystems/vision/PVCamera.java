@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.vision;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.VisionConstants.VisionCameraInfo;
 
 import static frc.robot.Constants.VisionConstants.*;
 
@@ -28,8 +27,9 @@ import static frc.robot.Constants.VisionConstants.*;
  * A subsystem that interfaces with the PhotonVision camera and processes vision data to estimate the
  * robot's pose on the field.
  */
-public class VisionSubsystem extends SubsystemBase {
+public class PVCamera extends SubsystemBase {
   public final PhotonCamera camera;
+  private final Transform3d botToCam;
   private final PhotonPoseEstimator photonPoseEstimator;
 
   private List<PhotonPipelineResult> allUnreadResults3D;
@@ -38,12 +38,13 @@ public class VisionSubsystem extends SubsystemBase {
 
 
   /** Creates a new Camera. */
-  public VisionSubsystem() {
-    camera = new PhotonCamera(VisionCameraInfo.PRIMARY.camName);
-    photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, primaryMultiTagStrat, VisionCameraInfo.PRIMARY.botToCam);
-    photonPoseEstimator.setMultiTagFallbackStrategy(fallbackSingleTagStrat);
+  public PVCamera(String camName, Transform3d botToCam) {
+    this.camera = new PhotonCamera(camName);
+    this.botToCam = botToCam;
+    this.photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, primaryMultiTagStrat, botToCam);
+    this.photonPoseEstimator.setMultiTagFallbackStrategy(fallbackSingleTagStrat);
 
-    updateResults();
+    updateResults(); // Fetch initial results
   }
 
 
@@ -93,7 +94,7 @@ public class VisionSubsystem extends SubsystemBase {
    * deviations based on number of tags, estimation strategy, and distance from the tags.
    *
    * @param estimatedPose The estimated pose to guess standard deviations for.
-   * @param targets All targets in this camera frame
+   * @param targets All targets in this camera frame.
    */
   private void updateEstimationStdDevs(
     Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
@@ -172,6 +173,6 @@ public class VisionSubsystem extends SubsystemBase {
 
 
   public Transform3d getBotToCam() {
-    return VisionCameraInfo.PRIMARY.botToCam;
+    return botToCam;
   }
 }

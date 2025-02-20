@@ -10,8 +10,8 @@ import static frc.robot.Constants.VisionConstants.VISION_YAW_DEADBAND;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriverJoystickConstants;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -69,7 +69,7 @@ public class TeleopDriveCommand extends Command {
 
     // If visionAim is true, aim using the vision system
     if (visionAim) {
-      var latestResultOptional = vision.getLatestResult2D();
+      var latestResultOptional = vision.getCameras().get(0).getLatestResult2D(); // TODO how to choose which camera to use?
       if (latestResultOptional.isPresent()) {
         var latestResult = latestResultOptional.get();
         if(latestResult.hasTargets()) {
