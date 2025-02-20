@@ -19,15 +19,21 @@ import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 public class RobotContainer {
+  // Swerve subsystems
   private final SwerveSubsystem m_Swerve;
 
-  // Periodically estimates pose based on odometry and vision readings
+  // Subsystem that periodically estimates pose based on odometry and vision readings
   @SuppressWarnings("unused")
   private final PoseEstimatorSubsystem m_PoseEstimator;
 
+  // Driver controller
   private final CommandXboxController m_DriverController;
 
+  // Autonomous command chooser
   private final SendableChooser<Command> autoChooser;
+
+  // Whether the robot should drive in field relative mode or robot relative mode
+  private boolean fieldOriented = true;
 
 
   public RobotContainer() {
@@ -43,11 +49,10 @@ public class RobotContainer {
         m_DriverController::getLeftY,
         m_DriverController::getLeftX,
         m_DriverController::getRightX,
-        m_DriverController.getHID()::getAButton,
+        () -> fieldOriented,
         m_DriverController.getHID()::getBButton
       )
     );
-
 
     // Register Named Commands for PP autons
     // ex. NamedCommands.registerCommand("autoBalance", swerve.autoBalanceCommand());
@@ -62,7 +67,8 @@ public class RobotContainer {
   private void configureBindings() {
     m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
     m_DriverController.y().whileTrue(new ChaseTagCommand(m_Swerve.getVisionSubsystem(), m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
-
+    m_DriverController.a().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
+    
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
     // m_DriverController.b().onTrue(m_Swerve.sysIdAngleMotorCommand());
