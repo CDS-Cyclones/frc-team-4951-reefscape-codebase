@@ -104,7 +104,7 @@ public class ChaseTagCommand extends Command {
       var omegaSpeed = omegaController.calculate(robotPose2d.getRotation().getRadians());
       if(omegaController.atGoal()) omegaSpeed = 0;
 
-      swerve.drive(xSpeed, ySpeed, omegaSpeed, false, false);
+      swerve.drive(xSpeed, ySpeed, omegaSpeed, false, true);
     }
   }
 
