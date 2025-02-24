@@ -24,9 +24,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.VisionConstants.PosesRelToAprilTags;
+import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.vision.PVCamera;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 /** A command that chases a target using the swerve drive.
@@ -38,7 +37,7 @@ public class ChaseTagCommand extends Command {
   private final VisionSubsystem vision;
   private final SwerveSubsystem swerve;
   private final Supplier<Pose2d> poseSupplier;
-  private final PosesRelToAprilTags desiredPose;
+  private final PoseRelToAprilTag desiredPose;
 
   private final ProfiledPIDController xController = new ProfiledPIDController(X_PID_CONSTANTS.kP, X_PID_CONSTANTS.kI, X_PID_CONSTANTS.kD, X_CONSTRAINTS);  
   private final ProfiledPIDController yController = new ProfiledPIDController(Y_PID_CONSTANTS.kP, Y_PID_CONSTANTS.kI, Y_PID_CONSTANTS.kD, Y_CONSTRAINTS);  
@@ -48,7 +47,7 @@ public class ChaseTagCommand extends Command {
 
 
   /** Creates a new ChaseTagCommand. */
-  public ChaseTagCommand(VisionSubsystem vision, SwerveSubsystem swerve, Supplier<Pose2d> poseSupplier, PosesRelToAprilTags desiredPose) {
+  public ChaseTagCommand(VisionSubsystem vision, SwerveSubsystem swerve, Supplier<Pose2d> poseSupplier, PoseRelToAprilTag desiredPose) {
     this.vision = vision;
     this.swerve = swerve;
     this.poseSupplier = poseSupplier;
@@ -59,7 +58,7 @@ public class ChaseTagCommand extends Command {
     omegaController.setTolerance(OMEGA_TOLERANCE);
     omegaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    addRequirements(this.vision, this.swerve);
+    addRequirements(this.vision, this.vision.getCameras().get(0), this.swerve);
   }
 
 
@@ -80,25 +79,26 @@ public class ChaseTagCommand extends Command {
     var robotPose2d = poseSupplier.get();
     var robotPose = new Pose3d(robotPose2d);
 
-    for (PVCamera cam : vision.getCameras()) {  
-      var photonResultOptional = cam.getLatestResult3D();
+    //for (PVCamera cam : vision.getCameras()) {  
+      var photonResultOptional = vision.getCameras().get(0).getLatestResult();
       if(photonResultOptional.isPresent()) {
+        System.out.println("hjkjfhgueifkeyuefefe");
         var photonResult = photonResultOptional.get();
         if(photonResult.hasTargets()) {
-          var targetOptional = photonResult.getTargets().stream().filter(t -> t.getFiducialId() == desiredPose.aprilTagId).filter(t -> t.getPoseAmbiguity() <= 2).findFirst();
-          
-          if(targetOptional.isPresent()) {
-            latestTarget = targetOptional.get();
-            var goalPose = robotPose.transformBy(cam.getBotToCam()).transformBy(latestTarget.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
+          // var targetOptional = photonResult.getTargets().stream().filter(t -> t.getFiducialId() == desiredPose.aprilTagId).filter(t -> t.getPoseAmbiguity() <= 2).findFirst();
+          var   betstrget = photonResult.getBestTarget();
+          if(true) {
+            System.out.println(betstrget.getFiducialId());
+            latestTarget =betstrget;
+            var goalPose = robotPose.transformBy(vision.getCameras().get(0).getBotToCam()).transformBy(latestTarget.getBestCameraToTarget()).transformBy(desiredPose.relativePose).toPose2d();
             
             xController.setGoal(goalPose.getX());
             yController.setGoal(goalPose.getY());
             omegaController.setGoal(goalPose.getRotation().getRadians());
-            break;
           }
         }
       }
-    }
+    // }
   
 
     if(latestTarget == null) {

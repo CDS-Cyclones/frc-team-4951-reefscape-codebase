@@ -13,9 +13,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriverJoystickConstants;
-import frc.robot.Constants.VisionConstants.PosesRelToAprilTags;
+import frc.robot.Constants.OperatorBoardConstants;
+import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
+import frc.robot.subsystems.OperatorBoard;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -34,6 +36,10 @@ public class RobotContainer {
   // Driver controller
   private final CommandXboxController m_DriverController;
 
+  // Custom operator board
+  @SuppressWarnings("unused")
+  private final OperatorBoard m_OperatorBoard;
+
   // Autonomous command chooser
   private final SendableChooser<Command> autoChooser;
 
@@ -47,6 +53,7 @@ public class RobotContainer {
     m_Vision = new VisionSubsystem();
     m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_Vision);
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
+    m_OperatorBoard = new OperatorBoard(OperatorBoardConstants.kOperatorBoardPort);
 
     // Set default driving command
     m_Swerve.setDefaultCommand(
@@ -73,7 +80,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
-    m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
+    m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PoseRelToAprilTag.SAMPLE_POSE));
     m_DriverController.a().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
     
     // check if inb test mode

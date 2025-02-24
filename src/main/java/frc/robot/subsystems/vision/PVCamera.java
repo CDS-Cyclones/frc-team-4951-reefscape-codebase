@@ -33,7 +33,6 @@ public class PVCamera extends SubsystemBase {
   private final PhotonPoseEstimator photonPoseEstimator;
 
   private List<PhotonPipelineResult> allUnreadResults3D;
-  private List<PhotonPipelineResult> allUnreadResults2D;
   private Matrix<N3, N1> curStdDevs;
 
 

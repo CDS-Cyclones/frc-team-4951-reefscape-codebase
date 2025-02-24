@@ -51,13 +51,11 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
-    public static final double VISION_YAW_DEADBAND = .5; // degrees // TODO tune
+    public static final double VISION_YAW_DEADBAND = .5;  // TODO tune
     public static final double AMBIGUITY_DEADBAND = 0.2;
 
-    public static final double VISION_TURN_kP = 0.01; // TODO tune
-    public static final double VISION_FORWARD_kP = 1;    // TODO tune
-
-    public static final double DESIRED_RANGE = .25; // in m TODO tune
+    public static final double VISION_TURN_kP = 0.005;    // TODO tune
+    public static final double VISION_FORWARD_kP = 1;     // TODO tune
 
     // Constraints for profiled movement of robot whilst controlled by vision
     public static final TrapezoidProfile.Constraints X_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
@@ -65,9 +63,9 @@ public final class Constants {
     public static final TrapezoidProfile.Constraints OMEGA_CONSTRAINTS = new TrapezoidProfile.Constraints(8, 8);
 
     // PID Values for ProfiledPIDControllers used in ChaseTagCommand
-    public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(3, 0, 0);       // TODO tune
-    public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(3, 0, 0);       // TODO tune
-    public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(2, 0, 0);   // TODO tune
+    public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(0.8, 0, 0.02);       // TODO tune
+    public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(0.4, 0, 0.07);       // TODO tune
+    public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(1, 0, 0);        // TODO tune
 
     // ProfiledPIDControllers tolerance values
     public static final double X_TOLERANCE = 0.2; // in m
@@ -94,12 +92,30 @@ public final class Constants {
         this.botToCam = botToCam;
       }
     }
+  
+
+    /**
+     * Enum representing different vision pipelines.
+     */
+    public enum VisionPipelineInfo {
+      TWO_D_APRIL_TAG_PIPELINE(1, "2d_apriltag_pipeline"),
+      THREE_D_APRIL_TAG_PIPELINE(0, "3d_apriltag_pipeline");
+
+      public final int pipelineIndex;
+      public final String pipelineName;
+
+      VisionPipelineInfo(int pipelineIndex, String pipelineName) {
+        this.pipelineIndex = pipelineIndex;
+        this.pipelineName = pipelineName;
+      }
+    }
+
 
     /**
      * Enum representing different desired poses relative to AprilTags on the field.
      */
-    public static enum PosesRelToAprilTags {
-      SAMPLE_POSE(10, 1.5, 0);
+    public static enum PoseRelToAprilTag {
+      SAMPLE_POSE(18, 1.5, 0);
 
       /** ID of the april tag */
       public final int aprilTagId;
@@ -107,7 +123,7 @@ public final class Constants {
       /** Where the robot should be in relation to the tag */
       public final Transform3d relativePose;
 
-      PosesRelToAprilTags(int aprilTagId, double metersInFront, double metersToTheLeft) {
+      PoseRelToAprilTag(int aprilTagId, double metersInFront, double metersToTheLeft) {
         this.aprilTagId = aprilTagId;
         this.relativePose = new Transform3d(
           new Translation3d(metersInFront, metersToTheLeft, 0),
@@ -127,5 +143,10 @@ public final class Constants {
     public static final double kLeftXDeadband  = 0.1;
     public static final double kLeftYDeadband  = 0.1;
     public static final double kRightXDeadband = 0.1;
+  }
+
+
+  public static class OperatorBoardConstants {
+    public static final int kOperatorBoardPort = 1;
   }
 }
