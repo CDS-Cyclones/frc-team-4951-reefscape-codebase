@@ -42,7 +42,7 @@ import static frc.robot.Constants.SwerveConstants.*;
  * The SwerveSubsystem class is a subsystem that contains the swerve drive of the robot.
  */
 public class SwerveSubsystem extends SubsystemBase {
-  public final SwerveDrive swerveDrive;
+  private final SwerveDrive swerveDrive;
 
   /**
    * Creates a new SwerveSubsystem.
