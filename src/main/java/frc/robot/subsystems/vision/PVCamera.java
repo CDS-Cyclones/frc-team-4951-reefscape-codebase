@@ -59,8 +59,6 @@ public class PVCamera extends SubsystemBase {
    * Updates {@link allUnreadResults2D} and {@link allUnreadResults3D} for both 2D and 3D pipelines.
    */
   public void updateResults() {
-    camera.setPipelineIndex(VisionPipelineInfo.TWO_D_APRIL_TAG_PIPELINE.pipelineIndex);
-    allUnreadResults2D = camera.getAllUnreadResults();
     camera.setPipelineIndex(VisionPipelineInfo.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
     allUnreadResults3D = camera.getAllUnreadResults(); 
   }
@@ -143,20 +141,6 @@ public class PVCamera extends SubsystemBase {
     return curStdDevs;
   }
 
-  
-  /**
-   * Retrieves the latest result from the camera 2D pipeline.
-   * 
-   * <p>This method fetches all unread results from #D april ttag pipeline and returns the latest one if available.
-   * If no unread results are found, it returns an empty {@link Optional}.
-   *
-   * @return an {@link Optional} containing the latest {@link PhotonPipelineResult} if available,
-   * or an empty {@link Optional} if there are no unread results.
-   */
-  public Optional<PhotonPipelineResult> getLatestResult2D() {
-    return allUnreadResults2D.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults2D.get(allUnreadResults2D.size() - 1));
-  }
-
 
   /**
    * Retrieves the latest result from the camera 3D pipeline.
@@ -167,11 +151,17 @@ public class PVCamera extends SubsystemBase {
    * @return an {@link Optional} containing the latest {@link PhotonPipelineResult} if available,
    * or an empty {@link Optional} if there are no unread results.
    */
-  public Optional<PhotonPipelineResult> getLatestResult3D() {
+  public Optional<PhotonPipelineResult> getLatestResult() {
     return allUnreadResults3D.isEmpty() ? Optional.empty() : Optional.of(allUnreadResults3D.get(allUnreadResults3D.size() - 1));
   }
 
 
+  /**
+   * Returns the transform from the robot's center of rotation to the camera.
+   * 
+   * @return {@link Transform3D} from the robot's center of rotation to the camera.
+   * 
+   */
   public Transform3d getBotToCam() {
     return botToCam;
   }

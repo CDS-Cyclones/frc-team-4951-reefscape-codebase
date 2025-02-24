@@ -64,22 +64,23 @@ public class TeleopDriveCommand extends Command {
     double forward = MathUtil.applyDeadband(forwardSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftXDeadband) * swerve.getMaximumDriveVelocity();
     double strafe = MathUtil.applyDeadband(strafeSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftYDeadband) * swerve.getMaximumDriveVelocity();
     double turn = MathUtil.applyDeadband(turnSupplier.getAsDouble() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier * swerve.getMaximumAzimuthVelocity();
-    boolean fieldRelative = !fieldRelativeSupplier.getAsBoolean();
+
+    boolean fieldRelative = fieldRelativeSupplier.getAsBoolean();
     boolean visionAim = visionAimSupplier.getAsBoolean();
 
     // If visionAim is true, aim using the vision system
     if (visionAim) {
-      var latestResultOptional = vision.getCameras().get(0).getLatestResult2D(); // TODO how to choose which camera to use?
+      var latestResultOptional = vision.getCameras().get(0).getLatestResult(); // TODO how to choose which camera to use?
       if (latestResultOptional.isPresent()) {
         var latestResult = latestResultOptional.get();
         if(latestResult.hasTargets()) {
           var target = latestResult.getBestTarget();
-          turn = MathUtil.applyDeadband(target.getYaw(), VISION_YAW_DEADBAND) * VISION_TURN_kP * swerve.getMaximumAzimuthVelocity();
+          var yaw = target.bestCameraToTarget.getRotation().getZ();
+          turn = -MathUtil.applyDeadband(yaw, VISION_YAW_DEADBAND) * VISION_TURN_kP * swerve.getMaximumAzimuthVelocity();
         }
       }
     }
 
-    // Drive the robot
     swerve.drive(forward, strafe, turn, fieldRelative, visionAim);
   }
 
