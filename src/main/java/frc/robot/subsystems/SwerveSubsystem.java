@@ -87,7 +87,7 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.setModuleEncoderAutoSynchronize(true, 1);
 
     // TODO What exactly does this do!?
-    swerveDrive.pushOffsetsToEncoders();
+    swerveDrive.useExternalFeedbackSensor();
 
     // Set motors to brake mode
     setMotorBrake(true);
