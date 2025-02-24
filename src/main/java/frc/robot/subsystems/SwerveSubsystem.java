@@ -169,6 +169,14 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.resetOdometry(initialHolonomicPose);
   }
 
+  /**
+   * Resets odometry to right cornerfacing forward. Gyro angle and module positions do not need to be reset when calling this
+   * method.
+   */
+  public void resetOdometry() {
+    swerveDrive.resetOdometry(new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(0)));
+  }
+
 
   /**
    * Gets the current pose (position and rotation) of the robot, as reported by odometry.

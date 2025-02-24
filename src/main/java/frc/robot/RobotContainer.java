@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -75,6 +76,11 @@ public class RobotContainer {
     m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PosesRelToAprilTags.SAMPLE_POSE));
     m_DriverController.a().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
     
+    // check if inb test mode
+    if(DriverStation.isTest()) {
+      m_DriverController.b().onTrue(Commands.runOnce(m_Swerve::resetOdometry));
+    }
+
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
     // m_DriverController.b().onTrue(m_Swerve.sysIdAngleMotorCommand());
