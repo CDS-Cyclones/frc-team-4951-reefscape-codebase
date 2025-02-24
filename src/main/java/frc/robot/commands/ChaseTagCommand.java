@@ -23,6 +23,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -44,6 +47,20 @@ public class ChaseTagCommand extends Command {
   private final ProfiledPIDController omegaController = new ProfiledPIDController(OMEGA_PID_CONSTANTS.kP, OMEGA_PID_CONSTANTS.kI, OMEGA_PID_CONSTANTS.kD, OMEGA_CONSTRAINTS);  
 
   private PhotonTrackedTarget latestTarget;
+
+  /////////////////////////////// PID TUNING ///////////////////////////////
+  private ShuffleboardTab tab = Shuffleboard.getTab("TunePIDs");
+
+  private GenericEntry xP = tab.add("x P", 0).getEntry();
+  private GenericEntry xI = tab.add("x I", 0).getEntry();
+  private GenericEntry xD = tab.add("x D", 0).getEntry();
+  private GenericEntry yP = tab.add("y P", 0).getEntry();
+  private GenericEntry yI = tab.add("y I", 0).getEntry();
+  private GenericEntry yD = tab.add("y D", 0).getEntry();
+  private GenericEntry omegaP = tab.add("omega P", 0).getEntry();
+  private GenericEntry omegaI = tab.add("omega I", 0).getEntry();
+  private GenericEntry omegaD = tab.add("omega D", 0).getEntry();
+  /////////////////////////////////////////////////////////////////////////
 
 
   /** Creates a new ChaseTagCommand. */
@@ -70,6 +87,18 @@ public class ChaseTagCommand extends Command {
     omegaController.reset(robotPose.getRotation().getRadians());
     xController.reset(robotPose.getX());
     yController.reset(robotPose.getY());
+
+    /////////////////////////////// PID TUNING ///////////////////////////////
+    xController.setP(xP.getDouble(0));
+    xController.setI(xI.getDouble(0));
+    xController.setD(xD.getDouble(0));  
+    yController.setP(yP.getDouble(0));
+    yController.setI(yI.getDouble(0));
+    yController.setD(yD.getDouble(0));
+    omegaController.setP(omegaP.getDouble(0));
+    omegaController.setI(omegaI.getDouble(0));
+    omegaController.setD(omegaD.getDouble(0));
+    /////////////////////////////////////////////////////////////////////////
   }
 
 

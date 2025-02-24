@@ -21,9 +21,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
-
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -31,6 +33,8 @@ import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveModule;
+import swervelib.parser.PIDFConfig;
 import swervelib.parser.SwerveDriveConfiguration;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -43,6 +47,20 @@ import static frc.robot.Constants.SwerveConstants.*;
  */
 public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrive swerveDrive;
+
+  /////////////////////////////// PID TUNING ///////////////////////////////
+  private ShuffleboardTab tab = Shuffleboard.getTab("TunePIDs");
+
+  private GenericEntry driveP = tab.add("drive P", 0).getEntry();
+  private GenericEntry driveI = tab.add("drive I", 0).getEntry();
+  private GenericEntry driveD = tab.add("drive D", 0).getEntry();
+  private GenericEntry driveF = tab.add("drive F", 0).getEntry();
+
+  private GenericEntry angleP = tab.add("angle P", 0).getEntry();
+  private GenericEntry angleI = tab.add("angle I", 0).getEntry();
+  private GenericEntry angleD = tab.add("angle D", 0).getEntry();
+  private GenericEntry angleF = tab.add("angle F", 0).getEntry();
+  /////////////////////////////////////////////////////////////////////////
 
   /**
    * Creates a new SwerveSubsystem.
@@ -91,13 +109,15 @@ public class SwerveSubsystem extends SubsystemBase {
           new PIDConstants(
             swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().p,
             swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().i,
-            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().d
+            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().d,
+            swerveDrive.swerveDriveConfiguration.modules[0].getDrivePIDF().iz
           ),
           // Rotation PID constants
           new PIDConstants(
             swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().p,
             swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().i,
-            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().d
+            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().d,
+            swerveDrive.swerveDriveConfiguration.modules[0].getAnglePIDF().iz
           )
         ),
         PPconfig, // The robot configuration
@@ -120,7 +140,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /** This method will be called once per scheduler run */
   @Override
-  public void periodic() {}
+  public void periodic() {
+    /////////////////////////////// PID TUNING ///////////////////////////////
+    for(SwerveModule module : swerveDrive.getModules()) {
+      module.setDrivePIDF(new PIDFConfig(driveP.getDouble(.0020645), driveI.getDouble(0), driveD.getDouble(0), driveF.getDouble(0)));
+      module.setAnglePIDF(new PIDFConfig(angleP.getDouble(.008), angleI.getDouble(0), angleD.getDouble(.02), angleF.getDouble(0)));
+    }
+    /////////////////////////////////////////////////////////////////////////
+  }
 
 
   /**
