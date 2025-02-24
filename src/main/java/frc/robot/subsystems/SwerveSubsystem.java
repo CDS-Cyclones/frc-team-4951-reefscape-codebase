@@ -170,8 +170,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param velocityY        Translation in the Y direction (left) in m/s.
    * @param angularVelocity  Rotation of the robot to set in rad/s.
    */
-  public void drive(double velocityX, double velocityY, double angularVelocity) {
-    swerveDrive.drive(new ChassisSpeeds(velocityX, velocityY, angularVelocity), false, new Translation2d(12.5, 12.5));
+  public void drive(double velocityX, double velocityY, double angularVelocity, Translation2d rotationPoint) {
+    swerveDrive.drive(new ChassisSpeeds(velocityX, velocityY, angularVelocity), false, rotationPoint);
   }
 
 

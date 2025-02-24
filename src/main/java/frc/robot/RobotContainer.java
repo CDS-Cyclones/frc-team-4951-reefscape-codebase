@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -86,6 +87,12 @@ public class RobotContainer {
     // check if inb test mode
     if(DriverStation.isTest()) {
       m_DriverController.b().onTrue(Commands.runOnce(m_Swerve::resetOdometry));
+
+      // Try pivoting around wheels
+      m_DriverController.povUpLeft().whileTrue(Commands.run(() -> m_Swerve.drive(.5 * m_Swerve.getMaximumDriveVelocity(), .5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(12.5, 12.5))));
+      m_DriverController.povUpRight().whileTrue(Commands.run(() -> m_Swerve.drive(.5 * m_Swerve.getMaximumDriveVelocity(), -.5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(12.5, -12.5))));
+      m_DriverController.povDownLeft().whileTrue(Commands.run(() -> m_Swerve.drive(-.5 * m_Swerve.getMaximumDriveVelocity(), .5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(-12.5, 12.5))));
+      m_DriverController.povDownRight().whileTrue(Commands.run(() -> m_Swerve.drive(-.5 * m_Swerve.getMaximumDriveVelocity(), -.5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(-12.5, -12.5))));
     }
 
     // SysId Routines for Swerve
