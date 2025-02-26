@@ -149,4 +149,9 @@ public final class Constants {
   public static class OperatorBoardConstants {
     public static final int kOperatorBoardPort = 1;
   }
+
+  public static class CANdleConstants{
+    public static final int CANid = 40;
+    public static final String CANbus = "pigeonbus";
+  }
 }

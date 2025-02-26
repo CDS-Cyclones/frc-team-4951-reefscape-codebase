@@ -5,7 +5,7 @@ import com.ctre.phoenix.led.CANdle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.subsystems.vision.VisionSubsystem;
-
+import static frc.robot.Constants.CANdleConstants.*;
 public class CANdleSubsystem extends SubsystemBase {
     private final VisionSubsystem vision;
     private final CANdle candle;
@@ -13,7 +13,7 @@ public class CANdleSubsystem extends SubsystemBase {
 
     public CANdleSubsystem(VisionSubsystem vision, SwerveSubsystem swerve, PoseRelToAprilTag desiredPose) {
         this.vision = vision;
-        this.candle = new CANdle(40, "pigeonbus");
+        this.candle = new CANdle(CANid, CANbus);
     }
 
     public boolean doesTagExist() {
