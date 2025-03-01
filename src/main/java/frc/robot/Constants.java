@@ -92,23 +92,6 @@ public final class Constants {
         this.botToCam = botToCam;
       }
     }
-  
-
-    /**
-     * Enum representing different vision pipelines.
-     */
-    public enum VisionPipelineInfo {
-      TWO_D_APRIL_TAG_PIPELINE(1, "2d_apriltag_pipeline"),
-      THREE_D_APRIL_TAG_PIPELINE(0, "3d_apriltag_pipeline");
-
-      public final int pipelineIndex;
-      public final String pipelineName;
-
-      VisionPipelineInfo(int pipelineIndex, String pipelineName) {
-        this.pipelineIndex = pipelineIndex;
-        this.pipelineName = pipelineName;
-      }
-    }
 
 
     /**
@@ -146,12 +129,35 @@ public final class Constants {
   }
 
 
-  public static class OperatorBoardConstants {
-    public static final int kOperatorBoardPort = 1;
+  public static class OperatorJoystickConstants {
+    public static final int kOperatorControllerPort = 1;
+
+    // Joystick deadbands for operator subsystems
+    public static final double elevatorSpeedDeadband  = 0.1;
   }
+
+
+  public static class OperatorBoardConstants {
+    public static final int kOperatorBoardPort = 2;
+  }
+
 
   public static class CANdleConstants{
     public static final int CANid = 40;
     public static final String CANbus = "pigeonbus";
+  }
+
+
+  public static enum ElevatorPosition {
+    L1(0),
+    L2(35.7),
+    L3(2),
+    L4(3);
+
+    public final double position;
+
+    ElevatorPosition(double position) {
+      this.position = position;
+    }
   }
 }

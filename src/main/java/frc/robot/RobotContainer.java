@@ -14,10 +14,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriverJoystickConstants;
+import frc.robot.Constants.ElevatorPosition;
 import frc.robot.Constants.OperatorBoardConstants;
+import frc.robot.Constants.OperatorJoystickConstants;
 import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
+import frc.robot.commands.operation.ElevatorGoToCommand;
+import frc.robot.commands.operation.MoveElevatorManuallyCommand;
+import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.OperatorBoard;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -26,6 +31,9 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 public class RobotContainer {
   // Swerve subsystems
   private final SwerveSubsystem m_Swerve;
+  
+  // Elevator subsystem
+  private final ElevatorSubsystem m_Elevator;
 
   // Vision subsystem
   private final VisionSubsystem m_Vision;
@@ -34,8 +42,8 @@ public class RobotContainer {
   @SuppressWarnings("unused")
   private final PoseEstimatorSubsystem m_PoseEstimator;
 
-  // Driver controller
-  private final CommandXboxController m_DriverController;
+  // Xbox controllers
+  private final CommandXboxController m_DriverController, m_OperatorController;
 
   // Custom operator board
   @SuppressWarnings("unused")
@@ -51,9 +59,11 @@ public class RobotContainer {
   public RobotContainer() {
     // Initialize
     m_Swerve = new SwerveSubsystem();
+    m_Elevator = new ElevatorSubsystem();
     m_Vision = new VisionSubsystem();
     m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_Vision);
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
+    m_OperatorController = new CommandXboxController(OperatorJoystickConstants.kOperatorControllerPort);
     m_OperatorBoard = new OperatorBoard(OperatorBoardConstants.kOperatorBoardPort);
 
     // Set default driving command
@@ -68,6 +78,9 @@ public class RobotContainer {
         m_DriverController.getHID()::getBButton
       )
     );
+
+    // Set default elevator command
+    // m_Elevator.setDefaultCommand(new MoveElevatorManuallyCommand(m_Elevator, m_OperatorController::getRightY));
 
     // Register Named Commands for PP autons
     // ex. NamedCommands.registerCommand("autoBalance", swerve.autoBalanceCommand());
@@ -98,6 +111,9 @@ public class RobotContainer {
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
     // m_DriverController.b().onTrue(m_Swerve.sysIdAngleMotorCommand());
+
+    // m_OperatorController.a().whileTrue(new ElevatorGoToCommand(m_Elevator, ElevatorPosition.L1));
+
   }
 
   public Command getAutonomousCommand() {
