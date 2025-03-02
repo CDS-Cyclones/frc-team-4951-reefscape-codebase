@@ -9,10 +9,10 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ElevatorConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final SparkMax elevatorMotor1, elevatorMotor2;
@@ -22,14 +22,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
-    elevatorMotor1 = new SparkMax(31, MotorType.kBrushless);
-    elevatorMotor2 = new SparkMax(32, MotorType.kBrushless);
+    elevatorMotor1 = new SparkMax(ElevatorConstants.kElevatorMotor1, MotorType.kBrushless);
+    elevatorMotor2 = new SparkMax(ElevatorConstants.kElevatorMotor2, MotorType.kBrushless);
 
     elevatorEncoder1 = elevatorMotor1.getEncoder();
     elevatorEncoder2 = elevatorMotor2.getEncoder();
 
     elevatorConfig = new SparkMaxConfig();
-    elevatorConfig.idleMode(IdleMode.kBrake);
+    elevatorConfig.idleMode(ElevatorConstants.kIdleMode);
 
     elevatorMotor1.configure(elevatorConfig, null, null);
     elevatorMotor2.configure(elevatorConfig, null, null);

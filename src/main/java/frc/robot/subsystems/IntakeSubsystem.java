@@ -4,71 +4,49 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
   private final SparkMax intakeMotor;
-  private final RelativeEncoder intakeEncoder;
   private final SparkBaseConfig intakeConfig;
 
 
   /** Creates a new ElevatorSubsystem. */
   public IntakeSubsystem() {
-    intakeMotor = new SparkMax(56, MotorType.kBrushless);
-
-    intakeEncoder = intakeMotor.getEncoder();
+    intakeMotor = new SparkMax(IntakeConstants.kIntakeMotorPort, MotorType.kBrushless);
 
     intakeConfig = new SparkMaxConfig();
-    intakeConfig.idleMode(IdleMode.kBrake);
+    intakeConfig.inverted(IntakeConstants.kInverted);
+    intakeConfig.idleMode(IntakeConstants.kIdleMode);
 
     intakeMotor.configure(intakeConfig, null, null);
   }
 
 
+  // This method will be called once per scheduler run
   @Override
   public void periodic() {
-    // print to Shuffleboard the encoder value
-    try {
-    SmartDashboard.putNumber("Intake Encoder", intakeEncoder.getPosition());
-
-    } catch (Exception e) {
-      System.out.println("Error in IntakeSubsystem.java");
-    }
-
   }
 
 
   /** 
    * Sets the speed of the intake motor.
    * 
-   * @param speed The speed to set the motors to. Positive values move the elevator up, negative values move the elevator down.
+   * @param speed The speed to set the motors to. Positive values outtake, negative values intake.
    */
   public void setIntakeSpeed(double speed) {
     intakeMotor.set(speed);
   }
 
 
-  /** Stops the intake motors. */
+  /** Stops the intake motor. */
   public void stopIntake() {
     intakeMotor.stopMotor();
-  }
-
-
-  /** 
-   * Gets the position of the intake.
-   * 
-   * @return The position of the intake.
-   */
-  public double getIntakePosition() {
-    return intakeEncoder.getPosition();
   }
 }

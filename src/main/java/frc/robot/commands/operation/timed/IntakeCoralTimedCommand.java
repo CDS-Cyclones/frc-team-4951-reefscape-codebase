@@ -2,52 +2,53 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.operation;
+package frc.robot.commands.operation.timed;
 
-import java.util.function.DoubleSupplier;
-
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.subsystems.IntakeSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class MoveElevatorManuallyCommand extends Command {
-  private final ElevatorSubsystem elevatorSubsystem;
-  private final DoubleSupplier speedSupplier;
+public class IntakeCoralTimedCommand extends Command {
+  private final IntakeSubsystem intakeSubsystem;
+  private final Timer timer;
 
 
-  /** Creates a new MoveElevatorManuallyCommand. */
-  public MoveElevatorManuallyCommand(ElevatorSubsystem elevatorSubsystem, DoubleSupplier speedSupplier) {
-    this.elevatorSubsystem = elevatorSubsystem;
-    this.speedSupplier = speedSupplier;
+  /** Creates a new IntakeCoralTimedCommand. */
+  public IntakeCoralTimedCommand(IntakeSubsystem intakeSubsystem) {
+    this.intakeSubsystem = intakeSubsystem;
+    this.timer = new Timer();
   
-    addRequirements(this.elevatorSubsystem);
+    addRequirements(this.intakeSubsystem);
   }
 
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    timer.reset();
+    timer.start();
+  }
 
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!(elevatorSubsystem.getElevatorPosition() <= 0)) {
-      elevatorSubsystem.setElevatorSpeed(-speedSupplier.getAsDouble());
-    }
+    intakeSubsystem.setIntakeSpeed(IntakeConstants.kCoralOuttakeSpeed);
   }
 
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    elevatorSubsystem.stopElevator();
+    intakeSubsystem.stopIntake();
   }
 
   
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return timer.hasElapsed(IntakeConstants.kCoralIntakeTime);
   }
 }

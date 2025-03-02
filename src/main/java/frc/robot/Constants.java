@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.pathplanner.lib.config.PIDConstants;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -152,12 +153,82 @@ public final class Constants {
     L1(0),
     L2(35.7),
     L3(2),
-    L4(3);
+    L4(3),
+    BARGE(4);
 
     public final double position;
 
     ElevatorPosition(double position) {
       this.position = position;
     }
+  }
+
+
+  public static class ElevatorConstants {
+    public static final int kElevatorMotor1 = 31;
+    public static final int kElevatorMotor2 = 32;
+
+    public static final IdleMode kIdleMode = IdleMode.kBrake;
+
+    public static final double kArmMin = 0.086;
+    public static final double kArmMax = 0.586;
+
+    public static final TrapezoidProfile.Constraints elevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0); 
+    public static final double kArmTolerance = 0.5;
+
+    public static enum ArmPosition {
+      IN(0.086),
+      OUT(0.586);
+  
+      public final double position;
+  
+      ArmPosition(double position) {
+        this.position = position;
+      }
+    }
+  }
+
+
+  public static class ArmConstants {
+    public static final int kArmMotorPort = 56;
+
+    public static final IdleMode kIdleMode = IdleMode.kBrake;
+    public static final boolean kInverted = true;
+
+    public static final double kArmMin = 0.086;
+    public static final double kArmMax = 0.586;
+
+    public static final TrapezoidProfile.Constraints armTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final PIDConstants armPID = new PIDConstants(1, 0, 0); 
+    public static final double kArmTolerance = 0.05;
+
+    public static enum ArmPosition {
+      IN(0.086),
+      OUT(0.586);
+  
+      public final double position;
+  
+      ArmPosition(double position) {
+        this.position = position;
+      }
+    }
+  }
+
+
+  public static class IntakeConstants {
+    public static final int kIntakeMotorPort = 57;
+
+    public static final IdleMode kIdleMode = IdleMode.kBrake;
+    public static final boolean kInverted = false;
+
+    public static final double kAlgaIntakeSpeed = -0.5;
+    public static final double kAlgaOuttakeSpeed = 1;
+    public static final double kCoralOuttakeSpeed = 0.5;
+
+    public static final double kAlgaIntakeTime = 1;
+    public static final double kAlgaOuttakeTime = 1;
+    public static final double kCoralIntakeTime = 1;
+    public static final double kCoralOuttakeTime = 1;
   }
 }

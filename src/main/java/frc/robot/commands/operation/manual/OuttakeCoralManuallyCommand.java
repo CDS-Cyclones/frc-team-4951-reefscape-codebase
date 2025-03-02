@@ -2,26 +2,22 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.operation;
-
-import java.util.function.DoubleSupplier;
+package frc.robot.commands.operation.manual;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.subsystems.IntakeSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class MoveArmManuallyCommand extends Command {
-  private final ArmSubsystem armSubsystem;
-  private final DoubleSupplier speedSupplier;
+public class OuttakeCoralManuallyCommand extends Command {
+  private final IntakeSubsystem intakeSubsystem;
 
 
-  /** Creates a new MoveElevatorManuallyCommand. */
-  public MoveArmManuallyCommand(ArmSubsystem armSubsystem, DoubleSupplier speedSupplier) {
-    this.armSubsystem = armSubsystem;
-    this.speedSupplier = speedSupplier;
+  /** Creates a new OuttakeCoralManuallyCommand. */
+  public OuttakeCoralManuallyCommand(IntakeSubsystem intakeSubsystem) {
+    this.intakeSubsystem = intakeSubsystem;
   
-    addRequirements(this.armSubsystem);
+    addRequirements(this.intakeSubsystem);
   }
 
 
@@ -33,16 +29,14 @@ public class MoveArmManuallyCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!(armSubsystem.getArmPosition() <= 0)) {
-      armSubsystem.setArmSpeed(-speedSupplier.getAsDouble());
-    }
+    intakeSubsystem.setIntakeSpeed(IntakeConstants.kCoralOuttakeSpeed);
   }
 
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    armSubsystem.stopArm();
+    intakeSubsystem.stopIntake();
   }
 
   

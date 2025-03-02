@@ -5,24 +5,27 @@
 package frc.robot.commands.operation;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.ElevatorPosition;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ElevatorGoToCommand extends Command {
   private final ElevatorSubsystem elevatorSubsystem;
+  private final ArmSubsystem armSubsystem;
   private final ElevatorPosition desiredPosition;
   private final ProfiledPIDController pidController;
 
 
   /** Creates a new ElevatorGoToCommand. */
-  public ElevatorGoToCommand(ElevatorSubsystem elevatorSubsystem, ElevatorPosition desiredPosition) {
+  public ElevatorGoToCommand(ElevatorSubsystem elevatorSubsystem, ArmSubsystem armSubsystem, ElevatorPosition desiredPosition) {
     this.elevatorSubsystem = elevatorSubsystem;
+    this.armSubsystem = armSubsystem;
     this.desiredPosition = desiredPosition;
 
-    pidController = new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(2, 1));
+    pidController = new ProfiledPIDController(ElevatorConstants.elevatorPID.kP, ElevatorConstants.elevatorPID.kI, ElevatorConstants.elevatorPID.kD, ElevatorConstants.elevatorTrapezoidConstraints);
 
     addRequirements(this.elevatorSubsystem);
   }
@@ -52,6 +55,6 @@ public class ElevatorGoToCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return pidController.atGoal();
+    return !armSubsystem.isArmOut() || pidController.atGoal();
   }
 }
