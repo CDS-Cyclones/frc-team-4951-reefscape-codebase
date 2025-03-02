@@ -7,20 +7,20 @@ package frc.robot.commands.operation;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class MoveElevatorManuallyCommand extends Command {
-  private final ElevatorSubsystem elevatorSubsystem;
-  private final DoubleSupplier speedSupplier;
+public class IntakeOutCommand extends Command {
+  private final IntakeSubsystem intakeSubsystem;
 
 
   /** Creates a new MoveElevatorManuallyCommand. */
-  public MoveElevatorManuallyCommand(ElevatorSubsystem elevatorSubsystem, DoubleSupplier speedSupplier) {
-    this.elevatorSubsystem = elevatorSubsystem;
-    this.speedSupplier = speedSupplier;
+  public IntakeOutCommand(IntakeSubsystem intakeSubsystem) {
+    this.intakeSubsystem = intakeSubsystem;
   
-    addRequirements(this.elevatorSubsystem);
+    addRequirements(this.intakeSubsystem);
   }
 
 
@@ -32,16 +32,14 @@ public class MoveElevatorManuallyCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!(elevatorSubsystem.getElevatorPosition() <= 0)) {
-      elevatorSubsystem.setElevatorSpeed(-speedSupplier.getAsDouble());
-    }
+    intakeSubsystem.setIntakeSpeed(-0.5);
   }
 
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    elevatorSubsystem.stopElevator();
+    intakeSubsystem.stopIntake();
   }
 
   

@@ -13,6 +13,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -76,6 +77,8 @@ public class SwerveSubsystem extends SubsystemBase {
       throw new RuntimeException(e);
     }
 
+    swerveDrive.setMaximumAllowableSpeeds(MAX_SPEED, MAX_SPEED);
+
     // Keep the robot heading the same as the previous heading while the robot is translating.
     swerveDrive.setHeadingCorrection(false);
 
@@ -88,6 +91,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // TODO What exactly does this do!?
     swerveDrive.useExternalFeedbackSensor();
+
+    swerveDrive.swerveController.addSlewRateLimiters(null,null, new SlewRateLimiter(1.2));
 
     // Set motors to brake mode
     setMotorBrake(true);
@@ -142,10 +147,10 @@ public class SwerveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     /////////////////////////////// PID TUNING ///////////////////////////////
-    for(SwerveModule module : swerveDrive.getModules()) {
-      module.setDrivePIDF(new PIDFConfig(driveP.getDouble(.0020645), driveI.getDouble(0), driveD.getDouble(0), driveF.getDouble(0)));
-      module.setAnglePIDF(new PIDFConfig(angleP.getDouble(.008), angleI.getDouble(0), angleD.getDouble(.02), angleF.getDouble(0)));
-    }
+    // for(SwerveModule module : swerveDrive.getModules()) {
+    //   module.setDrivePIDF(new PIDFConfig(driveP.getDouble(.0020645), driveI.getDouble(0), driveD.getDouble(0), driveF.getDouble(0)));
+    //   module.setAnglePIDF(new PIDFConfig(angleP.getDouble(.008), angleI.getDouble(0), angleD.getDouble(.02), angleF.getDouble(0)));
+    // }
     /////////////////////////////////////////////////////////////////////////
   }
 

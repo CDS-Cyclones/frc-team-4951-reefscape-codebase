@@ -89,15 +89,15 @@ public class ChaseTagCommand extends Command {
     yController.reset(robotPose.getY());
 
     /////////////////////////////// PID TUNING ///////////////////////////////
-    xController.setP(xP.getDouble(0));
-    xController.setI(xI.getDouble(0));
-    xController.setD(xD.getDouble(0));  
-    yController.setP(yP.getDouble(0));
-    yController.setI(yI.getDouble(0));
-    yController.setD(yD.getDouble(0));
-    omegaController.setP(omegaP.getDouble(0));
-    omegaController.setI(omegaI.getDouble(0));
-    omegaController.setD(omegaD.getDouble(0));
+    // xController.setP(xP.getDouble(0));
+    // xController.setI(xI.getDouble(0));
+    // xController.setD(xD.getDouble(0));  
+    // yController.setP(yP.getDouble(0));
+    // yController.setI(yI.getDouble(0));
+    // yController.setD(yD.getDouble(0));
+    // omegaController.setP(omegaP.getDouble(0));
+    // omegaController.setI(omegaI.getDouble(0));
+    // omegaController.setD(omegaD.getDouble(0));
     /////////////////////////////////////////////////////////////////////////
   }
 

@@ -21,11 +21,17 @@ import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 import frc.robot.commands.ChaseTagCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.commands.operation.ElevatorGoToCommand;
+import frc.robot.commands.operation.IntakeInCommand;
+import frc.robot.commands.operation.IntakeOutCommand;
+import frc.robot.commands.operation.MoveArmManuallyCommand;
 import frc.robot.commands.operation.MoveElevatorManuallyCommand;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.OperatorBoard;
 import frc.robot.subsystems.PoseEstimatorSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.USBCameraSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
@@ -34,6 +40,10 @@ public class RobotContainer {
   
   // Elevator subsystem
   private final ElevatorSubsystem m_Elevator;
+
+  private final ArmSubsystem m_Arm;
+
+  private final IntakeSubsystem m_Intake;
 
   // Vision subsystem
   private final VisionSubsystem m_Vision;
@@ -52,6 +62,8 @@ public class RobotContainer {
   // Autonomous command chooser
   private final SendableChooser<Command> autoChooser;
 
+  private final USBCameraSubsystem cam;
+
   // Whether the robot should drive in field relative mode or robot relative mode
   private boolean fieldOriented = true;
 
@@ -60,11 +72,14 @@ public class RobotContainer {
     // Initialize
     m_Swerve = new SwerveSubsystem();
     m_Elevator = new ElevatorSubsystem();
+    m_Arm = new ArmSubsystem();
+    m_Intake = new IntakeSubsystem();
     m_Vision = new VisionSubsystem();
     m_PoseEstimator = new PoseEstimatorSubsystem(m_Swerve, m_Vision);
     m_DriverController = new CommandXboxController(DriverJoystickConstants.kDriverControllerPort);
     m_OperatorController = new CommandXboxController(OperatorJoystickConstants.kOperatorControllerPort);
     m_OperatorBoard = new OperatorBoard(OperatorBoardConstants.kOperatorBoardPort);
+    cam = new USBCameraSubsystem("camera", 0);
 
     // Set default driving command
     m_Swerve.setDefaultCommand(
@@ -80,7 +95,10 @@ public class RobotContainer {
     );
 
     // Set default elevator command
-    // m_Elevator.setDefaultCommand(new MoveElevatorManuallyCommand(m_Elevator, m_OperatorController::getRightY));
+    m_Elevator.setDefaultCommand(new MoveElevatorManuallyCommand(m_Elevator, m_OperatorController::getRightY));
+
+    // Set defauilt command for arm
+    m_Arm.setDefaultCommand(new MoveArmManuallyCommand(m_Arm, m_OperatorController::getLeftY));
 
     // Register Named Commands for PP autons
     // ex. NamedCommands.registerCommand("autoBalance", swerve.autoBalanceCommand());
@@ -94,8 +112,8 @@ public class RobotContainer {
 
   private void configureBindings() {
     m_DriverController.x().onTrue((Commands.runOnce(m_Swerve::zeroGyro)));
-    m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PoseRelToAprilTag.SAMPLE_POSE));
-    m_DriverController.a().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
+    // m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PoseRelToAprilTag.SAMPLE_POSE));
+    // m_DriverController.rightBumper().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
     
     // check if inb test mode
     if(DriverStation.isTest()) {
@@ -107,6 +125,9 @@ public class RobotContainer {
       m_DriverController.povDownLeft().whileTrue(Commands.run(() -> m_Swerve.drive(-.5 * m_Swerve.getMaximumDriveVelocity(), .5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(-12.5, 12.5))));
       m_DriverController.povDownRight().whileTrue(Commands.run(() -> m_Swerve.drive(-.5 * m_Swerve.getMaximumDriveVelocity(), -.5 * m_Swerve.getMaximumDriveVelocity(), 0, new Translation2d(-12.5, -12.5))));
     }
+
+    m_DriverController.rightBumper().whileTrue(new IntakeOutCommand(m_Intake));
+    m_DriverController.leftBumper().whileTrue(new IntakeInCommand(m_Intake));
 
     // SysId Routines for Swerve
     // m_DriverController.x().onTrue(m_Swerve.sysIdDriveMotorCommand());
