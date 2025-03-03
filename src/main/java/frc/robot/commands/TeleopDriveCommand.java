@@ -61,9 +61,9 @@ public class TeleopDriveCommand extends Command {
   @Override
   public void execute() {
     // Get controller inputs
-    double forward = MathUtil.applyDeadband(forwardSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftXDeadband) * swerve.getMaximumDriveVelocity();
-    double strafe = MathUtil.applyDeadband(strafeSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftYDeadband) * swerve.getMaximumDriveVelocity();
-    double turn = MathUtil.applyDeadband(turnSupplier.getAsDouble() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier * swerve.getMaximumAzimuthVelocity();
+    double forward = MathUtil.applyDeadband(forwardSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftXDeadband) * swerve.getMaximumDriveVelocity() * 2.5;
+    double strafe = MathUtil.applyDeadband(strafeSupplier.getAsDouble() * -1, DriverJoystickConstants.kLeftYDeadband) * swerve.getMaximumDriveVelocity() * 2.5;
+    double turn = MathUtil.applyDeadband(turnSupplier.getAsDouble() * -1, DriverJoystickConstants.kRightXDeadband) * DriverJoystickConstants.kTurnMultiplier * swerve.getMaximumAzimuthVelocity() * 2.18;
 
     boolean fieldRelative = fieldRelativeSupplier.getAsBoolean();
     boolean visionAim = visionAimSupplier.getAsBoolean();
@@ -81,7 +81,7 @@ public class TeleopDriveCommand extends Command {
       }
     }
 
-    swerve.drive(forward, strafe, turn, fieldRelative, visionAim);
+    swerve.drive(forward, strafe, turn, true, visionAim);
   }
 
 
