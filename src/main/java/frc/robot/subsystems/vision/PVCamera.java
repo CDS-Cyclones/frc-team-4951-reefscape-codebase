@@ -58,7 +58,7 @@ public class PVCamera extends SubsystemBase {
    * Updates {@link allUnreadResults2D} and {@link allUnreadResults3D} for both 2D and 3D pipelines.
    */
   public void updateResults() {
-    camera.setPipelineIndex(VisionPipelineInfo.THREE_D_APRIL_TAG_PIPELINE.pipelineIndex);
+    camera.setPipelineIndex(0);
     allUnreadResults3D = camera.getAllUnreadResults(); 
   }
 
