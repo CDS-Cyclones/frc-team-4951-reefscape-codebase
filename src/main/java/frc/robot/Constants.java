@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.pathplanner.lib.config.PIDConstants;
@@ -68,10 +69,7 @@ public final class Constants {
 
     public static final String kGyroCanBusName = "pigeonbus";
     public static final int kGyroCanId = 38;
-
-    public static final boolean kGyroReversed = false;
   }
-
 
   public static final class ModuleConstants {
     // The MAXSwerve module can be configured with one of three pinion gears: 12T,
@@ -83,13 +81,12 @@ public final class Constants {
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
     public static final double kWheelDiameterMeters = Units.inchesToMeters(3);
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
-    
+
     // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear,
     // 15 teeth on the bevel pinion
     public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
     public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDrivingMotorReduction;
   }
-
 
   public static final class AutoConstants {
     public static final double kMaxSpeedMetersPerSecond = 3;
@@ -108,12 +105,23 @@ public final class Constants {
     );
   }
 
-
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
   }
 
+  public static final class OIConstants {
+    // Joystick ports
+    public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort = 1;
+    public static final int kOperatorBoardPort = 2;
 
+    // Joystick axis deadband
+    public static final double kJoystickAxisDeadband = 0.1;
+  }
+
+  public static final class LimelightConstants {
+    public static final String kLimelightName = "limelight";
+  }
 
 
 
@@ -155,7 +163,7 @@ public final class Constants {
     public static final double X_TOLERANCE = 0.2; // in m
     public static final double Y_TOLERANCE = 0.2; // in m
     public static final double OMEGA_TOLERANCE = 3; // in deg
-    
+
     /**
      * Enum representing different vision cameras.
      */
@@ -201,25 +209,6 @@ public final class Constants {
   }
 
 
-  public static class DriverJoystickConstants {
-    public static final int kDriverControllerPort = 0;
-
-    public static final double kTurnMultiplier = 0.8;
-
-    // Joystick deadbands for driving
-    public static final double kLeftXDeadband  = 0.1;
-    public static final double kLeftYDeadband  = 0.1;
-    public static final double kRightXDeadband = 0.1;
-  }
-
-
-  public static class OperatorJoystickConstants {
-    public static final int kOperatorControllerPort = 1;
-
-    // Joystick deadbands for operator subsystems
-    public static final double elevatorSpeedDeadband  = 0.1;
-  }
-
 
   public static class OperatorBoardConstants {
     public static final int kOperatorBoardPort = 2;
@@ -257,15 +246,15 @@ public final class Constants {
     public static final double kArmMax = 0.586;
 
     public static final TrapezoidProfile.Constraints elevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
-    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0); 
+    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0);
     public static final double kArmTolerance = 0.5;
 
     public static enum ArmPosition {
       IN(0.086),
       OUT(0.586);
-  
+
       public final double position;
-  
+
       ArmPosition(double position) {
         this.position = position;
       }
@@ -283,15 +272,15 @@ public final class Constants {
     public static final double kArmMax = 0.586;
 
     public static final TrapezoidProfile.Constraints armTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
-    public static final PIDConstants armPID = new PIDConstants(1, 0, 0); 
+    public static final PIDConstants armPID = new PIDConstants(1, 0, 0);
     public static final double kArmTolerance = 0.05;
 
     public static enum ArmPosition {
       IN(0.086),
       OUT(0.586);
-  
+
       public final double position;
-  
+
       ArmPosition(double position) {
         this.position = position;
       }

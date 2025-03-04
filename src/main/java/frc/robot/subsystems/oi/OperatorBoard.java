@@ -2,15 +2,10 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+package frc.robot.subsystems.oi;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.VisionConstants.PoseRelToAprilTag;
 
 public class OperatorBoard extends SubsystemBase {
   private final GenericHID operatorBoard;

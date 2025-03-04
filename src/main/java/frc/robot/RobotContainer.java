@@ -7,51 +7,35 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.Constants.DriverJoystickConstants;
+
 import frc.robot.Constants.ElevatorPosition;
-import frc.robot.Constants.OperatorBoardConstants;
-import frc.robot.Constants.OperatorJoystickConstants;
 import frc.robot.commands.drive.TeleopDriveCommand;
 import frc.robot.commands.operation.ElevatorGoToCommand;
-import frc.robot.commands.operation.manual.IntakeAlgaManuallyCommand;
-import frc.robot.commands.operation.manual.OuttakeCoralManuallyCommand;
-import frc.robot.commands.operation.manual.MoveArmManuallyCommand;
-import frc.robot.commands.operation.manual.MoveElevatorManuallyCommand;
-import frc.robot.commands.operation.manual.OuttakeAlgaManuallyCommand;
 import frc.robot.commands.operation.pid.ArmInCommand;
 import frc.robot.commands.operation.pid.ArmOutCommand;
 import frc.robot.commands.operation.timed.IntakeAlgaTimedCommand;
 import frc.robot.commands.operation.timed.OuttakeAlgaTimedCommand;
 import frc.robot.commands.operation.timed.OuttakeCoralTimedCommand;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.manipulator.ElevatorSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.OperatorBoard;
-import frc.robot.subsystems.PoseEstimatorSubsystem;
-import frc.robot.subsystems.USBCameraSubsystem;
-import frc.robot.subsystems.swerve.SwerveSubsystem;
-import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.subsystems.oi.OI;
+import frc.robot.subsystems.swerve.Swerve;
+import org.json.simple.parser.ParseException;
+
+import java.io.IOException;
 
 public class RobotContainer {
-  private final SwerveSubsystem m_swerve;
+  private final Swerve m_swerve;
   private final ElevatorSubsystem m_Elevator;
   private final ArmSubsystem m_Arm;
   private final IntakeSubsystem m_Intake;
-  private final VisionSubsystem m_Vision;
-  private final PoseEstimatorSubsystem m_PoseEstimator;
-  private final XboxController m_driverController, m_operatorController;
-  private final OperatorBoard m_OperatorBoard;
-  private final USBCameraSubsystem cam;
 
   // Autonomous command chooser
   private final SendableChooser<Command> autoChooser;
@@ -59,29 +43,22 @@ public class RobotContainer {
   // Whether the robot should drive in field relative mode or robot relative mode
   private boolean fieldOriented = true;
 
-  public RobotContainer() {
-    // Initialize suubsystems
-    m_swerve = new SwerveSubsystem();
+  public RobotContainer() throws IOException, ParseException {
+    // Initialize subsystems
+    m_swerve = new Swerve();
     m_Elevator = new ElevatorSubsystem();
     m_Arm = new ArmSubsystem();
     m_Intake = new IntakeSubsystem();
-    m_Vision = new VisionSubsystem();
-    m_PoseEstimator = new PoseEstimatorSubsystem(null, m_Vision);
-    m_driverController = new XboxController(DriverJoystickConstants.kDriverControllerPort);
-    m_operatorController = new XboxController(OperatorJoystickConstants.kOperatorControllerPort);
-    m_OperatorBoard = new OperatorBoard(OperatorBoardConstants.kOperatorBoardPort);
-    cam = new USBCameraSubsystem("camera", 0);
 
     // Set default commands
     m_swerve.setDefaultCommand(
       new TeleopDriveCommand(
         m_swerve,
-        m_Vision,
-        m_driverController::getLeftY,
-        m_driverController::getLeftX,
-        m_driverController::getRightX,
+        OI.m_driverController::getLeftY,
+        OI.m_driverController::getLeftX,
+        OI.m_driverController::getRightX,
         () -> fieldOriented,
-        m_driverController::getBButton
+        OI.m_driverController::getBButton
       )
     );
     // m_Elevator.setDefaultCommand(new MoveElevatorManuallyCommand(m_Elevator, m_Arm, m_OperatorController::getLeftY));
@@ -108,10 +85,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    new JoystickButton(m_driverController, Button.kX.value).onTrue(new RunCommand(() -> m_swerve.zeroHeading(), m_swerve));
-    new JoystickButton(m_driverController, Button.kY.value).whileTrue(new RunCommand(() -> m_swerve.setX(), m_swerve));
-    new JoystickButton(m_driverController, Button.kB.value).onTrue(new RunCommand(() -> fieldOriented = !fieldOriented));
-    
+    new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(new RunCommand(m_swerve::zeroHeading, m_swerve));
+    new JoystickButton(OI.m_driverController, Button.kY.value).whileTrue(new RunCommand(m_swerve::setX, m_swerve));
+    new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(new RunCommand(() -> fieldOriented = !fieldOriented));
+
     // m_DriverController.y().whileTrue(new ChaseTagCommand(m_Vision, m_Swerve, m_Swerve::getPose, PoseRelToAprilTag.SAMPLE_POSE));
     // m_DriverController.rightBumper().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
 
