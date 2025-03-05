@@ -7,44 +7,43 @@ package frc.robot.commands.operation.manual;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.manipulator.Pivot;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class MoveArmManuallyCommand extends Command {
-  private final Pivot armSubsystem;
-  private final DoubleSupplier speedSupplier;
-
+public class MovePivotManuallyCommand extends Command {
+  private final Pivot pivotSubsystem;
+  private final boolean moveOut;
 
   /** Creates a new MoveArmManuallyCommand. */
-  public MoveArmManuallyCommand(Pivot armSubsystem, DoubleSupplier speedSupplier) {
-    this.armSubsystem = armSubsystem;
-    this.speedSupplier = speedSupplier;
+  public MovePivotManuallyCommand(Pivot pivotSubsystem, boolean moveOut) {
+    this.pivotSubsystem = pivotSubsystem;
+    this.moveOut = moveOut;
 
-    addRequirements(this.armSubsystem);
+    addRequirements(this.pivotSubsystem);
   }
-
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {}
 
-
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!(armSubsystem.getArmPosition() <= ArmConstants.kArmMin && armSubsystem.getArmPosition() >= ArmConstants.kArmMax)) {
-      armSubsystem.setArmSpeed(-speedSupplier.getAsDouble());
+//    if(!(pivotSubsystem.getArmPosition() <= ArmConstants.kArmMin && pivotSubsystem.getArmPosition() >= ArmConstants.kArmMax)) {
+//      pivotSubsystem.setArmSpeed(-speedSupplier.getAsDouble());
+//    }
+    if (moveOut) {
+      pivotSubsystem.setSpeed(-0.2);
+    } else {
+      pivotSubsystem.setSpeed(0.2);
     }
   }
-
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    armSubsystem.stopArm();
+    pivotSubsystem.stop();
   }
-
 
   // Returns true when the command should end.
   @Override

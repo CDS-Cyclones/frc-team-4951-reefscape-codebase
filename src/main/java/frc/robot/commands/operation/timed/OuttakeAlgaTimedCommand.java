@@ -35,14 +35,14 @@ public class OuttakeAlgaTimedCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeSubsystem.setIntakeSpeed(IntakeConstants.kAlgaOuttakeSpeed);
+    intakeSubsystem.setSpeed(IntakeConstants.kAlgaOuttakeSpeed);
   }
 
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.stopIntake();
+    intakeSubsystem.stop();
   }
 
 

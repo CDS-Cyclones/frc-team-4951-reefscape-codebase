@@ -118,6 +118,7 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
     public static final int kOperatorBoardPort = 2;
+    public static final int kOperatorControllerManualBackupPort = 3;
 
     // Joystick axis deadband
     public static final double kJoystickAxisDeadband = 0.1;
@@ -157,13 +158,15 @@ public final class Constants {
     public static final double kPivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
 
     public static final PIDConstants kElevatorPIDConstants = new PIDConstants(1, 0, 0);
-    public static final TrapezoidProfile.Constraints kElevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final TrapezoidProfile.Constraints kElevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1, 0.5);
     public static final double kElevatorTolerance = 0.05;
+    public static final double kElevatorFeedforwardVelocity = 0.05;
 
     public static final PIDConstants kPivotPIDConstants = new PIDConstants(1, 0, 0);
-    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(1, 0.5);
     public static final double kPivotTolerance = 0.05;
-
+    public static final double kPivotFeedforwardVelocityOut = 0;
+    public static final double kPivotFeedforwardVelocityIn = 0;
 
 
 
@@ -273,54 +276,25 @@ public final class Constants {
   }
 
 
-  public static class CANdleConstants{
+  public static class CANdleConstants {
     public static final int CANid = 40;
     public static final String CANbus = "pigeonbus";
   }
 
 
-  public static enum ElevatorPosition {
-    L1(0),
-    L2(35.7),
-    L3(2),
-    L4(3),
-    BARGE(4);
-
-    public final double position;
-
-    ElevatorPosition(double position) {
-      this.position = position;
-    }
-  }
 
 
 
 
 
-  public static class ArmConstants {
-    public static final int kArmMotorPort = 56;
 
-    public static final IdleMode kIdleMode = IdleMode.kBrake;
-    public static final boolean kInverted = true;
 
-    public static final double kArmMin = 0.086;
-    public static final double kArmMax = 0.586;
 
-    public static final TrapezoidProfile.Constraints armTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
-    public static final PIDConstants armPID = new PIDConstants(1, 0, 0);
-    public static final double kArmTolerance = 0.05;
 
-    public static enum ArmPosition {
-      IN(0.086),
-      OUT(0.586);
 
-      public final double position;
 
-      ArmPosition(double position) {
-        this.position = position;
-      }
-    }
-  }
+
+
 
 
   public static class IntakeConstants {

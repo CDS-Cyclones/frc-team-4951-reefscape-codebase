@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,17 +15,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
-import frc.robot.Constants.ElevatorPosition;
 import frc.robot.commands.drive.TeleopDriveCommand;
+import frc.robot.commands.operation.manual.MoveElevatorManuallyCommand;
+import frc.robot.commands.operation.manual.MoveIntakeWheelsManuallyCommand;
+import frc.robot.commands.operation.manual.MovePivotManuallyCommand;
 import frc.robot.commands.operation.pid.ElevatorGoToCommand;
 import frc.robot.commands.operation.pid.PivotGoToCommand;
-import frc.robot.commands.operation.pid.ArmOutCommand;
-import frc.robot.commands.operation.timed.IntakeAlgaTimedCommand;
-import frc.robot.commands.operation.timed.OuttakeAlgaTimedCommand;
-import frc.robot.commands.operation.timed.OuttakeCoralTimedCommand;
 import frc.robot.subsystems.manipulator.Elevator;
 import frc.robot.subsystems.manipulator.Pivot;
-import frc.robot.subsystems.manipulator.ElevatorSubsystem;
 import frc.robot.subsystems.manipulator.IntakeWheels;
 import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.swerve.Swerve;
@@ -63,6 +61,20 @@ public class RobotContainer {
       )
     );
 
+    m_elevator.setDefaultCommand(
+      new ElevatorGoToCommand(
+        m_elevator,
+          ManipulatorSubsystemsPositions.getCurrentElevatorPositionSupplier()
+      )
+    );
+
+    m_pivot.setDefaultCommand(
+      new PivotGoToCommand(
+        m_pivot,
+        ManipulatorSubsystemsPositions.getCurrentPivotPositionSupplier()
+      )
+    );
+
     // Auto chooser for selecting pathplanner trajectories
     registerNamedCommands();
     autoChooser = AutoBuilder.buildAutoChooser();
@@ -78,21 +90,33 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(new RunCommand(m_swerve::zeroHeading, m_swerve));
     new JoystickButton(OI.m_driverController, Button.kY.value).whileTrue(new RunCommand(m_swerve::setX, m_swerve));
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(new RunCommand(() -> fieldOriented = !fieldOriented));;
+
+    // Check if the robot is in test mode
+    if (DriverStation.isTest()) {
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kY.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, true));
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, false));
+
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kB.value).whileTrue(new MovePivotManuallyCommand(m_pivot, true));
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kX.value).whileTrue(new MovePivotManuallyCommand(m_pivot, false));
+
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kLeftBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, 1));
+      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kRightBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, -1));
+    }
   }
 
   /**
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("elevatorDown", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.DOWN));
-    NamedCommands.registerCommand("elevatorL1", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.L1));
-    NamedCommands.registerCommand("elevatorL2", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.L2));
-    NamedCommands.registerCommand("elevatorL3", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.L3));
-    NamedCommands.registerCommand("elevatorL4", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.L4));
-    NamedCommands.registerCommand("elevatorBarge", new ElevatorGoToCommand(m_elevator , Positions.ElevatorPosition.BARGE));
+    NamedCommands.registerCommand("elevatorDown", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.DOWN)));
+    NamedCommands.registerCommand("elevatorL1", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L1)));
+    NamedCommands.registerCommand("elevatorL2", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L2)));
+    NamedCommands.registerCommand("elevatorL3", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L3)));
+    NamedCommands.registerCommand("elevatorL4", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L4)));
+    NamedCommands.registerCommand("elevatorBarge", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.BARGE)));
 
-    NamedCommands.registerCommand("pivotIn", new PivotGoToCommand(m_pivot , Positions.PivotPosition.IN));
-    NamedCommands.registerCommand("pivotOut", new PivotGoToCommand(m_pivot , Positions.PivotPosition.OUT));
+    NamedCommands.registerCommand("pivotIn", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
+    NamedCommands.registerCommand("pivotOut", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
   }
 
   /**

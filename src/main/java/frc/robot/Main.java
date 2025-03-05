@@ -5,10 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import lombok.SneakyThrows;
 
 public final class Main {
   private Main() {}
 
+  @SneakyThrows
   public static void main(String... args) {
     RobotBase.startRobot(Robot::new);
   }

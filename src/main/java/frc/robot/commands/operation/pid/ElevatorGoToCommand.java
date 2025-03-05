@@ -7,20 +7,24 @@ package frc.robot.commands.operation.pid;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.Positions;
+import frc.robot.ManipulatorSubsystemsPositions;
 import frc.robot.subsystems.manipulator.Elevator;
-import frc.robot.subsystems.manipulator.Pivot;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+import java.util.function.DoubleSupplier;
+
+/**
+ * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
+ * The position is determined in {@link ManipulatorSubsystemsPositions}.
+ */
 public class ElevatorGoToCommand extends Command {
   private final Elevator elevator;
-  private final Positions.ElevatorPosition desiredPosition;
+  private final DoubleSupplier desiredPositionSupplier;
   private final ProfiledPIDController pidController;
 
   /** Creates a new ElevatorGoToCommand. */
-  public ElevatorGoToCommand(Elevator elevator, Positions.ElevatorPosition desiredPosition) {
+  public ElevatorGoToCommand(Elevator elevator, DoubleSupplier desiredPositionSupplier) {
     this.elevator = elevator;
-    this.desiredPosition = desiredPosition;
+    this.desiredPositionSupplier = desiredPositionSupplier;
     this.pidController = new ProfiledPIDController(
       Constants.ManipulatorConstants.kElevatorPIDConstants.kP,
       Constants.ManipulatorConstants.kElevatorPIDConstants.kI,
@@ -34,14 +38,18 @@ public class ElevatorGoToCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    pidController.setGoal(desiredPosition.getPosition());
-    pidController.setTolerance(Constants.ManipulatorConstants.kPivotTolerance);
+    pidController.setGoal(desiredPositionSupplier.getAsDouble());
+    pidController.setTolerance(Constants.ManipulatorConstants.kElevatorTolerance);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double speed = pidController.calculate(elevator.getPosition());
+    if(pidController.getGoal().position != desiredPositionSupplier.getAsDouble()) {
+      pidController.setGoal(desiredPositionSupplier.getAsDouble());
+    }
+
+    double speed = pidController.calculate(elevator.getPosition()) + Constants.ManipulatorConstants.kElevatorFeedforwardVelocity;
     elevator.setSpeed(speed);
   }
 
@@ -52,6 +60,6 @@ public class ElevatorGoToCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return pidController.atGoal();
+    return false;
   }
 }

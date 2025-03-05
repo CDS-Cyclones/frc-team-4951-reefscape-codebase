@@ -4,49 +4,46 @@
 
 package frc.robot.commands.operation.manual;
 
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.manipulator.Elevator;
 import frc.robot.subsystems.manipulator.Pivot;
-import frc.robot.subsystems.manipulator.ElevatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class MoveElevatorManuallyCommand extends Command {
-  private final ElevatorSubsystem elevatorSubsystem;
-  private final Pivot armSubsystem;
-  private final DoubleSupplier speedSupplier;
-
+  private final Elevator elevatorSubsystem;
+  private final Pivot pivotSubsystem;
+  private final boolean moveUp;
 
   /** Creates a new MoveElevatorManuallyCommand. */
-  public MoveElevatorManuallyCommand(ElevatorSubsystem elevatorSubsystem, Pivot armSubsystem, DoubleSupplier speedSupplier) {
+  public MoveElevatorManuallyCommand(Elevator elevatorSubsystem, Pivot pivotSubsystem, boolean moveUp) {
     this.elevatorSubsystem = elevatorSubsystem;
-    this.armSubsystem = armSubsystem;
-    this.speedSupplier = speedSupplier;
+    this.pivotSubsystem = pivotSubsystem;
+    this.moveUp = moveUp;
 
-    addRequirements(this.elevatorSubsystem, this.armSubsystem);
+    addRequirements(this.elevatorSubsystem);
   }
-
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {}
 
-
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(armSubsystem.isArmOut()) { // assure that arm is out
-      elevatorSubsystem.setElevatorSpeed(-speedSupplier.getAsDouble());
+    if(pivotSubsystem.isOut()) { // assure that pivot is out
+      if(moveUp) {
+        elevatorSubsystem.setSpeed(0.25);
+      } else {
+        elevatorSubsystem.setSpeed(-0.3);
+      }
     }
   }
-
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    elevatorSubsystem.stopElevator();
+    elevatorSubsystem.stop();
   }
-
 
   // Returns true when the command should end.
   @Override

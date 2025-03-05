@@ -8,37 +8,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.manipulator.IntakeWheels;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class OuttakeCoralManuallyCommand extends Command {
+public class MoveIntakeWheelsManuallyCommand extends Command {
   private final IntakeWheels intakeSubsystem;
-
+  private final double speed;
 
   /** Creates a new OuttakeCoralManuallyCommand. */
-  public OuttakeCoralManuallyCommand(IntakeWheels intakeSubsystem) {
+  public MoveIntakeWheelsManuallyCommand(IntakeWheels intakeSubsystem, double speed) {
     this.intakeSubsystem = intakeSubsystem;
+    this.speed = speed;
 
     addRequirements(this.intakeSubsystem);
   }
-
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {}
 
-
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intakeSubsystem.setIntakeSpeed(IntakeConstants.kCoralOuttakeSpeed);
+    intakeSubsystem.setSpeed(speed);
   }
-
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.stopIntake();
+    intakeSubsystem.stop();
   }
-
 
   // Returns true when the command should end.
   @Override

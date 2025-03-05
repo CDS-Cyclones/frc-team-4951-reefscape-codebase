@@ -7,19 +7,20 @@ package frc.robot.commands.operation.pid;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.Positions;
 import frc.robot.subsystems.manipulator.Pivot;
+
+import java.util.function.DoubleSupplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class PivotGoToCommand extends Command {
   private final Pivot pivot;
-  private final Positions.PivotPosition desiredPosition;
+  private final DoubleSupplier desiredPositionSupplier;
   private final ProfiledPIDController pidController;
 
   /** Creates a new PivotGoToCommand. */
-  public PivotGoToCommand(Pivot pivot, Positions.PivotPosition desiredPosition) {
+  public PivotGoToCommand(Pivot pivot, DoubleSupplier desiredPositionSupplier) {
     this.pivot = pivot;
-    this.desiredPosition = desiredPosition;
+    this.desiredPositionSupplier = desiredPositionSupplier;
     this.pidController = new ProfiledPIDController(
       Constants.ManipulatorConstants.kPivotPIDConstants.kP,
       Constants.ManipulatorConstants.kPivotPIDConstants.kI,
@@ -33,14 +34,25 @@ public class PivotGoToCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    pidController.setGoal(desiredPosition.getPosition());
+    pidController.setGoal(desiredPositionSupplier.getAsDouble());
     pidController.setTolerance(Constants.ManipulatorConstants.kPivotTolerance);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    if (pidController.getGoal().position != desiredPositionSupplier.getAsDouble()) {
+      pidController.setGoal(desiredPositionSupplier.getAsDouble());
+    }
+
     double speed = pidController.calculate(pivot.getPosition());
+
+    if(pivot.getPosition() < 0) {
+      speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityIn;
+    } else {
+      speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityOut;
+    }
+
     pivot.setSpeed(speed);
   }
 
