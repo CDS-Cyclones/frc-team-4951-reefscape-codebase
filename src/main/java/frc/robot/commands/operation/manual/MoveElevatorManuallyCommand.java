@@ -7,18 +7,18 @@ package frc.robot.commands.operation.manual;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.manipulator.Pivot;
 import frc.robot.subsystems.manipulator.ElevatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class MoveElevatorManuallyCommand extends Command {
   private final ElevatorSubsystem elevatorSubsystem;
-  private final ArmSubsystem armSubsystem;
+  private final Pivot armSubsystem;
   private final DoubleSupplier speedSupplier;
 
 
   /** Creates a new MoveElevatorManuallyCommand. */
-  public MoveElevatorManuallyCommand(ElevatorSubsystem elevatorSubsystem, ArmSubsystem armSubsystem, DoubleSupplier speedSupplier) {
+  public MoveElevatorManuallyCommand(ElevatorSubsystem elevatorSubsystem, Pivot armSubsystem, DoubleSupplier speedSupplier) {
     this.elevatorSubsystem = elevatorSubsystem;
     this.armSubsystem = armSubsystem;
     this.speedSupplier = speedSupplier;

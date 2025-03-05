@@ -8,19 +8,19 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.manipulator.Pivot;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class MoveArmManuallyCommand extends Command {
-  private final ArmSubsystem armSubsystem;
+  private final Pivot armSubsystem;
   private final DoubleSupplier speedSupplier;
 
 
   /** Creates a new MoveArmManuallyCommand. */
-  public MoveArmManuallyCommand(ArmSubsystem armSubsystem, DoubleSupplier speedSupplier) {
+  public MoveArmManuallyCommand(Pivot armSubsystem, DoubleSupplier speedSupplier) {
     this.armSubsystem = armSubsystem;
     this.speedSupplier = speedSupplier;
-  
+
     addRequirements(this.armSubsystem);
   }
 
@@ -45,7 +45,7 @@ public class MoveArmManuallyCommand extends Command {
     armSubsystem.stopArm();
   }
 
-  
+
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {

@@ -7,16 +7,16 @@ package frc.robot.commands.operation.timed;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.manipulator.IntakeWheels;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeAlgaTimedCommand extends Command {
-  private final IntakeSubsystem intakeSubsystem;
+  private final IntakeWheels intakeSubsystem;
   private final Timer timer;
 
 
   /** Creates a new IntakeAlgaTimedCommand. */
-  public IntakeAlgaTimedCommand(IntakeSubsystem intakeSubsystem) {
+  public IntakeAlgaTimedCommand(IntakeWheels intakeSubsystem) {
     this.intakeSubsystem = intakeSubsystem;
     this.timer = new Timer();
 
@@ -45,7 +45,7 @@ public class IntakeAlgaTimedCommand extends Command {
     intakeSubsystem.stopIntake();
   }
 
-  
+
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {

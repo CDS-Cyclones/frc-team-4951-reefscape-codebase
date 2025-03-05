@@ -6,17 +6,17 @@ package frc.robot.commands.operation.manual;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.manipulator.IntakeWheels;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeAlgaManuallyCommand extends Command {
-  private final IntakeSubsystem intakeSubsystem;
+  private final IntakeWheels intakeSubsystem;
 
 
   /** Creates a new IntakeAlgaManuallyCommand. */
-  public IntakeAlgaManuallyCommand(IntakeSubsystem intakeSubsystem) {
+  public IntakeAlgaManuallyCommand(IntakeWheels intakeSubsystem) {
     this.intakeSubsystem = intakeSubsystem;
-  
+
     addRequirements(this.intakeSubsystem);
   }
 
@@ -39,7 +39,7 @@ public class IntakeAlgaManuallyCommand extends Command {
     intakeSubsystem.stopIntake();
   }
 
-  
+
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {

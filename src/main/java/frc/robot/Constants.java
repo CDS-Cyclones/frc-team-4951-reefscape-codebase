@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -123,6 +127,66 @@ public final class Constants {
     public static final String kLimelightName = "limelight";
   }
 
+  public static final class ManipulatorConstants {
+    public static final int kElevatorMotor1Id = 31;
+    public static final int kElevatorMotor2Id = 32;
+    public static final int kPivotMotorId = 56;
+    public static final int kIntakeWheelsMotorId = 57;
+
+    public static final SparkBaseConfig kElevatorMotor1Config = new SparkMaxConfig()
+      .smartCurrentLimit(80)
+      .secondaryCurrentLimit(90)
+      .idleMode(SparkBaseConfig.IdleMode.kBrake)
+      .inverted(false);
+    public static final SparkBaseConfig kElevatorMotor2Config = new SparkMaxConfig()
+      .smartCurrentLimit(80)
+      .secondaryCurrentLimit(90)
+      .idleMode(SparkBaseConfig.IdleMode.kBrake)
+      .inverted(false);
+    public static final SparkBaseConfig kPivotMotorConfig = new SparkMaxConfig()
+      .smartCurrentLimit(80)
+      .secondaryCurrentLimit(90)
+      .idleMode(SparkBaseConfig.IdleMode.kBrake)
+      .inverted(true);
+    public static final SparkBaseConfig kIntakeWheelsMotorConfig = new SparkMaxConfig()
+      .smartCurrentLimit(80)
+      .secondaryCurrentLimit(90)
+      .idleMode(SparkBaseConfig.IdleMode.kBrake)
+      .inverted(false);
+
+    public static final double kPivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+
+    public static final PIDConstants kElevatorPIDConstants = new PIDConstants(1, 0, 0);
+    public static final TrapezoidProfile.Constraints kElevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final double kElevatorTolerance = 0.05;
+
+    public static final PIDConstants kPivotPIDConstants = new PIDConstants(1, 0, 0);
+    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final double kPivotTolerance = 0.05;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static final double kArmMin = 0.086;
+    public static final double kArmMax = 0.586;
+
+    public static final TrapezoidProfile.Constraints elevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
+    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0);
+    public static final double kArmTolerance = 0.5;
+  }
+
 
 
 
@@ -209,12 +273,6 @@ public final class Constants {
   }
 
 
-
-  public static class OperatorBoardConstants {
-    public static final int kOperatorBoardPort = 2;
-  }
-
-
   public static class CANdleConstants{
     public static final int CANid = 40;
     public static final String CANbus = "pigeonbus";
@@ -236,30 +294,7 @@ public final class Constants {
   }
 
 
-  public static class ElevatorConstants {
-    public static final int kElevatorMotor1 = 31;
-    public static final int kElevatorMotor2 = 32;
 
-    public static final IdleMode kIdleMode = IdleMode.kBrake;
-
-    public static final double kArmMin = 0.086;
-    public static final double kArmMax = 0.586;
-
-    public static final TrapezoidProfile.Constraints elevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
-    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0);
-    public static final double kArmTolerance = 0.5;
-
-    public static enum ArmPosition {
-      IN(0.086),
-      OUT(0.586);
-
-      public final double position;
-
-      ArmPosition(double position) {
-        this.position = position;
-      }
-    }
-  }
 
 
   public static class ArmConstants {
@@ -289,7 +324,7 @@ public final class Constants {
 
 
   public static class IntakeConstants {
-    public static final int kIntakeMotorPort = 57;
+    public static final int kIntakeWheelsMotorPort = 57;
 
     public static final IdleMode kIdleMode = IdleMode.kBrake;
     public static final boolean kInverted = false;
