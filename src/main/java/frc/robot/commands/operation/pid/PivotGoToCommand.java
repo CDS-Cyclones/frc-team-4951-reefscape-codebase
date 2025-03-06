@@ -46,16 +46,9 @@ public class PivotGoToCommand extends Command {
     }
 
     double speed = pidController.calculate(pivot.getPosition());
+    double feedforward = pivot.calculateFeedforward(pidController.getSetpoint().velocity, 0);
 
-    if(pivot.getPosition() < .87) {
-      speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityIn;
-    } else {
-      speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityOut;
-    }
-
-    // System.out.println("Pivot speed: " + speed);
-
-    pivot.setVoltage(speed);
+    // pivot.setVoltage(speed);
 
     System.out.println("Pivot volt: " + desiredPositionSupplier.getAsDouble());
 

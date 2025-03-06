@@ -9,13 +9,32 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+
+import static edu.wpi.first.units.Units.Volts;
 
 public class Pivot extends SubsystemBase {
   private final SparkMax pivotMotor;
   private final SparkAbsoluteEncoder pivotAbsoluteEncoder;
+  private final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
+  private final SysIdRoutine pivotRoutine =
+          new SysIdRoutine(
+                  new SysIdRoutine.Config(),
+                  new SysIdRoutine.Mechanism(
+                          this::setVoltage,
+                          this::logMotors,
+                          this
+                  )
+          );
 
   /** Creates a new Pivot subsystem. */
   public Pivot() {
@@ -44,8 +63,22 @@ public class Pivot extends SubsystemBase {
     pivotMotor.set(speed);
   }
 
-  public void setVoltage(double volts) {
-    pivotMotor.setVoltage(volts);
+  /**
+   * Sets the voltage of the pivot motor.
+   *
+   * @param voltage The {@link Voltage} to set the motor to in volts. Positive values move the pivot out, negative values move the arm in.
+   */
+  public void setVoltage(double voltage) {
+    pivotMotor.setVoltage(voltage);
+  }
+
+  /**
+   * Sets the voltage of the pivot motor.
+   *
+   * @param voltage The {@link Voltage} to set the motor to in volts. Positive values move the pivot out, negative values move the arm in.
+   */
+  public void setVoltage(Voltage voltage) {
+    pivotMotor.setVoltage(voltage);
   }
 
   /**
@@ -65,11 +98,41 @@ public class Pivot extends SubsystemBase {
   }
 
   /**
+     * Calculate the feedforward voltage for the elevator.
+          *
+          * @param velocity The velocity of the elevator.
+          *
+          * @return The feedforward voltage as a double.
+          */
+  public double calculateFeedforward(double velocity, double acceleration) {
+    return feedforward.calculate(velocity, acceleration);
+  }
+
+  /**
    * Checks if the pivot is out (will not be in elevator's way going up).
    *
    * @return True if the arm is out, false otherwise.
    */
   public boolean isOut() {
     return pivotAbsoluteEncoder.getPosition() >= Constants.ManipulatorConstants.kPivotMinPositionForElevatorMovement;
+  }
+
+  public void logMotors(SysIdRoutineLog log) {
+    // Calculate the raw voltage
+    double motorVoltage1 = pivotMotor.get() * RobotController.getBatteryVoltage();
+
+    // Convert it to a Voltage type
+    Voltage voltage1 = Voltage.ofBaseUnits(motorVoltage1, Volts);
+
+    // Log the voltage
+    log.motor("pivot-motor").voltage(voltage1);
+  }
+
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return pivotRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return pivotRoutine.dynamic(direction);
   }
 }

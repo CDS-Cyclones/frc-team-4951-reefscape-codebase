@@ -48,8 +48,10 @@ public class ElevatorGoToCommand extends Command {
     if(pidController.getGoal().position != desiredPositionSupplier.getAsDouble()) {
       pidController.setGoal(desiredPositionSupplier.getAsDouble());
     }
+    double feedforward = elevator.calculateFeedforward(pidController.getSetpoint().velocity);
 
-    double speed = pidController.calculate(elevator.getPosition()) + Constants.ManipulatorConstants.kElevatorFeedforwardVelocity;
+    double speed = pidController.calculate(elevator.getPosition());
+    speed += feedforward;
     elevator.setSpeed(speed);
   }
 
