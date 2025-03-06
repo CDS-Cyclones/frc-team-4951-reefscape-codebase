@@ -47,13 +47,19 @@ public class PivotGoToCommand extends Command {
 
     double speed = pidController.calculate(pivot.getPosition());
 
-    if(pivot.getPosition() < 0) {
+    if(pivot.getPosition() < .87) {
       speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityIn;
     } else {
       speed += Constants.ManipulatorConstants.kPivotFeedforwardVelocityOut;
     }
 
-    pivot.setSpeed(speed);
+    // System.out.println("Pivot speed: " + speed);
+
+    pivot.setVoltage(speed);
+
+    System.out.println("Pivot volt: " + desiredPositionSupplier.getAsDouble());
+
+
   }
 
   // Called once the command ends or is interrupted.
@@ -63,6 +69,6 @@ public class PivotGoToCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return pidController.atGoal();
+    return false;
   }
 }

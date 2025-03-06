@@ -162,11 +162,11 @@ public final class Constants {
     public static final double kElevatorTolerance = 0.05;
     public static final double kElevatorFeedforwardVelocity = 0.05;
 
-    public static final PIDConstants kPivotPIDConstants = new PIDConstants(1, 0, 0);
-    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(1, 0.5);
+    public static final PIDConstants kPivotPIDConstants = new PIDConstants(3, 0, 0);
+    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(5, 3);
     public static final double kPivotTolerance = 0.05;
-    public static final double kPivotFeedforwardVelocityOut = 0;
-    public static final double kPivotFeedforwardVelocityIn = 0;
+    public static final double kPivotFeedforwardVelocityOut = -0.05;
+    public static final double kPivotFeedforwardVelocityIn = 0.3;
 
 
 

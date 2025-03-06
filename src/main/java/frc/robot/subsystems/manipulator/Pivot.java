@@ -44,6 +44,10 @@ public class Pivot extends SubsystemBase {
     pivotMotor.set(speed);
   }
 
+  public void setVoltage(double volts) {
+    pivotMotor.setVoltage(volts);
+  }
+
   /**
    * Stops the pivot motor.
    */

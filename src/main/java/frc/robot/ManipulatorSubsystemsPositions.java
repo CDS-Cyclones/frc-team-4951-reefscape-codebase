@@ -65,8 +65,8 @@ public final class ManipulatorSubsystemsPositions {
   }
 
   public enum PivotPosition {
-    IN(new MutablePivotPosition(0.0)),
-    OUT(new MutablePivotPosition(1.0));
+    IN(new MutablePivotPosition(0.588)),
+    OUT(new MutablePivotPosition(.89));
 
     private final MutablePivotPosition position;
 

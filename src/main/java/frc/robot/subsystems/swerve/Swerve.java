@@ -122,20 +122,20 @@ public class Swerve extends SubsystemBase {
       }
     );
 
-    boolean doRejectUpdate = false;
+    // boolean doRejectUpdate = false;
 
-    LimelightHelpers.SetRobotOrientation(Constants.LimelightConstants.kLimelightName, m_poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LimelightConstants.kLimelightName);
-    if (Math.abs(getTurnRate())> 720) { // if ang vel is > 2 rev/sec, ignore vision updates
-      doRejectUpdate = true;
-    }
-    if (mt2.tagCount == 0) {
-      doRejectUpdate = true;
-    }
-    if (!doRejectUpdate) {
-      m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-      m_poseEstimator.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-    }
+    // LimelightHelpers.SetRobotOrientation(Constants.LimelightConstants.kLimelightName, m_poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    // LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Constants.LimelightConstants.kLimelightName);
+    // if (Math.abs(getTurnRate())> 720) { // if ang vel is > 2 rev/sec, ignore vision updates
+    //   doRejectUpdate = true;
+    // }
+    // if (mt2.tagCount == 0) {
+    //   doRejectUpdate = true;
+    // }
+    // if (!doRejectUpdate) {
+    //   m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
+    //   m_poseEstimator.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    // }
   }
 
   /**
@@ -249,7 +249,7 @@ public class Swerve extends SubsystemBase {
 
   /** Zeroes the heading of the robot. */
   public void zeroHeading() {
-    m_gyro.setYaw(0);
+    //m_gyro.setYaw(0);
     m_gyro.reset();
   }
 

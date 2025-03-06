@@ -61,12 +61,12 @@ public class RobotContainer {
       )
     );
 
-    m_elevator.setDefaultCommand(
-      new ElevatorGoToCommand(
-        m_elevator,
-          ManipulatorSubsystemsPositions.getCurrentElevatorPositionSupplier()
-      )
-    );
+    // m_elevator.setDefaultCommand(
+    //   new ElevatorGoToCommand(
+    //     m_elevator,
+    //       ManipulatorSubsystemsPositions.getCurrentElevatorPositionSupplier()
+    //   )
+    // );
 
     m_pivot.setDefaultCommand(
       new PivotGoToCommand(
@@ -91,16 +91,20 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kY.value).whileTrue(new RunCommand(m_swerve::setX, m_swerve));
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(new RunCommand(() -> fieldOriented = !fieldOriented));;
 
+    new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kY.value).onTrue(new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
+    // new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, false));
+    new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).onTrue(new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
+
     // Check if the robot is in test mode
     if (DriverStation.isTest()) {
-      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kY.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, true));
-      new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, false));
 
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kB.value).whileTrue(new MovePivotManuallyCommand(m_pivot, true));
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kX.value).whileTrue(new MovePivotManuallyCommand(m_pivot, false));
 
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kLeftBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, 1));
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kRightBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, -1));
+    
+    
     }
   }
 
