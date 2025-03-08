@@ -4,18 +4,16 @@
 
 package frc.robot;
 
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -26,6 +24,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -53,79 +52,97 @@ public final class Constants {
     REPLAY
   }
 
-  public static final class DriveConstants {
-    // Driving Parameters - Note that these are not the maximum capable speeds of
-    // the robot, rather the allowed maximum speeds
-    public static final double kMaxSpeedMetersPerSecond = 4.8;
-    public static final double kMaxAngularSpeed = 2 * Math.PI;  // radians per second
+  public class DriveConstants {
+    public static final double maxSpeedMetersPerSec = 4.8;
+    public static final double odometryFrequency = 100.0; // Hz
+    public static final double trackWidth = Units.inchesToMeters(27.0);
+    public static final double wheelBase = Units.inchesToMeters(32.5);
+    public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
+    public static final Translation2d[] moduleTranslations =
+        new Translation2d[] {
+          new Translation2d(trackWidth / 2.0, wheelBase / 2.0),
+          new Translation2d(trackWidth / 2.0, -wheelBase / 2.0),
+          new Translation2d(-trackWidth / 2.0, wheelBase / 2.0),
+          new Translation2d(-trackWidth / 2.0, -wheelBase / 2.0)
+        };
 
-    // Chassis configuration
-    public static final double kTrackWidth = Units.inchesToMeters(27);  // Distance between centers of right and left wheels on robot
-    public static final double kWheelBase = Units.inchesToMeters(32.5);  // Distance between front and back wheels on robot
-    public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-      new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-      new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-      new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-      new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
-    );
+    // Zeroed rotation values for each module, see setup instructions
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-Math.PI / 2.0);
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.0);
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(Math.PI);
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(Math.PI / 2);
 
-    // Angular offsets of the modules relative to the chassis in radians
-    public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;  // Math.PI / 2;
-    public static final double kFrontRightChassisAngularOffset = 0;            // Math.PI;
-    public static final double kBackLeftChassisAngularOffset = Math.PI;;       // 0;
-    public static final double kBackRightChassisAngularOffset = Math.PI / 2;   // -Math.PI / 2;
+    // Device CAN IDs
+    public static final int pigeon2CanId = 9;
+    public static final String pigeon2CanBus = "pigeonbus";
 
-    // SPARK MAX CAN IDs
-    public static final int kFrontLeftDrivingCanId = 21;
-    public static final int kRearLeftDrivingCanId = 27;
-    public static final int kFrontRightDrivingCanId = 23;
-    public static final int kRearRightDrivingCanId = 25;
+    public static final int frontLeftDriveCanId = 21;
+    public static final int backLeftDriveCanId = 27;
+    public static final int frontRightDriveCanId = 23;
+    public static final int backRightDriveCanId = 25;
 
-    public static final int kFrontLeftTurningCanId = 22;
-    public static final int kRearLeftTurningCanId = 28;
-    public static final int kFrontRightTurningCanId = 24;
-    public static final int kRearRightTurningCanId = 26;
+    public static final int frontLeftTurnCanId = 22;
+    public static final int backLeftTurnCanId = 28;
+    public static final int frontRightTurnCanId = 24;
+    public static final int backRightTurnCanId = 26;
 
-    public static final String kGyroCanBusName = "pigeonbus";
-    public static final int kGyroCanId = 38;
-  }
+    // Drive motor configuration
+    public static final int driveMotorCurrentLimit = 80;
+    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
+    public static final double driveMotorReduction = (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
+    public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
-  public static final class ModuleConstants {
-    // The MAXSwerve module can be configured with one of three pinion gears: 12T,
-    // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
-    // more teeth will result in a robot that drives faster).
-    public static final int kDrivingMotorPinionTeeth = 14;
+    // Drive encoder configuration
+    public static final double driveEncoderPositionFactor = 2 * Math.PI / driveMotorReduction; // Rotor Rotations -> Wheel Radians
+    public static final double driveEncoderVelocityFactor = (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
 
-    // Calculations required for driving motor conversion factors and feed forward
-    public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-    public static final double kWheelDiameterMeters = Units.inchesToMeters(3);
-    public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
+    // Drive PID configuration
+    public static final double driveKp = 0.0;
+    public static final double driveKd = 0.0;
+    public static final double driveKs = 0.0;
+    public static final double driveKv = 0.1;
+    public static final double driveSimP = 0.05;
+    public static final double driveSimD = 0.0;
+    public static final double driveSimKs = 0.0;
+    public static final double driveSimKv = 0.0789;
 
-    // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear,
-    // 15 teeth on the bevel pinion
-    public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
-    public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDrivingMotorReduction;
-  }
+    // Turn motor configuration
+    public static final boolean turnInverted = false;
+    public static final int turnMotorCurrentLimit = 40;
+    public static final double turnMotorReduction = 4.71 / 1;
+    public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
 
-  public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 3;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-    public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-    public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+    // Turn encoder configuration
+    public static final boolean turnEncoderInverted = true;
+    public static final double turnEncoderPositionFactor = 2 * Math.PI; // Rotations -> Radians
+    public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
-    public static final double kPXController = 1;
-    public static final double kPYController = 1;
-    public static final double kPThetaController = 1;
+    // Turn PID configuration
+    public static final double turnKp = 2.0;
+    public static final double turnKd = 0.0;
+    public static final double turnSimP = 8.0;
+    public static final double turnSimD = 0.0;
+    public static final double turnPIDMinInput = 0; // Radians
+    public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
-    // Constraint for the motion profiled robot angle controller
-    public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
-      kMaxAngularSpeedRadiansPerSecond,
-      kMaxAngularSpeedRadiansPerSecondSquared
-    );
-  }
-
-  public static final class NeoMotorConstants {
-    public static final double kFreeSpeedRpm = 5676;
+    // PathPlanner configuration
+    public static final double robotMassKg = 52;
+    public static final double robotMOI = 6.883;
+    public static final double wheelCOF = 1.2;
+    public static final RobotConfig ppConfig =
+      new RobotConfig(
+        robotMassKg,
+        robotMOI,
+        new ModuleConfig(
+          wheelRadiusMeters,
+          maxSpeedMetersPerSec,
+          wheelCOF,
+          driveGearbox.withReduction(driveMotorReduction),
+          driveMotorCurrentLimit,
+          1
+        ),
+        moduleTranslations
+      );
   }
 
   public static final class OIConstants {
@@ -219,9 +236,6 @@ public final class Constants {
   public static final class VisionConstants {
     public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
 
-    public static final PoseStrategy primaryMultiTagStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-    public static final PoseStrategy fallbackSingleTagStrat = PoseStrategy.LOWEST_AMBIGUITY;
-
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
@@ -245,28 +259,6 @@ public final class Constants {
     public static final double X_TOLERANCE = 0.2; // in m
     public static final double Y_TOLERANCE = 0.2; // in m
     public static final double OMEGA_TOLERANCE = 3; // in deg
-
-    /**
-     * Enum representing different vision cameras.
-     */
-    public static enum VisionCameraInfo {
-      PRIMARY(
-        "cds_cam",
-        new Transform3d(
-          new Translation3d(0.406, 0, 0.1524), // X is forward in m, z is up in m
-          new Rotation3d(0, 0, 0)  // facing forward
-        )
-      );
-
-      public final String camName;
-      public final Transform3d botToCam;
-
-      VisionCameraInfo(String camName, Transform3d botToCam) {
-        this.camName = camName;
-        this.botToCam = botToCam;
-      }
-    }
-
 
     /**
      * Enum representing different desired poses relative to AprilTags on the field.
