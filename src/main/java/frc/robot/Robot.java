@@ -25,6 +25,7 @@ public class Robot extends LoggedRobot {
 
   @SuppressWarnings("resource")
   public Robot() throws IOException, ParseException {
+    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     Logger.recordMetadata("ProjectName", "4951Reefscape");
 
     if (isReal()) {
