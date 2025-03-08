@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -219,9 +218,6 @@ public final class Constants {
   public static final class VisionConstants {
     public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
 
-    public static final PoseStrategy primaryMultiTagStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-    public static final PoseStrategy fallbackSingleTagStrat = PoseStrategy.LOWEST_AMBIGUITY;
-
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
@@ -245,28 +241,6 @@ public final class Constants {
     public static final double X_TOLERANCE = 0.2; // in m
     public static final double Y_TOLERANCE = 0.2; // in m
     public static final double OMEGA_TOLERANCE = 3; // in deg
-
-    /**
-     * Enum representing different vision cameras.
-     */
-    public static enum VisionCameraInfo {
-      PRIMARY(
-        "cds_cam",
-        new Transform3d(
-          new Translation3d(0.406, 0, 0.1524), // X is forward in m, z is up in m
-          new Rotation3d(0, 0, 0)  // facing forward
-        )
-      );
-
-      public final String camName;
-      public final Transform3d botToCam;
-
-      VisionCameraInfo(String camName, Transform3d botToCam) {
-        this.camName = camName;
-        this.botToCam = botToCam;
-      }
-    }
-
 
     /**
      * Enum representing different desired poses relative to AprilTags on the field.
