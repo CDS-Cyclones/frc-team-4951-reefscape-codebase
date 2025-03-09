@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,12 +12,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.DesiredFieldPose.DriveRotation;
+import frc.robot.DesiredFieldPose.DrivePose;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.operation.manual.MoveIntakeWheelsManuallyCommand;
 import frc.robot.commands.operation.manual.MovePivotManuallyCommand;
@@ -34,7 +32,9 @@ import frc.robot.subsystems.manipulator.Pivot;
 import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.manipulator.IntakeWheels;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -43,6 +43,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   private final Drive drive;
+  private final Vision vision;
   private final Elevator m_elevator;
   private final Pivot m_pivot;
   private final IntakeWheels m_intakeWheels;
@@ -57,11 +58,12 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
+        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.cameraName, drive::getRotation));
         break;
 
       case SIM:
         // create a maple-sim swerve drive simulation instance
-        this.swerveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        swerveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         
         // add the simulated drivetrain to the simulation field
         SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
@@ -75,12 +77,13 @@ public class RobotContainer {
           new ModuleIOSim(swerveSimulation.getModules()[3]),
           swerveSimulation::setSimulationWorldPose
         );
-
+        vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, swerveSimulation::getSimulatedDriveTrainPose));
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, (pose) -> {});
+        vision = new Vision(drive, new VisionIO() {});
         break;
     }
 
@@ -133,8 +136,19 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
     // POSES
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DriveRotation.A)));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DriveRotation.B)));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.A)));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.B)));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.C)));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.D)));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.E)));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.F)));
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.G)));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.H)));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.I)));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.J)));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.K)));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.L)));
+    
 
     // Check if the robot is in test mode
     if (DriverStation.isTest()) {

@@ -8,7 +8,11 @@ import java.util.function.Supplier;
 
 import org.dyn4j.geometry.Rotation;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 /**
  * A class to store all the positions of the elevator and pivot.
@@ -106,31 +110,44 @@ public final class DesiredFieldPose {
   //     }
   // }
 
+  private static final Transform3d rotationToFaceTag = new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI));
 
-  public static enum DriveRotation {
-    A(Constants.VisionConstants.aprilTagFieldLayout.getTagPose(18).get().getRotation().toRotation2d().minus(new Rotation2d(Math.PI))),
-    B(Constants.VisionConstants.aprilTagFieldLayout.getTagPose(19).get().getRotation().toRotation2d().minus(new Rotation2d(Math.PI)));
+  public static enum DrivePose {
+    A(Constants.VisionConstants.aprilTagLayout.getTagPose(18).get().transformBy(rotationToFaceTag)),
+    B(Constants.VisionConstants.aprilTagLayout.getTagPose(18).get().transformBy(rotationToFaceTag)),
+    C(Constants.VisionConstants.aprilTagLayout.getTagPose(19).get().transformBy(rotationToFaceTag)),
+    D(Constants.VisionConstants.aprilTagLayout.getTagPose(19).get().transformBy(rotationToFaceTag)),
+    E(Constants.VisionConstants.aprilTagLayout.getTagPose(20).get().transformBy(rotationToFaceTag)),
+    F(Constants.VisionConstants.aprilTagLayout.getTagPose(20).get().transformBy(rotationToFaceTag)),
+    G(Constants.VisionConstants.aprilTagLayout.getTagPose(21).get().transformBy(rotationToFaceTag)),
+    H(Constants.VisionConstants.aprilTagLayout.getTagPose(21).get().transformBy(rotationToFaceTag)),
+    I(Constants.VisionConstants.aprilTagLayout.getTagPose(22).get().transformBy(rotationToFaceTag)),
+    J(Constants.VisionConstants.aprilTagLayout.getTagPose(22).get().transformBy(rotationToFaceTag)),
+    K(Constants.VisionConstants.aprilTagLayout.getTagPose(17).get().transformBy(rotationToFaceTag)),
+    L(Constants.VisionConstants.aprilTagLayout.getTagPose(17).get().transformBy(rotationToFaceTag));
 
-    private final Rotation2d rotation2d;
+    private final Pose3d pose;
 
-    DriveRotation(Rotation2d rotation2d) {
-      this.rotation2d = rotation2d;
+    DrivePose(Pose3d pose) {
+      this.pose = pose;
     }
 
     public Rotation2d getRotation2d() {
-      return rotation2d;
+      return pose.getRotation().toRotation2d();
+    }
+
+    public Pose3d getPose() {
+      return pose;
     }
   }
 
-  private static DriveRotation driveRotation = DriveRotation.A;
+  private static DrivePose drivePose = DrivePose.A;
 
   public static Rotation2d getDriveRotation2d() {
-      return driveRotation.rotation2d;
+      return drivePose.getRotation2d();
   }
 
-  public static void setDriveRotation(DriveRotation dR) {
-      driveRotation = dR;
+  public static void setDriveRotation(DrivePose dP) {
+      drivePose = dP;
   }
-
-
 }
