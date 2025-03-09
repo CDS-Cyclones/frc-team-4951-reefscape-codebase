@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.operation.manual.MoveIntakeWheelsManuallyCommand;
 import frc.robot.commands.operation.manual.MovePivotManuallyCommand;
@@ -26,9 +27,14 @@ import frc.robot.subsystems.manipulator.IntakeWheels;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.GyroIO;
 import frc.robot.subsystems.swerve.GyroIOPigeon2;
+import frc.robot.subsystems.swerve.GyroIOSim;
 import frc.robot.subsystems.swerve.ModuleIO;
 import frc.robot.subsystems.swerve.ModuleIOSim;
 import frc.robot.subsystems.swerve.ModuleIOSpark;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -37,6 +43,8 @@ public class RobotContainer {
   private final Pivot m_pivot;
   private final IntakeWheels m_intakeWheels;
 
+  private SwerveDriveSimulation swerveSimulation = null;
+
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -44,17 +52,31 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        swerve = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3));
+        swerve = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
         break;
 
       case SIM:
+        // create a maple-sim swerve drive simulation instance
+        this.swerveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        
+        // add the simulated drivetrain to the simulation field
+        SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
+        
         // Sim robot, instantiate physics sim IO implementations
-        swerve = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+        swerve = new Drive(
+          new GyroIOSim(swerveSimulation.getGyroSimulation()),
+          new ModuleIOSim(swerveSimulation.getModules()[0]),
+          new ModuleIOSim(swerveSimulation.getModules()[1]),
+          new ModuleIOSim(swerveSimulation.getModules()[2]),
+          new ModuleIOSim(swerveSimulation.getModules()[3]),
+          swerveSimulation::setSimulationWorldPose
+        );
+
         break;
 
       default:
         // Replayed robot, disable IO implementations
-        swerve = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){});
+        swerve = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, (pose) -> {});
         break;
     }
 
@@ -84,9 +106,9 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     swerve.setDefaultCommand(DriveCommands.joystickDrive(
       swerve,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      () -> -OI.m_driverController.getRightX())
+      () -> OI.m_driverController.getLeftY(),
+      () -> OI.m_driverController.getLeftX(),
+      () -> OI.m_driverController.getRightX())
     );
 
     // Lock to 0° when A button is held
@@ -101,17 +123,13 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(swerve::stopWithX, swerve));
 
     // Reset gyro to 0° when B button is pressed
-    new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(
-      () -> swerve.setPose(new Pose2d(swerve.getPose().getTranslation(), new Rotation2d())), swerve).ignoringDisable(true)
-    );
-
-    new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kY.value).onTrue(new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
-    // new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).whileTrue(new MoveElevatorManuallyCommand(m_elevator, m_pivot, false));
-    new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kA.value).onTrue(new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
+    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+      ? () -> swerve.resetOdometry(swerveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
+      : () -> swerve.resetOdometry(new Pose2d(swerve.getPose().getTranslation(), new Rotation2d())); // zero gyro
+    new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, swerve).ignoringDisable(true));
 
     // Check if the robot is in test mode
     if (DriverStation.isTest()) {
-
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kB.value).whileTrue(new MovePivotManuallyCommand(m_pivot, true));
       new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kX.value).whileTrue(new MovePivotManuallyCommand(m_pivot, false));
 
@@ -143,4 +161,22 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+
+  public void resetSimulationField() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    swerve.resetOdometry(new Pose2d(3, 3, new Rotation2d()));
+    SimulatedArena.getInstance().resetFieldForAuto();
+  }
+
+public void updateSimulation() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    SimulatedArena.getInstance().simulationPeriodic();
+    Logger.recordOutput("FieldSimulation/RobotPosition", swerveSimulation.getSimulatedDriveTrainPose());
+    Logger.recordOutput(
+            "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput(
+            "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+}
 }
