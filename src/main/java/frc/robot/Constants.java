@@ -171,6 +171,38 @@ public final class Constants {
     );
   }
 
+  public class VisionConstants {
+    // AprilTag layout
+    public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+
+    public static String cameraName = "limelight";
+    public static String cameraNameSim = "simCam";
+
+    // Robot to camera transforms
+    // (Not used by Limelight, configure in web UI instead)
+    public static Transform3d botToCamTransformSim = new Transform3d(
+      new Translation3d(0.41275, 0, 0.15), // X is forward in m, z is up in m
+      new Rotation3d(0, 0, 0)  // facing forward
+    );
+    
+    // Basic filtering thresholds
+    public static double maxAmbiguity = 0.3;
+    public static double maxZError = 0.75;
+
+    // Standard deviation baselines, for 1 meter distance and 1 tag
+    // (Adjusted automatically based on distance and # of tags)
+    public static double linearStdDevBaseline = 0.02; // Meters
+    public static double angularStdDevBaseline = 0.06; // Radians
+
+    // Standard deviation multipliers for each camera
+    // (Adjust to trust some cameras more than others)
+    public static double[] cameraStdDevFactors = new double[] {1.0};
+
+    // Multipliers to apply for MegaTag 2 observations
+    public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
+    public static double angularStdDevMegatag2Factor = Double.POSITIVE_INFINITY; // No rotation data available
+  }
+
   public static final class OIConstants {
     // Joystick ports
     public static final int kDriverControllerPort = 0;
@@ -180,10 +212,6 @@ public final class Constants {
 
     // Joystick axis deadband
     public static final double kJoystickAxisDeadband = 0.1;
-  }
-
-  public static final class LimelightConstants {
-    public static final String kLimelightName = "limelight";
   }
 
   public static final class ManipulatorConstants {
@@ -257,56 +285,54 @@ public final class Constants {
 
 
 
+  // public static final class VisionConstants {
+  //   public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
 
+  //   public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
+  //   public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
 
-  public static final class VisionConstants {
-    public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
+  //   public static final double VISION_YAW_DEADBAND = .5;  // TODO tune
+  //   public static final double AMBIGUITY_DEADBAND = 0.2;
 
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
+  //   public static final double VISION_TURN_kP = 0.005;    // TODO tune
+  //   public static final double VISION_FORWARD_kP = 1;     // TODO tune
 
-    public static final double VISION_YAW_DEADBAND = .5;  // TODO tune
-    public static final double AMBIGUITY_DEADBAND = 0.2;
+  //   // Constraints for profiled movement of robot whilst controlled by vision
+  //   public static final TrapezoidProfile.Constraints X_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
+  //   public static final TrapezoidProfile.Constraints Y_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
+  //   public static final TrapezoidProfile.Constraints OMEGA_CONSTRAINTS = new TrapezoidProfile.Constraints(8, 8);
 
-    public static final double VISION_TURN_kP = 0.005;    // TODO tune
-    public static final double VISION_FORWARD_kP = 1;     // TODO tune
+  //   // PID Values for ProfiledPIDControllers used in ChaseTagCommand
+  //   public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(0.8, 0, 0.02);       // TODO tune
+  //   public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(0.4, 0, 0.07);       // TODO tune
+  //   public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(1, 0, 0);        // TODO tune
 
-    // Constraints for profiled movement of robot whilst controlled by vision
-    public static final TrapezoidProfile.Constraints X_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
-    public static final TrapezoidProfile.Constraints Y_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
-    public static final TrapezoidProfile.Constraints OMEGA_CONSTRAINTS = new TrapezoidProfile.Constraints(8, 8);
+  //   // ProfiledPIDControllers tolerance values
+  //   public static final double X_TOLERANCE = 0.2; // in m
+  //   public static final double Y_TOLERANCE = 0.2; // in m
+  //   public static final double OMEGA_TOLERANCE = 3; // in deg
 
-    // PID Values for ProfiledPIDControllers used in ChaseTagCommand
-    public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(0.8, 0, 0.02);       // TODO tune
-    public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(0.4, 0, 0.07);       // TODO tune
-    public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(1, 0, 0);        // TODO tune
+  //   /**
+  //    * Enum representing different desired poses relative to AprilTags on the field.
+  //    */
+  //   public static enum PoseRelToAprilTag {
+  //     SAMPLE_POSE(18, 1.5, 0);
 
-    // ProfiledPIDControllers tolerance values
-    public static final double X_TOLERANCE = 0.2; // in m
-    public static final double Y_TOLERANCE = 0.2; // in m
-    public static final double OMEGA_TOLERANCE = 3; // in deg
+  //     /** ID of the april tag */
+  //     public final int aprilTagId;
 
-    /**
-     * Enum representing different desired poses relative to AprilTags on the field.
-     */
-    public static enum PoseRelToAprilTag {
-      SAMPLE_POSE(18, 1.5, 0);
+  //     /** Where the robot should be in relation to the tag */
+  //     public final Transform3d relativePose;
 
-      /** ID of the april tag */
-      public final int aprilTagId;
-
-      /** Where the robot should be in relation to the tag */
-      public final Transform3d relativePose;
-
-      PoseRelToAprilTag(int aprilTagId, double metersInFront, double metersToTheLeft) {
-        this.aprilTagId = aprilTagId;
-        this.relativePose = new Transform3d(
-          new Translation3d(metersInFront, metersToTheLeft, 0),
-          new Rotation3d(0, 0, Math.PI) // PI rads (180 deg) means facing the tag
-        );
-      }
-    }
-  }
+  //     PoseRelToAprilTag(int aprilTagId, double metersInFront, double metersToTheLeft) {
+  //       this.aprilTagId = aprilTagId;
+  //       this.relativePose = new Transform3d(
+  //         new Translation3d(metersInFront, metersToTheLeft, 0),
+  //         new Rotation3d(0, 0, Math.PI) // PI rads (180 deg) means facing the tag
+  //       );
+  //     }
+  //   }
+  // }
 
 
   public static class CANdleConstants {

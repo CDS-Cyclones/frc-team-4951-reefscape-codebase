@@ -7,14 +7,14 @@ package frc.robot.commands.operation.pid;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.ManipulatorSubsystemsPositions;
+import frc.robot.DesiredFieldPose;
 import frc.robot.subsystems.manipulator.Elevator;
 
 import java.util.function.DoubleSupplier;
 
 /**
  * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
- * The position is determined in {@link ManipulatorSubsystemsPositions}.
+ * The position is determined in {@link DesiredFieldPose}.
  */
 public class ElevatorGoToCommand extends Command {
   private final Elevator elevator;
