@@ -17,7 +17,6 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -95,12 +94,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(this::getPose, this::resetOdometry,
         this::getChassisSpeeds, this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+        new PPHolonomicDriveController(ppDrivePID, ppTurnPID),
         ppConfig,
-        ()
-            -> DriverStation.getAlliance().orElse(Alliance.Blue)
-            == Alliance.Red,
+        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback((activePath) -> {

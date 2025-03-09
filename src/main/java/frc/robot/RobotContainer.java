@@ -48,7 +48,7 @@ public class RobotContainer {
   private final Pivot m_pivot;
   private final IntakeWheels m_intakeWheels;
 
-  private SwerveDriveSimulation swerveSimulation = null;
+  private SwerveDriveSimulation driveSimulation = null;
 
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -63,21 +63,21 @@ public class RobotContainer {
 
       case SIM:
         // create a maple-sim swerve drive simulation instance
-        swerveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         
         // add the simulated drivetrain to the simulation field
-        SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
+        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(
-          new GyroIOSim(swerveSimulation.getGyroSimulation()),
-          new ModuleIOSim(swerveSimulation.getModules()[0]),
-          new ModuleIOSim(swerveSimulation.getModules()[1]),
-          new ModuleIOSim(swerveSimulation.getModules()[2]),
-          new ModuleIOSim(swerveSimulation.getModules()[3]),
-          swerveSimulation::setSimulationWorldPose
+          new GyroIOSim(driveSimulation.getGyroSimulation()),
+          new ModuleIOSim(driveSimulation.getModules()[0]),
+          new ModuleIOSim(driveSimulation.getModules()[1]),
+          new ModuleIOSim(driveSimulation.getModules()[2]),
+          new ModuleIOSim(driveSimulation.getModules()[3]),
+          driveSimulation::setSimulationWorldPose
         );
-        vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, swerveSimulation::getSimulatedDriveTrainPose));
+        vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, driveSimulation::getSimulatedDriveTrainPose));
         break;
 
       default:
@@ -131,7 +131,7 @@ public class RobotContainer {
 
     // Reset gyro to 0° when B button is pressed
     final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-      ? () -> drive.resetOdometry(swerveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
+      ? () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
@@ -195,7 +195,7 @@ public void updateSimulation() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
     SimulatedArena.getInstance().simulationPeriodic();
-    Logger.recordOutput("FieldSimulation/RobotPosition", swerveSimulation.getSimulatedDriveTrainPose());
+    Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput(
             "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     Logger.recordOutput(

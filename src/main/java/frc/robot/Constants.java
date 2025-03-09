@@ -4,13 +4,6 @@
 
 package frc.robot;
 
-import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
@@ -23,16 +16,17 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -110,10 +104,10 @@ public final class Constants {
     public static final double driveKd = 0.0;
     public static final double driveKs = 0.0;
     public static final double driveKv = 0.1;
-    public static final double driveSimP = 0.05;
+    public static final double driveSimP = 0.0;
     public static final double driveSimD = 0.0;
-    public static final double driveSimKs = 0.0;
-    public static final double driveSimKv = 0.0789;
+    public static final double driveSimKs = 0.04038;
+    public static final double driveSimKv = 0.11972;
 
     // Turn motor configuration
     public static final boolean turnInverted = false;
@@ -129,8 +123,8 @@ public final class Constants {
     // Turn PID configuration
     public static final double turnKp = 2.0;
     public static final double turnKd = 0.0;
-    public static final double turnSimP = 8;
-    public static final double turnSimD = 0.05;
+    public static final double turnSimP = 10;
+    public static final double turnSimD = 0.2;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
@@ -138,6 +132,8 @@ public final class Constants {
     public static final double robotMassKg = 52;
     public static final double robotMOI = 6.883;
     public static final double wheelCOF = 1.2;
+    public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
+    public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);
     public static final RobotConfig ppConfig =
       new RobotConfig(
         robotMassKg,
