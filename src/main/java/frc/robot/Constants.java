@@ -11,6 +11,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -109,7 +118,7 @@ public final class Constants {
     // Turn motor configuration
     public static final boolean turnInverted = false;
     public static final int turnMotorCurrentLimit = 40;
-    public static final double turnMotorReduction = 4.71 / 1;
+    public static final double turnMotorReduction = 9424.0 / 203.0;
     public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
 
     // Turn encoder configuration
@@ -120,8 +129,8 @@ public final class Constants {
     // Turn PID configuration
     public static final double turnKp = 2.0;
     public static final double turnKd = 0.0;
-    public static final double turnSimP = 8.0;
-    public static final double turnSimD = 0.0;
+    public static final double turnSimP = 8;
+    public static final double turnSimD = 0.05;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
@@ -143,6 +152,23 @@ public final class Constants {
         ),
         moduleTranslations
       );
+    
+    public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
+      .withCustomModuleTranslations(moduleTranslations)
+      .withRobotMass(Kilograms.of(robotMassKg))
+      .withGyro(COTS.ofPigeon2())
+      .withSwerveModule(new SwerveModuleSimulationConfig(
+        driveGearbox,
+        turnGearbox,
+        driveMotorReduction,
+        turnMotorReduction,
+        Volts.of(0.1),
+        Volts.of(0.1),
+        Meters.of(wheelRadiusMeters),
+        KilogramSquareMeters.of(0.02),
+        wheelCOF
+      )
+    );
   }
 
   public static final class OIConstants {
