@@ -16,8 +16,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.DesiredFieldPose.DrivePose;
-import frc.robot.commands.DriveCommands;
+import frc.robot.MutableFieldPose.FieldPose;
+import frc.robot.commands.drive.DriveCharacterizationCommands;
+import frc.robot.commands.drive.JoystickDriveCommand;
+import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.operation.manual.MoveIntakeWheelsManuallyCommand;
 import frc.robot.commands.operation.manual.MovePivotManuallyCommand;
 import frc.robot.subsystems.drive.Drive;
@@ -91,8 +93,8 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     
     // Set up SysId routines
-    autoChooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption("Drive Wheel Radius Characterization", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption("Drive Simple FF Characterization", DriveCharacterizationCommands.feedforwardCharacterization(drive));
     autoChooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
@@ -111,19 +113,20 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(DriveCommands.joystickDrive(
+    drive.setDefaultCommand(new JoystickDriveCommand(
       drive,
       () -> -OI.m_driverController.getLeftY(),
       () -> -OI.m_driverController.getLeftX(),
       () -> -OI.m_driverController.getRightX())
     );
 
-    // Lock to 0° when A button is held
-    new JoystickButton(OI.m_driverController, Button.kA.value).whileTrue(DriveCommands.joystickDriveAtAngle(
+    // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
+    new JoystickButton(OI.m_driverController, Button.kA.value).whileTrue(new VisionAssistedDriveToPoseCommand(
       drive,
+      vision,
       () -> -OI.m_driverController.getLeftY(),
       () -> -OI.m_driverController.getLeftX(),
-      DesiredFieldPose::getDriveRotation2d
+      MutableFieldPose::getMutableFieldPose
     ));
 
     // Switch to X pattern when X button is pressed
@@ -135,20 +138,19 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // POSES
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.A)));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.B)));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.C)));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.D)));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.E)));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.F)));
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.G)));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.H)));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.I)));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.J)));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.K)));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.L)));
-    
+    // Set desired field pose when buttons are pressed
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.A)));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.B)));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.C)));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.D)));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.E)));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.F)));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.G)));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.H)));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.I)));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.J)));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.K)));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.L)));
 
     // Check if the robot is in test mode
     if (DriverStation.isTest()) {
@@ -191,14 +193,12 @@ public class RobotContainer {
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
-public void updateSimulation() {
+  public void updateSimulation() {  
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
     SimulatedArena.getInstance().simulationPeriodic();
     Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-    Logger.recordOutput(
-            "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    Logger.recordOutput(
-            "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
-}
+    Logger.recordOutput("FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput("FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+  }
 }

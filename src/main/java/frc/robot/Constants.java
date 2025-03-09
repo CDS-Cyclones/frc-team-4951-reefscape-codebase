@@ -128,6 +128,13 @@ public final class Constants {
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
+    // Configuration for profiled controllers
+    public static final double omegaPPIDCKp = 5.0;
+    public static final double omegaPPIDCKd = 0.4;
+    public static final double omegaPPIDCMaxVel = 8; // Radians per second
+    public static final double omegaPPIDCMaxAccel = 20; // Radians per second squared
+
+
     // PathPlanner configuration
     public static final double robotMassKg = 52;
     public static final double robotMOI = 6.883;
