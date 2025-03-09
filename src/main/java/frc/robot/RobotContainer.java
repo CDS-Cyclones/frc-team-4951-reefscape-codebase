@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.DesiredFieldPose.DriveRotation;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.operation.manual.MoveIntakeWheelsManuallyCommand;
 import frc.robot.commands.operation.manual.MovePivotManuallyCommand;
@@ -108,16 +109,16 @@ public class RobotContainer {
       swerve,
       () -> OI.m_driverController.getLeftY(),
       () -> OI.m_driverController.getLeftX(),
-      () -> OI.m_driverController.getRightX())
+      () -> -OI.m_driverController.getRightX())
     );
 
     // Lock to 0° when A button is held
     new JoystickButton(OI.m_driverController, Button.kA.value).whileTrue(DriveCommands.joystickDriveAtAngle(
       swerve,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      () -> new Rotation2d())
-    );
+      () -> OI.m_driverController.getLeftY(),
+      () -> OI.m_driverController.getLeftX(),
+      DesiredFieldPose::getDriveRotation2d
+    ));
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(swerve::stopWithX, swerve));
@@ -127,6 +128,10 @@ public class RobotContainer {
       ? () -> swerve.resetOdometry(swerveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
       : () -> swerve.resetOdometry(new Pose2d(swerve.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, swerve).ignoringDisable(true));
+
+    // POSES
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DriveRotation.A)));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DriveRotation.B)));
 
     // Check if the robot is in test mode
     if (DriverStation.isTest()) {
@@ -142,15 +147,15 @@ public class RobotContainer {
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("elevatorDown", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.DOWN)));
-    NamedCommands.registerCommand("elevatorL1", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L1)));
-    NamedCommands.registerCommand("elevatorL2", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L2)));
-    NamedCommands.registerCommand("elevatorL3", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L3)));
-    NamedCommands.registerCommand("elevatorL4", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L4)));
-    NamedCommands.registerCommand("elevatorBarge", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.BARGE)));
+    // NamedCommands.registerCommand("elevatorDown", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.DOWN)));
+    // NamedCommands.registerCommand("elevatorL1", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L1)));
+    // NamedCommands.registerCommand("elevatorL2", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L2)));
+    // NamedCommands.registerCommand("elevatorL3", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L3)));
+    // NamedCommands.registerCommand("elevatorL4", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L4)));
+    // NamedCommands.registerCommand("elevatorBarge", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.BARGE)));
 
-    NamedCommands.registerCommand("pivotIn", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
-    NamedCommands.registerCommand("pivotOut", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
+    // NamedCommands.registerCommand("pivotIn", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
+    // NamedCommands.registerCommand("pivotOut", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
   }
 
   /**
