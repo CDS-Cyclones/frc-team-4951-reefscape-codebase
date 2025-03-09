@@ -113,16 +113,16 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(DriveCommands.joystickDrive(
       drive,
-      () -> OI.m_driverController.getLeftY(),
-      () -> OI.m_driverController.getLeftX(),
+      () -> -OI.m_driverController.getLeftY(),
+      () -> -OI.m_driverController.getLeftX(),
       () -> -OI.m_driverController.getRightX())
     );
 
     // Lock to 0° when A button is held
     new JoystickButton(OI.m_driverController, Button.kA.value).whileTrue(DriveCommands.joystickDriveAtAngle(
       drive,
-      () -> OI.m_driverController.getLeftY(),
-      () -> OI.m_driverController.getLeftX(),
+      () -> -OI.m_driverController.getLeftY(),
+      () -> -OI.m_driverController.getLeftX(),
       DesiredFieldPose::getDriveRotation2d
     ));
 
@@ -136,18 +136,18 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
     // POSES
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.A)));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.B)));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.C)));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.D)));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.E)));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.F)));
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.G)));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.H)));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.I)));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.J)));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.K)));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDriveRotation(DrivePose.L)));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.A)));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.B)));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.C)));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.D)));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.E)));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.F)));
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.G)));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.H)));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.I)));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.J)));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.K)));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> DesiredFieldPose.setDrivePose(DrivePose.L)));
     
 
     // Check if the robot is in test mode

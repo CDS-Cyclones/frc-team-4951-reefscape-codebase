@@ -147,7 +147,11 @@ public final class DesiredFieldPose {
       return drivePose.getRotation2d();
   }
 
-  public static void setDriveRotation(DrivePose dP) {
+  public static Pose3d getDrivePose() {
+      return drivePose.getPose();
+  }
+
+  public static void setDrivePose(DrivePose dP) {
       drivePose = dP;
   }
 }
