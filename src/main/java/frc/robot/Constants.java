@@ -259,6 +259,7 @@ public final class Constants {
     public static final double elevatorKg = 0.0;
     public static final double elevatorKv = 0.0;
     public static final double elevatorKa = 0.0;
+    public static final double elevatorPIDTolerance = 0.01;
 
     // Pivot constants
     public static final double pivotMinPosition = 0.0;
@@ -271,6 +272,7 @@ public final class Constants {
     public static final double pivotKg = 0.0;
     public static final double pivotKv = 0.0;
     public static final double pivotKa = 0.0;
+    public static final double pivotPIDTolerance = 0.01;
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
   }
 

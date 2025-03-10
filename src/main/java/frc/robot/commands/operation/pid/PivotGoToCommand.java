@@ -1,67 +1,84 @@
-// // Copyright (c) FIRST and other WPILib contributors.
-// // Open Source Software; you can modify and/or share it under the terms of
-// // the WPILib BSD license file in the root directory of this project.
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-// package frc.robot.commands.operation.pid;
+package frc.robot.commands.operation.pid;
 
-// import edu.wpi.first.math.controller.ProfiledPIDController;
-// import edu.wpi.first.wpilibj2.command.Command;
-// import frc.robot.Constants;
-// import frc.robot.subsystems.pivot.PivotOld;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 
-// import java.util.function.DoubleSupplier;
+import frc.robot.mutables.MutablePivotPosition.PivotPosition;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.mutables.MutablePivotPosition;
+import static frc.robot.Constants.ManipulatorConstants.*;
 
-// /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-// public class PivotGoToCommand extends Command {
-//   private final PivotOld pivot;
-//   private final DoubleSupplier desiredPositionSupplier;
-//   private final ProfiledPIDController pidController;
+import java.util.function.Supplier;
 
-//   /** Creates a new PivotGoToCommand. */
-//   public PivotGoToCommand(PivotOld pivot, DoubleSupplier desiredPositionSupplier) {
-//     this.pivot = pivot;
-//     this.desiredPositionSupplier = desiredPositionSupplier;
-//     this.pidController = new ProfiledPIDController(
-//       Constants.ManipulatorConstants.kPivotPIDConstants.kP,
-//       Constants.ManipulatorConstants.kPivotPIDConstants.kI,
-//       Constants.ManipulatorConstants.kPivotPIDConstants.kD,
-//       Constants.ManipulatorConstants.kPivotTrapezoidConstraints
-//     );
+/**
+ * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
+ * The position is determined in {@link MutablePivotPosition}.
+ */
+public class PivotGoToCommand extends Command {
+  private final Pivot pivot;
+  private final Supplier<PivotPosition>  desiredPositionSupplier;
+  private final ProfiledPIDController controller;
 
-//     addRequirements(this.pivot);
-//   }
+  private double lastSpeed;
+  private double lastTime;
 
-//   // Called when the command is initially scheduled.
-//   @Override
-//   public void initialize() {
-//     pidController.setGoal(desiredPositionSupplier.getAsDouble());
-//     pidController.setTolerance(Constants.ManipulatorConstants.kPivotTolerance);
-//   }
+  /** Creates a new ElevatorGoToCommand. */
+  public PivotGoToCommand(Pivot pivot, Supplier<PivotPosition> desiredPositionSupplier) {
+    this.pivot = pivot;
+    this.desiredPositionSupplier = desiredPositionSupplier;
+    
+    controller = new ProfiledPIDController(pivotKp, 0.0, pivotKd, new TrapezoidProfile.Constraints(pivotMaxSpeed, pivotMaxAcceleration));
 
-//   // Called every time the scheduler runs while the command is scheduled.
-//   @Override
-//   public void execute() {
-//     if (pidController.getGoal().position != desiredPositionSupplier.getAsDouble()) {
-//       pidController.setGoal(desiredPositionSupplier.getAsDouble());
-//     }
+    addRequirements(this.pivot);
+  }
 
-//     double speed = pidController.calculate(pivot.getPosition());
-//     double feedforward = pivot.calculateFeedforward(pidController.getSetpoint().velocity, 0);
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {
+    controller.setGoal(desiredPositionSupplier.get().getPosition());
+    controller.setTolerance(pivotPIDTolerance);
 
-//     // pivot.setVoltage(speed);
+    lastSpeed = 0.0;
+    lastTime = Timer.getFPGATimestamp();
+  }
 
-//     System.out.println("Pivot volt: " + desiredPositionSupplier.getAsDouble());
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+    if(controller.getGoal().position != desiredPositionSupplier.get().getPosition()) {
+      controller.setGoal(desiredPositionSupplier.get().getPosition());
+    }
 
+    // Calculate the speed of the pivot
+    double acceleration = (controller.getSetpoint().velocity - lastSpeed) / (Timer.getFPGATimestamp() - lastTime);
+    double speed = controller.calculate(pivot.getPosition());
+    speed += pivot.calculateFeedforward(controller.getSetpoint().velocity, acceleration);
 
-//   }
+    // If the pivot isfull in or out, prevent it from moving further.
+    if((pivot.getPosition() <= pivotMinPosition && speed < 0.0) || (pivot.getPosition() >= pivotMaxPosition && speed > 0.0))
+      speed = 0.0;
+    
+    // Set the speed of the pivot
+    pivot.setSpeed(speed);
 
-//   // Called once the command ends or is interrupted.
-//   @Override
-//   public void end(boolean interrupted) {}
+    // Update tracking variables
+    lastSpeed = controller.getSetpoint().velocity;
+    lastTime = Timer.getFPGATimestamp();
+  }
 
-//   // Returns true when the command should end.
-//   @Override
-//   public boolean isFinished() {
-//     return false;
-//   }
-// }
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {}
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
+}
