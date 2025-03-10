@@ -129,10 +129,14 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for profiled controllers
-    public static final double omegaPPIDCKp = 5.0;
-    public static final double omegaPPIDCKd = 0.4;
-    public static final double omegaPPIDCMaxVel = 8; // Radians per second
-    public static final double omegaPPIDCMaxAccel = 20; // Radians per second squared
+    public static final double anglePPIDCKp = 5.0;
+    public static final double anglePPIDCKd = 0.4;
+    public static final double anglePPIDCMaxVel = 8; // Radians per second
+    public static final double anglePPIDCMaxAccel = 20; // Radians per second squared
+    public static final double translationPPIDCKp = 5;
+    public static final double translationPPIDCKd = 0.0;
+    public static final double translationPPIDCMaxVel = 1.5; // Meters per second
+    public static final double translationPPIDCMaxAccel = 1; // Meters per second squared
 
 
     // PathPlanner configuration
@@ -184,7 +188,7 @@ public final class Constants {
     // Robot to camera transforms
     // (Not used by Limelight, configure in web UI instead)
     public static Transform3d botToCamTransformSim = new Transform3d(
-      new Translation3d(0.41275, 0, 0.15), // X is forward in m, z is up in m
+      new Translation3d(-.3, 0, 0), // X is forward in m, z is up in m
       new Rotation3d(0, 0, 0)  // facing forward
     );
     

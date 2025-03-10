@@ -6,7 +6,6 @@ import lombok.Setter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,10 +14,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
  * A class to store all the positions of the elevator and pivot.
  */
 public final class MutableFieldPose {
-  private static final Transform3d rotationToFaceTag = new Transform3d(new Translation3d(), new Rotation3d(0, 0, Math.PI));
-  private static final double inFrontOfTag = 0.5;
-  private static final double leftOfTag = 0.5;
-  private static final double rightOfTag = 0.5;
+  private static final double inFrontOfTag = 0.1;
+  private static final double inFrontOfTagSim = 0.5;
+  private static final double leftOfTag = -0.3;
+  private static final double rightOfTag = 0.3;
 
   /**
    * An enum to represent all desired field poses of the robot.
@@ -39,12 +38,14 @@ public final class MutableFieldPose {
 
     private final int tagBlueId;
     private final int tagRedId;
-    private final Transform3d transform;
+    private final double away;
+    private final double side;
 
-    FieldPose(int tagBlueId, int tagRedId, double front, double left) {
+    FieldPose(int tagBlueId, int tagRedId, double away, double side) {
       this.tagBlueId = tagBlueId;
       this.tagRedId = tagRedId;
-      this.transform = new Transform3d(new Translation3d(front, left, 0), new Rotation3d());
+      this.away = away;
+      this.side = side;
     }
 
     public int getTagId() {
@@ -56,7 +57,39 @@ public final class MutableFieldPose {
     }
 
     public Pose3d getDesiredPose() {
-      return getTagPose().transformBy(rotationToFaceTag);
+      Pose3d tagPose = getTagPose();
+      double tagAngle = tagPose.getRotation().toRotation2d().getRadians();
+      double tagX = tagPose.getTranslation().getX();
+      double tagY = tagPose.getTranslation().getY();
+
+      // Ensure the angle is between 0 and 2pi
+      if (tagAngle < 0) {
+        tagAngle = 2 * Math.PI + tagAngle;
+      }
+
+      double cos = Math.cos(tagAngle);
+      double sin = Math.sin(tagAngle);
+
+      double newX = tagX;
+      double newY = tagY;
+      Pose3d newPose;
+  
+      switch (Constants.currentMode) {
+        case SIM:
+          newX += inFrontOfTagSim * cos;
+          newY += inFrontOfTagSim * sin;
+        default:
+          newX += away * cos;
+          newY += away * sin;
+      }
+
+      // now do tranomration to the left or right of the tag
+      newX += side * -sin;
+      newY += side * cos;
+
+      newPose = new Pose3d(new Translation3d(newX, newY, 0), new Rotation3d(0, 0, tagAngle + Math.PI));
+
+      return newPose;
     }
 
     public Rotation2d getDesiredRotation2d() {

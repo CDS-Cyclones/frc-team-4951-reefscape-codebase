@@ -60,9 +60,21 @@ public class Vision extends SubsystemBase {
    * servoing with vision.
    *
    * @param cameraIndex The index of the camera to use.
+   * 
+   * @return The X angle to the best target.
    */
   public Rotation2d getTargetX(int cameraIndex) {
     return inputs[cameraIndex].latestTargetObservation.tx();
+  }
+
+  /**
+   * Returns ids of all tags detected by the camera.
+   *
+   * @param cameraIndex The index of the camera to use.
+   * @return An array with ids of all tags detected by the camera.
+   */
+  public int[] getTagIds(int cameraIndex) {
+    return inputs[cameraIndex].tagIds;
   }
 
   @Override

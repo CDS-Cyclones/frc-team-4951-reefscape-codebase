@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +41,7 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -121,7 +123,7 @@ public class RobotContainer {
     );
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
-    new JoystickButton(OI.m_driverController, Button.kA.value).whileTrue(new VisionAssistedDriveToPoseCommand(
+    new JoystickButton(OI.m_driverController, Button.kLeftBumper.value).whileTrue(new VisionAssistedDriveToPoseCommand(
       drive,
       vision,
       () -> -OI.m_driverController.getLeftY(),
@@ -191,6 +193,7 @@ public class RobotContainer {
 
     drive.resetOdometry(new Pose2d(3, 3, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2))); 
   }
 
   public void updateSimulation() {  

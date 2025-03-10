@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -33,7 +34,13 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private final DoubleSupplier ySupplier;
   private final Supplier<FieldPose> desiredFieldPoseSupplier;
 
-  private final ProfiledPIDController omegaController;
+  private final ProfiledPIDController angleController;
+  private final ProfiledPIDController translationXController;
+  private final ProfiledPIDController translationYController;
+
+  private ChassisSpeeds speeds;
+  private boolean isFlipped;
+  private boolean hasDetectedDesiredTag;
 
   /** Creates a new JoystickDriveAtAngleCommand. */
   public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
@@ -45,46 +52,74 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
     addRequirements(this.drive, this.vision);
 
-    omegaController = new ProfiledPIDController(omegaPPIDCKp, 0.0, omegaPPIDCKd, new TrapezoidProfile.Constraints(omegaPPIDCMaxVel, omegaPPIDCMaxAccel));
-    omegaController.enableContinuousInput(-Math.PI, Math.PI);
+    angleController = new ProfiledPIDController(anglePPIDCKp, 0.0, anglePPIDCKd, new TrapezoidProfile.Constraints(anglePPIDCMaxVel, anglePPIDCMaxAccel));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    translationXController = new ProfiledPIDController(translationPPIDCKp, 0.0, translationPPIDCKd, new TrapezoidProfile.Constraints(translationPPIDCMaxVel, translationPPIDCMaxAccel));
+    translationYController = new ProfiledPIDController(translationPPIDCKp, 0.0, translationPPIDCKd, new TrapezoidProfile.Constraints(translationPPIDCMaxVel, translationPPIDCMaxAccel));
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    omegaController.reset(drive.getRotation().getRadians());
+    angleController.reset(drive.getRotation().getRadians());
+    translationXController.reset(drive.getPose().getTranslation().getX());
+    translationYController.reset(drive.getPose().getTranslation().getY());
+
+    // Check if red alliance
+    isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+
+    hasDetectedDesiredTag = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // Get linear velocity from joystick (vision might override later)
-    Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
     // Calculate angular speed
-    double omega = omegaController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
+    double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
 
-    // If vision system detects target and robot is within a certain range, override manual control
-    // if (LimelightHelpers.getTV(cameraName) && LimelightHelpers.getFiducialID(cameraName) == desiredFieldPoseSupplier.get().getTagId()) {
-    //   // Calculate linear velocity from vision
-    //   linearVelocity = vision.getLinearVelocityToTarget();
-    //   // Calculate angular velocity from vision
-    //   omega = vision.getAngularVelocityToTarget();
-    // }
+    if(!hasDetectedDesiredTag) {
+      // Check if vision system detects desired tag
+      int[] detectedTagIds = vision.getTagIds(0);
+      for (int tagId : detectedTagIds) {
+        if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
+          hasDetectedDesiredTag = true;
+          break;
+        }
+      }
+    }
 
-    // Convert to field relative speeds & send command
-    ChassisSpeeds speeds =  new ChassisSpeeds(
-      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-      omega
-    );
-    boolean isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-              
-    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-      speeds,
-      isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()
-    ));
+    // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
+    if(hasDetectedDesiredTag) {
+      Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
+      
+      // Calculate translation speed
+      double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
+      double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
+  
+      speeds =  new ChassisSpeeds(
+        isFlipped ? -velocityX : velocityX,
+        isFlipped ? -velocityY : velocityY,
+        omega
+      );
+
+      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+    
+      return;
+    } else {
+      // Get linear velocity
+      Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+      speeds = new ChassisSpeeds(
+        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+        omega
+      );
+
+      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+    }
   }
+
 
   // Called once the command ends or is interrupted.
   @Override
