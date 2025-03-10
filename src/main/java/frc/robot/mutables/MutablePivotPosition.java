@@ -29,14 +29,5 @@ public final class MutablePivotPosition {
 
   @Getter
   @Setter
-  private static PivotPosition mutableElevatorPositions = PivotPosition.FULL_IN;
-
-  /**
-   * Returns the desired pivot position.
-   *
-   * @return The desired pivot position.
-   */
-  public static double getDesiredPivotPosition() {
-    return mutableElevatorPositions.getPosition();
-  }
+  private static PivotPosition mutablePivotPosition = PivotPosition.FULL_IN;
 }

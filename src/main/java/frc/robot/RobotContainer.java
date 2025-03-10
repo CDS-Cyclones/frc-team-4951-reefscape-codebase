@@ -20,7 +20,11 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
+import frc.robot.commands.operation.pid.ElevatorGoToCommand;
+import frc.robot.commands.operation.pid.PivotGoToCommand;
+import frc.robot.mutables.MutableElevatorPosition;
 import frc.robot.mutables.MutableFieldPose;
+import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -115,6 +119,19 @@ public class RobotContainer {
       () -> -OI.m_driverController.getRightX())
     );
 
+    // Default command, elevator PID control
+    elevator.setDefaultCommand(new ElevatorGoToCommand(
+      elevator,
+      pivot,
+      MutableElevatorPosition::getMutableElevatorPosition
+    ));
+
+    // Default command, pivot PID control
+    pivot.setDefaultCommand(new PivotGoToCommand(
+      pivot,
+      MutablePivotPosition::getMutablePivotPosition
+    ));
+
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value).whileTrue(new VisionAssistedDriveToPoseCommand(
       drive,
@@ -146,15 +163,6 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.J)));
     new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.K)));
     new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.L)));
-
-    // Check if the robot is in test mode
-    // if (DriverStation.isTest()) {
-    //   new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kB.value).whileTrue(new MovePivotManuallyCommand(m_pivot, true));
-    //   new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kX.value).whileTrue(new MovePivotManuallyCommand(m_pivot, false));
-
-    //   new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kLeftBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, 1));
-    //   new JoystickButton(OI.m_mainpulatorControllerManualBackup, Button.kRightBumper.value).whileTrue(new MoveIntakeWheelsManuallyCommand(m_intakeWheels, -1));
-    // }
   }
 
   /**
@@ -180,17 +188,7 @@ public class RobotContainer {
   /**
    * Register named commands for PathPlanner autos.
    */
-  private void registerNamedCommands() {
-    // NamedCommands.registerCommand("elevatorDown", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.DOWN)));
-    // NamedCommands.registerCommand("elevatorL1", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L1)));
-    // NamedCommands.registerCommand("elevatorL2", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L2)));
-    // NamedCommands.registerCommand("elevatorL3", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L3)));
-    // NamedCommands.registerCommand("elevatorL4", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.L4)));
-    // NamedCommands.registerCommand("elevatorBarge", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentElevatorPosition(ManipulatorSubsystemsPositions.ElevatorPosition.BARGE)));
-
-    // NamedCommands.registerCommand("pivotIn", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.IN)));
-    // NamedCommands.registerCommand("pivotOut", new RunCommand(() -> ManipulatorSubsystemsPositions.setCurrentPivotPosition(ManipulatorSubsystemsPositions.PivotPosition.OUT)));
-  }
+  private void registerNamedCommands() {}
 
   /**
    * Returns the selected autonomous command.

@@ -31,14 +31,5 @@ public final class MutableElevatorPosition {
 
   @Getter
   @Setter
-  private static ElevatorPosition mutableElevatorPositions = ElevatorPosition.DOWN;
-
-  /**
-   * Returns the desired elevator position.
-   *
-   * @return The desired elevator position.
-   */
-  public static double getDesiredElevatorPosition() {
-    return mutableElevatorPositions.getPosition();
-  }
+  private static ElevatorPosition mutableElevatorPosition = ElevatorPosition.DOWN;
 }
