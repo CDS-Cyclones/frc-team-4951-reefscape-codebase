@@ -1,5 +1,6 @@
 package frc.robot.subsystems.oi;
 
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.OIConstants;
 
@@ -9,6 +10,6 @@ import frc.robot.Constants.OIConstants;
 public class OI {
     public static XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
     public static XboxController m_manipulatorController = new XboxController(OIConstants.kOperatorControllerPort);
-    public static OperatorBoard m_operatorBoard = new OperatorBoard(OIConstants.kOperatorBoardPort);
+    public static GenericHID m_operatorBoard = new GenericHID(OIConstants.kOperatorBoardPort);
     public static XboxController m_mainpulatorControllerManualBackup = new XboxController(OIConstants.kOperatorControllerManualBackupPort);
 }

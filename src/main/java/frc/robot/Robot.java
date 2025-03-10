@@ -23,7 +23,6 @@ public class Robot extends LoggedRobot {
 
   private final RobotContainer robotContainer;
 
-  @SuppressWarnings("resource")
   public Robot() throws IOException, ParseException {
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
