@@ -9,15 +9,27 @@ import com.revrobotics.spark.SparkMax;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import static frc.robot.Constants.ManipulatorConstants.*;
 
-public class Intake implements IntakeIO {
+import org.littletonrobotics.junction.Logger;
+
+public class Intake extends SubsystemBase implements IntakeIO {
+  private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
   private final SparkMax intakeMotor;
 
   public Intake() {
     intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
 
     intakeMotor.configure(intakeWheelsMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+  }
+
+  // This method will be called once per scheduler run
+  @Override
+  public void periodic() {
+    updateInputs(intakeInputs);
+    Logger.processInputs("Intake", intakeInputs);
   }
 
   /**
@@ -43,7 +55,5 @@ public class Intake implements IntakeIO {
     inputs.intakeCurrent = intakeMotor.getOutputCurrent();
     inputs.intakeVoltage = intakeMotor.getBusVoltage();
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
-    inputs.intakeWarnings = intakeMotor.getWarnings();
-    inputs.intakeFaults = intakeMotor.getFaults();
   }
 }

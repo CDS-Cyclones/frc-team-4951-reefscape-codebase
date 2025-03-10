@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -16,9 +18,9 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
 
 public class Pivot extends SubsystemBase implements PivotIO {
+  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
   private final SparkMax motor = new SparkMax(pivotMotorId, MotorType.kBrushless);
   private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKg, pivotKv, pivotKa);
   private final AbsoluteEncoder encoder;
@@ -32,6 +34,13 @@ public class Pivot extends SubsystemBase implements PivotIO {
     encoder = motor.getAbsoluteEncoder();
 
     motor.configure(pivotMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+  }
+
+  // This method will be called once per scheduler run
+  @Override
+  public void periodic() {
+    updateInputs(pivotInputs);
+    Logger.processInputs("Pivot", pivotInputs);
   }
 
   /**
@@ -95,7 +104,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return True if no tin the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
-    return getPosition() >= Constants.ManipulatorConstants.pivotMinPositionForElevatorMovement;
+    return getPosition() >= pivotMinPositionForElevatorMovement;
   }
 
   public void logMotors(SysIdRoutineLog log) {
@@ -117,8 +126,6 @@ public class Pivot extends SubsystemBase implements PivotIO {
     inputs.motorCurrent = motor.getOutputCurrent();
     inputs.motorVoltage = motor.getBusVoltage();
     inputs.motorTemperature = motor.getMotorTemperature();
-    inputs.motorWarnings = motor.getWarnings();
-    inputs.motorFaults = motor.getFaults();
     inputs.motorAbsolutePosition = encoder.getPosition();
     inputs.motorVelocity = encoder.getVelocity();
   }

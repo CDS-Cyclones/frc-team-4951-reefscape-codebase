@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -16,8 +18,8 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 public class Elevator extends SubsystemBase implements ElevatorIO {
+  private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
   private final SparkMax motor1 = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
   private final SparkMax motor2 = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(elevatorKs, elevatorKg, elevatorKv, elevatorKa);
@@ -36,6 +38,13 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
     motor2.configure(elevatorMotor2Config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 
     zeroEncoders();
+  }
+
+  // This method will be called once per scheduler run
+  @Override
+  public void periodic() {
+    updateInputs(elevatorInputs);
+    Logger.processInputs("Elevator", elevatorInputs);
   }
 
   /**
@@ -132,10 +141,6 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
     inputs.motorVoltage[1] = motor2.getBusVoltage();
     inputs.motorTemperature[0] = motor1.getMotorTemperature();
     inputs.motorTemperature[1] = motor2.getMotorTemperature();
-    inputs.motorWarnings[0] = motor1.getWarnings();
-    inputs.motorWarnings[1] = motor2.getWarnings();
-    inputs.motorFaults[0] = motor1.getFaults();
-    inputs.motorFaults[1] = motor2.getFaults();
     inputs.motorPosition[0] = encoder1.getPosition();
     inputs.motorPosition[1] = encoder2.getPosition();
     inputs.motorVelocity[0] = encoder1.getVelocity();
