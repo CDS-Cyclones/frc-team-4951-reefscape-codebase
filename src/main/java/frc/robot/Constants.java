@@ -211,9 +211,9 @@ public final class Constants {
   public static final class OIConstants {
     // Joystick ports
     public static final int kDriverControllerPort = 0;
-    public static final int kOperatorControllerPort = 1;
-    public static final int kOperatorBoardPort = 2;
-    public static final int kOperatorControllerManualBackupPort = 3;
+    public static final int kOperatorBoardPort = 1;
+    public static final int kOperatorControllerPort = 2;
+    public static final int kOperatorControllerManualPort = 3;
 
     // Joystick axis deadband
     public static final double kJoystickAxisDeadband = 0.1;

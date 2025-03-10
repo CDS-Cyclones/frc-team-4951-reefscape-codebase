@@ -9,7 +9,7 @@ import frc.robot.Constants.OIConstants;
  */
 public class OI {
     public static XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
-    public static XboxController m_manipulatorController = new XboxController(OIConstants.kOperatorControllerPort);
     public static GenericHID m_operatorBoard = new GenericHID(OIConstants.kOperatorBoardPort);
-    public static XboxController m_mainpulatorControllerManualBackup = new XboxController(OIConstants.kOperatorControllerManualBackupPort);
+    public static XboxController m_manipulatorController = new XboxController(OIConstants.kOperatorControllerPort);
+    public static XboxController m_mainpulatorControllerManual = new XboxController(OIConstants.kOperatorControllerManualPort);
 }

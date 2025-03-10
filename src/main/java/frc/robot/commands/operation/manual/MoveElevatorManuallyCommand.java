@@ -1,53 +1,70 @@
-// // Copyright (c) FIRST and other WPILib contributors.
-// // Open Source Software; you can modify and/or share it under the terms of
-// // the WPILib BSD license file in the root directory of this project.
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-// package frc.robot.commands.operation.manual;
+package frc.robot.commands.operation.manual;
 
-// import edu.wpi.first.wpilibj2.command.Command;
-// import frc.robot.subsystems.elevator.Elevator;
-// import frc.robot.subsystems.pivot.Pivot;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 
-// /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-// public class MoveElevatorManuallyCommand extends Command {
-//   private final Elevator elevator;
-//   private final PivotOld pivotSubsystem;
-//   private final boolean moveUp;
+import edu.wpi.first.wpilibj2.command.Command;
 
-//   /** Creates a new MoveElevatorManuallyCommand. */
-//   public MoveElevatorManuallyCommand(Elevator elevatorSubsystem, PivotOld pivotSubsystem, boolean moveUp) {
-//     this.elevatorSubsystem = elevatorSubsystem;
-//     this.pivotSubsystem = pivotSubsystem;
-//     this.moveUp = moveUp;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.mutables.MutableElevatorPosition;
+import static frc.robot.Constants.ManipulatorConstants.*;
 
-//     addRequirements(this.elevatorSubsystem);
-//   }
+import java.util.function.DoubleSupplier;
 
-//   // Called when the command is initially scheduled.
-//   @Override
-//   public void initialize() {}
+/**
+ * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
+ * The position is determined in {@link MutableElevatorPosition}.
+ */
+public class MoveElevatorManuallyCommand extends Command {
+  private final Elevator elevator;
+  private final Pivot pivot;
+  private final DoubleSupplier speedSupplier;
 
-//   // Called every time the scheduler runs while the command is scheduled.
-//   @Override
-//   public void execute() {
-//     if(pivotSubsystem.isOut()) { // assure that pivot is out
-//       if(moveUp) {
-//         elevatorSubsystem.setSpeed(0.25);
-//       } else {
-//         elevatorSubsystem.setSpeed(-0.3);
-//       }
-//     }
-//   }
+  /** Creates a new ElevatorGoToCommand. */
+  public MoveElevatorManuallyCommand(Elevator elevator, Pivot pivot, DoubleSupplier speedSupplier) {
+    this.elevator = elevator;
+    this.pivot = pivot;
+    this.speedSupplier = speedSupplier;
+    
+    addRequirements(this.elevator);
+  }
 
-//   // Called once the command ends or is interrupted.
-//   @Override
-//   public void end(boolean interrupted) {
-//     elevatorSubsystem.stop();
-//   }
+  // Called when the command is initially scheduled.
+  @Override
+  public void initialize() {}
 
-//   // Returns true when the command should end.
-//   @Override
-//   public boolean isFinished() {
-//     return false;
-//   }
-// }
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {
+    double speed = speedSupplier.getAsDouble();
+    boolean safeToRun = true;
+
+    // If the pivot is in the way of the elevator, prevent it from going up.
+    if(!pivot.isOutOfElevatorWay() && speed > 0.0)
+      safeToRun = false;
+
+    // If the elevator is at the top or bottom, prevent it from moving further.
+    if((elevator.getPosition() <= elevatorMinPosition && speed < 0.0) || (elevator.getPosition() >= elevatorMaxPosition && speed > 0.0))
+      safeToRun = false;
+    
+    // Run elevator if it is safe to do so.
+    if(safeToRun)
+      elevator.setSpeed(speed);
+  }
+
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    elevator.stop();
+  }
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
+}

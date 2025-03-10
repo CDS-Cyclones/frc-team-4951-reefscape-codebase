@@ -9,7 +9,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,6 +19,8 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
+import frc.robot.commands.operation.manual.MoveElevatorManuallyCommand;
+import frc.robot.commands.operation.manual.MoveIntakeManuallyCommand;
 import frc.robot.commands.operation.pid.ElevatorGoToCommand;
 import frc.robot.commands.operation.pid.PivotGoToCommand;
 import frc.robot.mutables.MutableElevatorPosition;
@@ -150,7 +151,7 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // Set desired field pose when buttons are pressed
+    // Set desired field pose when buttons are pressed on operator board
     new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.A)));
     new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.B)));
     new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.C)));
@@ -163,6 +164,20 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.J)));
     new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.K)));
     new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.L)));
+  
+    // Bindings for manual manipulator controller
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
+      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> 0.2));
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kA.value)
+      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> -0.2));
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kB.value)
+      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> 0.2));
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kX.value)
+      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> -0.2));
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kRightBumper.value)
+      .whileTrue(new MoveIntakeManuallyCommand(intake, () -> 0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+    new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
+      .whileTrue(new MoveIntakeManuallyCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
   }
 
   /**

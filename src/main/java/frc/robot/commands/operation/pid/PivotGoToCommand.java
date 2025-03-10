@@ -60,7 +60,7 @@ public class PivotGoToCommand extends Command {
     double speed = controller.calculate(pivot.getPosition());
     speed += pivot.calculateFeedforward(controller.getSetpoint().velocity, acceleration);
 
-    // If the pivot isfull in or out, prevent it from moving further.
+    // If the pivot is fully in or out, prevent it from moving further.
     if((pivot.getPosition() <= pivotMinPosition && speed < 0.0) || (pivot.getPosition() >= pivotMaxPosition && speed > 0.0))
       speed = 0.0;
     

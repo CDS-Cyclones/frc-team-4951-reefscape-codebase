@@ -8,9 +8,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.mutables.MutableElevatorPosition;
-import static frc.robot.Constants.ManipulatorConstants.*;
 
 import java.util.function.DoubleSupplier;
 
@@ -18,16 +17,16 @@ import java.util.function.DoubleSupplier;
  * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
  * The position is determined in {@link MutableElevatorPosition}.
  */
-public class MovePivotManuallyCommand extends Command {
-  private final Pivot pivot;
+public class MoveIntakeManuallyCommand extends Command {
+  private final Intake intake;
   private final DoubleSupplier speedSupplier;
 
   /** Creates a new ElevatorGoToCommand. */
-  public MovePivotManuallyCommand(Pivot pivot, DoubleSupplier speedSupplier) {
-    this.pivot = pivot;
+  public MoveIntakeManuallyCommand(Intake intake, DoubleSupplier speedSupplier) {
+    this.intake = intake;
     this.speedSupplier = speedSupplier;
     
-    addRequirements(this.pivot);
+    addRequirements(this.intake);
   }
 
   // Called when the command is initially scheduled.
@@ -38,21 +37,15 @@ public class MovePivotManuallyCommand extends Command {
   @Override
   public void execute() {
     double speed = speedSupplier.getAsDouble();
-    boolean safeToRun = false;
 
-    // If the pivot is fully in or out, prevent it from moving further.
-    if((pivot.getPosition() <= pivotMinPosition && speed < 0.0) || (pivot.getPosition() >= pivotMaxPosition && speed > 0.0))
-      safeToRun = false;
-    
-    // Run elevator if it is safe to do so.
-    if(safeToRun)
-      pivot.setSpeed(speed);
+    // Set the speed of the intake
+    intake.setSpeed(speed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    pivot.stop();
+    intake.stop();
   }
 
   // Returns true when the command should end.
