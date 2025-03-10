@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.mutables;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +9,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Constants;
 
 /**
- * A class to store all the positions of the elevator and pivot.
+ * A mutable class to represent the desired field pose of the robot.
  */
 public final class MutableFieldPose {
   private static final double inFrontOfTag = 0.1;

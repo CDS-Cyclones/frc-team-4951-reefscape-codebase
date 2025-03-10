@@ -17,7 +17,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -28,7 +27,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -222,65 +220,58 @@ public final class Constants {
   }
 
   public static final class ManipulatorConstants {
-    public static final int kElevatorMotor1Id = 31;
-    public static final int kElevatorMotor2Id = 32;
-    public static final int kPivotMotorId = 56;
-    public static final int kIntakeWheelsMotorId = 57;
+    // CAN IDs
+    public static final int elevatorMotor1Id = 31;
+    public static final int elevatorMotor2Id = 32;
+    public static final int pivotMotorId = 56;
+    public static final int intakeMotorId = 57;
 
-    public static final SparkBaseConfig kElevatorMotor1Config = new SparkMaxConfig()
+    // Motor configurations
+    public static final SparkBaseConfig elevatorMotor1Config = new SparkMaxConfig()
       .smartCurrentLimit(80)
       .secondaryCurrentLimit(90)
       .idleMode(SparkBaseConfig.IdleMode.kBrake)
       .inverted(false);
-    public static final SparkBaseConfig kElevatorMotor2Config = new SparkMaxConfig()
+    public static final SparkBaseConfig elevatorMotor2Config = new SparkMaxConfig()
       .smartCurrentLimit(80)
       .secondaryCurrentLimit(90)
       .idleMode(SparkBaseConfig.IdleMode.kBrake)
       .inverted(false);
-    public static final SparkBaseConfig kPivotMotorConfig = new SparkMaxConfig()
+    public static final SparkBaseConfig pivotMotorConfig = new SparkMaxConfig()
       .smartCurrentLimit(80)
       .secondaryCurrentLimit(90)
       .idleMode(SparkBaseConfig.IdleMode.kBrake)
       .inverted(true);
-    public static final SparkBaseConfig kIntakeWheelsMotorConfig = new SparkMaxConfig()
+    public static final SparkBaseConfig intakeWheelsMotorConfig = new SparkMaxConfig()
       .smartCurrentLimit(80)
       .secondaryCurrentLimit(90)
       .idleMode(SparkBaseConfig.IdleMode.kBrake)
       .inverted(false);
 
-    public static final double kPivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+    // Elevator constants
+    public static final double elevatorMinPosition = 0.0;
+    public static final double elevatorMaxPosition = 1.0;
+    public static final double elevatorMaxSpeed = 0.5;
+    public static final double elevatorMaxAcceleration = 0.5;
+    public static final double elevatorKp = 0.5;
+    public static final double elevatorKd = 0.0;
+    public static final double elevatorKs = 0.0;
+    public static final double elevatorKg = 0.0;
+    public static final double elevatorKv = 0.0;
+    public static final double elevatorKa = 0.0;
 
-    public static final PIDConstants kElevatorPIDConstants = new PIDConstants(1, 0, 0);
-    public static final TrapezoidProfile.Constraints kElevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1, 0.5);
-    public static final double kElevatorTolerance = 0.05;
-    public static final double kElevatorFeedforwardVelocity = 0.05;
-
-    public static final PIDConstants kPivotPIDConstants = new PIDConstants(3, 0, 0);
-    public static final TrapezoidProfile.Constraints kPivotTrapezoidConstraints = new TrapezoidProfile.Constraints(5, 3);
-    public static final double kPivotTolerance = 0.05;
-    public static final double kPivotFeedforwardVelocityOut = -0.05;
-    public static final double kPivotFeedforwardVelocityIn = 0.3;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static final double kArmMin = 0.086;
-    public static final double kArmMax = 0.586;
-
-    public static final TrapezoidProfile.Constraints elevatorTrapezoidConstraints = new TrapezoidProfile.Constraints(1.5, 1);
-    public static final PIDConstants elevatorPID = new PIDConstants(1, 0, 0);
-    public static final double kArmTolerance = 0.5;
+    // Pivot constants
+    public static final double pivotMinPosition = 0.0;
+    public static final double pivotMaxPosition = 0.586;
+    public static final double pivotMaxSpeed = 0.5;
+    public static final double pivotMaxAcceleration = 0.5;
+    public static final double pivotKp = 0.5;
+    public static final double pivotKd = 0.0;
+    public static final double pivotKs = 0.0;
+    public static final double pivotKg = 0.0;
+    public static final double pivotKv = 0.0;
+    public static final double pivotKa = 0.0;
+    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
   }
 
 
@@ -345,37 +336,5 @@ public final class Constants {
   public static class CANdleConstants {
     public static final int CANid = 40;
     public static final String CANbus = "pigeonbus";
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  public static class IntakeConstants {
-    public static final int kIntakeWheelsMotorPort = 57;
-
-    public static final IdleMode kIdleMode = IdleMode.kBrake;
-    public static final boolean kInverted = false;
-
-    public static final double kAlgaIntakeSpeed = -0.5;
-    public static final double kAlgaOuttakeSpeed = 1;
-    public static final double kCoralOuttakeSpeed = 0.5;
-
-    public static final double kAlgaIntakeTime = 1;
-    public static final double kAlgaOuttakeTime = 1;
-    public static final double kCoralIntakeTime = 1;
-    public static final double kCoralOuttakeTime = 1;
   }
 }
