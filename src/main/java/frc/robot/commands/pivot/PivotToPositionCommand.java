@@ -36,6 +36,8 @@ public class PivotToPositionCommand extends Command {
   public void initialize() {
     controller.setGoal(desiredPosition.getPosition());
     controller.setTolerance(pivotPIDTolerance);
+
+    MutablePivotPosition.setMutablePivotPosition(desiredPosition);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

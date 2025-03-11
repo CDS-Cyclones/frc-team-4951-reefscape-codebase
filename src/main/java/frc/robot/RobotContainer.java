@@ -30,7 +30,9 @@ import frc.robot.commands.intake.ScoreCoralCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
+import frc.robot.mutables.MutableElevatorPosition;
 import frc.robot.mutables.MutableFieldPose;
+import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
@@ -112,7 +114,14 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     setupSysIdRoutines();
+    setMutableDefaults();
     configureBindings();
+  }
+
+  public void setMutableDefaults() {
+    MutableFieldPose.setMutableFieldPose(FieldPose.I);
+    MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
+    MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
   }
 
   /**
