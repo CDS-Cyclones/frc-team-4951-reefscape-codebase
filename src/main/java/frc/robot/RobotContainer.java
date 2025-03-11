@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,14 +20,17 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-import frc.robot.commands.operation.manual.MoveElevatorManuallyCommand;
-import frc.robot.commands.operation.manual.MoveIntakeManuallyCommand;
-import frc.robot.commands.operation.pid.ElevatorGoToCommand;
-import frc.robot.commands.operation.pid.PivotGoToCommand;
-import frc.robot.mutables.MutableElevatorPosition;
+import frc.robot.commands.elevator.ElevatorToPositionCommand;
+import frc.robot.commands.elevator.HoldElevatorPositionCommand;
+import frc.robot.commands.elevator.ManualElevatorCommand;
+import frc.robot.commands.intake.ManualIntakeCommand;
+import frc.robot.commands.pivot.HoldPivotPositionCommand;
+import frc.robot.commands.pivot.ManualPivotCommand;
+import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.mutables.MutableFieldPose;
-import frc.robot.mutables.MutablePivotPosition;
+import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
+import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -120,18 +124,11 @@ public class RobotContainer {
       () -> -OI.m_driverController.getRightX())
     );
 
-    // Default command, elevator PID control
-    elevator.setDefaultCommand(new ElevatorGoToCommand(
-      elevator,
-      pivot,
-      MutableElevatorPosition::getMutableElevatorPosition
-    ));
+    // Default command for elevator, hold position
+    elevator.setDefaultCommand(new HoldElevatorPositionCommand(elevator));
 
-    // Default command, pivot PID control
-    pivot.setDefaultCommand(new PivotGoToCommand(
-      pivot,
-      MutablePivotPosition::getMutablePivotPosition
-    ));
+    // Default command for pivot, hold position
+    pivot.setDefaultCommand(new HoldPivotPositionCommand(pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value).whileTrue(new VisionAssistedDriveToPoseCommand(
@@ -167,17 +164,17 @@ public class RobotContainer {
   
     // Bindings for manual manipulator controller
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
-      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> 0.2));
+      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.2));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kA.value)
-      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> -0.2));
+      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> -0.2));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kB.value)
-      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> 0.2));
+      .whileTrue(new ManualPivotCommand(pivot, () -> 0.2));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kX.value)
-      .whileTrue(new MoveElevatorManuallyCommand(elevator, pivot, () -> -0.2));
+      .whileTrue(new ManualPivotCommand(pivot, () -> -0.2));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kRightBumper.value)
-      .whileTrue(new MoveIntakeManuallyCommand(intake, () -> 0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(new ManualIntakeCommand(intake, () -> 0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
-      .whileTrue(new MoveIntakeManuallyCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
   }
 
   /**
@@ -203,7 +200,22 @@ public class RobotContainer {
   /**
    * Register named commands for PathPlanner autos.
    */
-  private void registerNamedCommands() {}
+  private void registerNamedCommands() {
+    NamedCommands.registerCommand("elevator__down", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN));
+    NamedCommands.registerCommand("elevator__l1", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L1));
+    NamedCommands.registerCommand("elevator__l2", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L2));
+    NamedCommands.registerCommand("elevator__l3", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L3));
+    NamedCommands.registerCommand("elevator__l4", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L4));
+    NamedCommands.registerCommand("elevator__barge", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.BARGE));
+
+    NamedCommands.registerCommand("pivot__intake_ready", new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY));
+    NamedCommands.registerCommand("pivot__elevator_clear", new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR));
+    NamedCommands.registerCommand("pivot__l1", new PivotToPositionCommand(pivot, PivotPosition.L1));
+    NamedCommands.registerCommand("pivot__l2", new PivotToPositionCommand(pivot, PivotPosition.L2));
+    NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, PivotPosition.L3));
+    NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, PivotPosition.L4));
+    NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, PivotPosition.BARGE));
+  }
 
   /**
    * Returns the selected autonomous command.

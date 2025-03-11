@@ -15,9 +15,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import static frc.robot.Constants.DriveConstants.*;
@@ -78,6 +80,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
 
     if(!hasDetectedDesiredTag) {
+      OI.m_driverController.setRumble(RumbleType.kBothRumble, 0.4);
+
       // Check if vision system detects desired tag
       int[] detectedTagIds = vision.getTagIds(0);
       for (int tagId : detectedTagIds) {
@@ -86,6 +90,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
           break;
         }
       }
+      
     }
 
     // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
@@ -122,11 +127,13 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    // TODO indicate with candle that its ready to shoot
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return translationXController.atGoal() && translationYController.atGoal() && angleController.atGoal();
   }
 }

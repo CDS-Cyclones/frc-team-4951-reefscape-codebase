@@ -276,65 +276,6 @@ public final class Constants {
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
   }
 
-
-
-
-
-
-
-
-
-
-  // public static final class VisionConstants {
-  //   public static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);  // TODO switch to '25 for comp, using '24 b/c Web Components do not have '25 field.
-
-  //   public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);     // TODO tune
-  //   public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);  // TODO tune
-
-  //   public static final double VISION_YAW_DEADBAND = .5;  // TODO tune
-  //   public static final double AMBIGUITY_DEADBAND = 0.2;
-
-  //   public static final double VISION_TURN_kP = 0.005;    // TODO tune
-  //   public static final double VISION_FORWARD_kP = 1;     // TODO tune
-
-  //   // Constraints for profiled movement of robot whilst controlled by vision
-  //   public static final TrapezoidProfile.Constraints X_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
-  //   public static final TrapezoidProfile.Constraints Y_CONSTRAINTS = new TrapezoidProfile.Constraints(3, 2);
-  //   public static final TrapezoidProfile.Constraints OMEGA_CONSTRAINTS = new TrapezoidProfile.Constraints(8, 8);
-
-  //   // PID Values for ProfiledPIDControllers used in ChaseTagCommand
-  //   public static final PIDConstants X_PID_CONSTANTS = new PIDConstants(0.8, 0, 0.02);       // TODO tune
-  //   public static final PIDConstants Y_PID_CONSTANTS = new PIDConstants(0.4, 0, 0.07);       // TODO tune
-  //   public static final PIDConstants OMEGA_PID_CONSTANTS = new PIDConstants(1, 0, 0);        // TODO tune
-
-  //   // ProfiledPIDControllers tolerance values
-  //   public static final double X_TOLERANCE = 0.2; // in m
-  //   public static final double Y_TOLERANCE = 0.2; // in m
-  //   public static final double OMEGA_TOLERANCE = 3; // in deg
-
-  //   /**
-  //    * Enum representing different desired poses relative to AprilTags on the field.
-  //    */
-  //   public static enum PoseRelToAprilTag {
-  //     SAMPLE_POSE(18, 1.5, 0);
-
-  //     /** ID of the april tag */
-  //     public final int aprilTagId;
-
-  //     /** Where the robot should be in relation to the tag */
-  //     public final Transform3d relativePose;
-
-  //     PoseRelToAprilTag(int aprilTagId, double metersInFront, double metersToTheLeft) {
-  //       this.aprilTagId = aprilTagId;
-  //       this.relativePose = new Transform3d(
-  //         new Translation3d(metersInFront, metersToTheLeft, 0),
-  //         new Rotation3d(0, 0, Math.PI) // PI rads (180 deg) means facing the tag
-  //       );
-  //     }
-  //   }
-  // }
-
-
   public static class CANdleConstants {
     public static final int CANid = 40;
     public static final String CANbus = "pigeonbus";

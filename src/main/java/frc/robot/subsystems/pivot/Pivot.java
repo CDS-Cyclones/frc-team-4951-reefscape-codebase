@@ -89,8 +89,9 @@ public class Pivot extends SubsystemBase implements PivotIO {
   /**
    * Calculate the feedforward voltage for the pivot.
    *
-   * @param velocity The velocity of the pivot.
-   * @param acceleration The acceleration of the pivot.
+   * @param positionRadians The position (angle) setpoint. This angle should be measured from the
+   * horizontal (i.e. if the provided angle is 0, the arm should be parallel with the floor). 
+   * @param velocity The velocity setpoint.
    *
    * @return The feedforward voltage as a double.
    */
