@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
@@ -30,10 +31,13 @@ import frc.robot.commands.intake.ScoreCoralCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
+import frc.robot.mutables.MutableElevatorPosition;
 import frc.robot.mutables.MutableFieldPose;
+import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
+import frc.robot.sequences.ScoreSequence;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -112,7 +116,14 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     setupSysIdRoutines();
+    setMutableDefaults();
     configureBindings();
+  }
+
+  public void setMutableDefaults() {
+    MutableFieldPose.setMutableFieldPose(FieldPose.I);
+    MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
+    MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
   }
 
   /**
@@ -142,6 +153,15 @@ public class RobotContainer {
       MutableFieldPose::getMutableFieldPose
     ));
 
+    // Run scoring sequence whenever right bumper is clicked
+    new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(  // TODO once tested switch to onTrue
+      elevator,
+      pivot,
+      intake,
+      MutableElevatorPosition::getMutableElevatorPosition,
+      MutablePivotPosition::getMutablePivotPosition
+    ));
+
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -151,7 +171,7 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // Set desired field pose when buttons are pressed on operator board
+    // Operator board bindings
     new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.A)));
     new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.B)));
     new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.C)));
@@ -164,7 +184,37 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.J)));
     new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.K)));
     new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.L)));
-  
+    new JoystickButton(OI.m_operatorBoard, 13).onTrue(
+      Commands.sequence(
+          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.INTAKE_LEFT)),
+          new IntakeCoralCommand(intake)
+      )
+    );
+    new JoystickButton(OI.m_operatorBoard, 14).onTrue(
+      Commands.sequence(
+          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.INTAKE_RIGHT)),
+          new IntakeCoralCommand(intake)
+      )
+    );
+    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE); 
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4); 
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3); 
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2); 
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
+    }));
+
+
+
     // Bindings for manual manipulator controller
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
       .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.2));

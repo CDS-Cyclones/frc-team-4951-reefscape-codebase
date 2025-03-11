@@ -7,7 +7,7 @@ package frc.robot.commands.elevator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import frc.robot.mutables.MutableElevatorPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
@@ -38,6 +38,8 @@ public class ElevatorToPositionCommand extends Command {
   public void initialize() {
     controller.setGoal(desiredPosition.getPosition());
     controller.setTolerance(elevatorPIDTolerance);
+
+    MutableElevatorPosition.setMutableElevatorPosition(desiredPosition);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
