@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.hardware.CANrange;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
 
@@ -11,17 +12,17 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static edu.wpi.first.units.Units.Meters;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase implements IntakeIO {
   private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
-  private final SparkMax intakeMotor;
+  private final SparkMax intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
+  private final CANrange rangeSensor = new CANrange(canrangeCanId, canrangeCanBus);
 
   public Intake() {
-    intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
-
     intakeMotor.configure(intakeWheelsMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
   }
 
@@ -42,6 +43,15 @@ public class Intake extends SubsystemBase implements IntakeIO {
   }
 
   /**
+   * Returns whether the coral is in the intake.
+   *
+   * @return Whether the coral is in the intake.
+   */
+  public boolean isCoralInIntake() {
+    return rangeSensor.getDistance().getValue().in(Meters) < intakeRangeSensorThreshold;
+  }
+
+  /**
    * Stops the intake motor.
    */
   public void stop() {
@@ -55,5 +65,8 @@ public class Intake extends SubsystemBase implements IntakeIO {
     inputs.intakeCurrent = intakeMotor.getOutputCurrent();
     inputs.intakeVoltage = intakeMotor.getBusVoltage();
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
+    inputs.canrangeConnected = rangeSensor.isConnected();
+    inputs.coralInIntake = isCoralInIntake();
+    inputs.intakeDistance = rangeSensor.getDistance().getValue().in(Meters);
   }
 }

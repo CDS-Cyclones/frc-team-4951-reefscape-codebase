@@ -225,6 +225,8 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
+    public static final int canrangeCanId = 40;
+    public static final String canrangeCanBus = "pigeonbus";
 
     // Motor configurations
     public static final SparkBaseConfig elevatorMotor1Config = new SparkMaxConfig()
@@ -274,6 +276,10 @@ public final class Constants {
     public static final double pivotKa = 0.0;
     public static final double pivotPIDTolerance = 0.01;
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+
+    public static final double intakeRangeSensorThreshold = 0.05; // in m TODO figure this out
+    public static final double coralIntakeSpeed = 0.3;
+    public static final double coralScoringTime = 0.5; // in sec
   }
 
   public static class CANdleConstants {
