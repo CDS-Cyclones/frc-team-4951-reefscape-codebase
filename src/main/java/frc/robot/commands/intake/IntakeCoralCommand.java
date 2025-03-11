@@ -7,19 +7,16 @@ package frc.robot.commands.intake;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.intake.Intake;
+import static frc.robot.Constants.ManipulatorConstants.*;
 
-import java.util.function.DoubleSupplier;
-
-public class ManualIntakeCommand extends Command {
+public class IntakeCoralCommand extends Command {
   private final Intake intake;
-  private final DoubleSupplier speedSupplier;
 
   /** 
-   * A commaand that allows to manually control the intake.
+   * Intakes until coral is detected.
    */
-  public ManualIntakeCommand(Intake intake, DoubleSupplier speedSupplier) {
+  public IntakeCoralCommand(Intake intake) {
     this.intake = intake;
-    this.speedSupplier = speedSupplier;
     
     addRequirements(this.intake);
   }
@@ -31,10 +28,8 @@ public class ManualIntakeCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double speed = speedSupplier.getAsDouble();
-
     // Set the speed of the intake
-    intake.setSpeed(speed);
+    intake.setSpeed(coralIntakeSpeed);
   }
 
   // Called once the command ends or is interrupted.
@@ -46,6 +41,6 @@ public class ManualIntakeCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return intake.isCoralInIntake(); // Stop when coral is detected
   }
 }

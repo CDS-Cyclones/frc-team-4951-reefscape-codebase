@@ -24,7 +24,9 @@ import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
+import frc.robot.commands.intake.IntakeCoralCommand;
 import frc.robot.commands.intake.ManualIntakeCommand;
+import frc.robot.commands.intake.ScoreCoralCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
@@ -230,6 +232,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("align__tagJ", new AutoDriveToPoseCommand(drive, vision, FieldPose.J));
     NamedCommands.registerCommand("align__tagK", new AutoDriveToPoseCommand(drive, vision, FieldPose.K));
     NamedCommands.registerCommand("align__tagL", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));
+
+    NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake));
+    NamedCommands.registerCommand("score_coral", new ScoreCoralCommand(intake));
   }
 
   /**
