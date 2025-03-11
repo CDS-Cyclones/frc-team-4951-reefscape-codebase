@@ -127,14 +127,14 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for profiled controllers
-    public static final double anglePPIDCKp = 5.0;
+    public static final double anglePPIDCKp = 6.0;
     public static final double anglePPIDCKd = 0.4;
     public static final double anglePPIDCMaxVel = 8; // Radians per second
     public static final double anglePPIDCMaxAccel = 20; // Radians per second squared
-    public static final double translationPPIDCKp = 5;
-    public static final double translationPPIDCKd = 0.0;
-    public static final double translationPPIDCMaxVel = 1.5; // Meters per second
-    public static final double translationPPIDCMaxAccel = 1; // Meters per second squared
+    public static final double translationPPIDCKp = 4;
+    public static final double translationPPIDCKd = 0.1;
+    public static final double translationPPIDCMaxVel = 6; // Meters per second
+    public static final double translationPPIDCMaxAccel = 15; // Meters per second squared
 
 
     // PathPlanner configuration
@@ -225,6 +225,8 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
+    public static final int canrangeCanId = 40;
+    public static final String canrangeCanBus = "pigeonbus";
 
     // Motor configurations
     public static final SparkBaseConfig elevatorMotor1Config = new SparkMaxConfig()
@@ -274,6 +276,10 @@ public final class Constants {
     public static final double pivotKa = 0.0;
     public static final double pivotPIDTolerance = 0.01;
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+
+    public static final double intakeRangeSensorThreshold = 0.05; // in m TODO figure this out
+    public static final double coralIntakeSpeed = 0.3;
+    public static final double coralScoringTime = 0.5; // in sec
   }
 
   public static class CANdleConstants {

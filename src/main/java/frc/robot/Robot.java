@@ -75,7 +75,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void disabledInit() {
-    robotContainer.resetSimulationField();
+    // robotContainer.resetSimulationField();
   }
 
   @Override

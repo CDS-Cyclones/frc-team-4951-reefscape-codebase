@@ -7,6 +7,7 @@ package frc.robot.commands.drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +26,7 @@ import frc.robot.utils.OIUtil;
 import static frc.robot.Constants.DriveConstants.*;
 
 /*
- * This command allows manual control of the robot's x and y directions while using a ProfiledPIDController to adjust its orientation (omega) to a desired field pose.
+ * This command allows manual control of the robot's x and y directions while using a {@link ProfiledPIDController} to adjust its orientation (omega) to a desired field pose.
  * Additionally, if the vision system detects the desired tag and the robot is within a certain range, the command will override manual control and autonomously navigate the robot to the target.
  */
 public class VisionAssistedDriveToPoseCommand extends Command {
@@ -36,8 +37,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private final Supplier<FieldPose> desiredFieldPoseSupplier;
 
   private final ProfiledPIDController angleController;
-  private final ProfiledPIDController translationXController;
-  private final ProfiledPIDController translationYController;
+  private final PIDController translationXController;
+  private final PIDController translationYController;
 
   private ChassisSpeeds speeds;
   private boolean isFlipped;
@@ -56,16 +57,16 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     angleController = new ProfiledPIDController(anglePPIDCKp, 0.0, anglePPIDCKd, new TrapezoidProfile.Constraints(anglePPIDCMaxVel, anglePPIDCMaxAccel));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-    translationXController = new ProfiledPIDController(translationPPIDCKp, 0.0, translationPPIDCKd, new TrapezoidProfile.Constraints(translationPPIDCMaxVel, translationPPIDCMaxAccel));
-    translationYController = new ProfiledPIDController(translationPPIDCKp, 0.0, translationPPIDCKd, new TrapezoidProfile.Constraints(translationPPIDCMaxVel, translationPPIDCMaxAccel));
+    translationXController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
+    translationYController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     angleController.reset(drive.getRotation().getRadians());
-    translationXController.reset(drive.getPose().getTranslation().getX());
-    translationYController.reset(drive.getPose().getTranslation().getY());
+    translationXController.reset();
+    translationYController.reset();
 
     // Check if red alliance
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
@@ -134,6 +135,6 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return translationXController.atGoal() && translationYController.atGoal() && angleController.atGoal();
+    return translationXController.atSetpoint() && translationYController.atSetpoint() && angleController.atSetpoint();
   }
 }
