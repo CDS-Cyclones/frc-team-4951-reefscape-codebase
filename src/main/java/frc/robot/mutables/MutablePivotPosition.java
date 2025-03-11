@@ -11,10 +11,13 @@ public final class MutablePivotPosition {
    * An enum to represent all desired elevator positions.
    */
   public static enum PivotPosition {
-    FULL_IN(0.0),      // To be able to intake through funnel
-    REST_IN(0.1),      // Doesn't stick, but isnt in elevator's way
-    SCORE_CORAL(0.5),  // To be able to score coral   
-    SCORE_ALGA(0.6);   // To be able to score alga
+    INTAKE_READY(0.0),
+    ELEVATOR_CLEAR(0.1),
+    L1(0),
+    L2(0.2),
+    L3(0.4),
+    L4(0.6),
+    BARGE(0.8);
 
     private final double position;
 
@@ -29,14 +32,5 @@ public final class MutablePivotPosition {
 
   @Getter
   @Setter
-  private static PivotPosition mutableElevatorPositions = PivotPosition.FULL_IN;
-
-  /**
-   * Returns the desired pivot position.
-   *
-   * @return The desired pivot position.
-   */
-  public static double getDesiredPivotPosition() {
-    return mutableElevatorPositions.getPosition();
-  }
+  private static PivotPosition mutablePivotPosition = PivotPosition.ELEVATOR_CLEAR;
 }

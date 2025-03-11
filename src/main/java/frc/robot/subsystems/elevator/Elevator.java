@@ -107,7 +107,6 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * Calculate the feedforward voltage for the elevator.
    *
    * @param velocity The velocity of the elevator.
-   * @param acceleration The acceleration of the elevator.
    *
    * @return The feedforward voltage as a double.
    */
