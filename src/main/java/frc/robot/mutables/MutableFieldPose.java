@@ -15,8 +15,8 @@ import frc.robot.Constants;
  * A mutable class to represent the desired field pose of the robot.
  */
 public final class MutableFieldPose {
-  private static final double inFrontOfTag = 0.1;
-  private static final double inFrontOfTagSim = 0.5;
+  private static final double inFrontOfTag = 0.05;
+  private static final double inFrontOfTagSim = 0.4;
   private static final double leftOfTag = -0.14;
   private static final double rightOfTag = 0.14;
 
@@ -24,29 +24,33 @@ public final class MutableFieldPose {
    * An enum to represent all desired field poses of the robot.
    */
   public static enum FieldPose {
-    A(21, 10, inFrontOfTag, rightOfTag),
-    B(21, 10, inFrontOfTag, leftOfTag),
-    C(22, 9, inFrontOfTag, rightOfTag),
-    D(22, 9, inFrontOfTag, leftOfTag),
-    E(17, 8, inFrontOfTag, rightOfTag),
-    F(17, 8, inFrontOfTag, leftOfTag),
-    G(18, 7, inFrontOfTag, rightOfTag),
-    H(18, 7, inFrontOfTag, leftOfTag),
-    I(19, 6, inFrontOfTag, rightOfTag),
-    J(19, 6, inFrontOfTag, leftOfTag),
-    K(20, 11, inFrontOfTag, rightOfTag),
-    L(20, 11, inFrontOfTag, leftOfTag);
+    A(21, 10, inFrontOfTag, rightOfTag, Math.PI),
+    B(21, 10, inFrontOfTag, leftOfTag, Math.PI),
+    C(22, 9, inFrontOfTag, rightOfTag, Math.PI),
+    D(22, 9, inFrontOfTag, leftOfTag, Math.PI),
+    E(17, 8, inFrontOfTag, rightOfTag, Math.PI),
+    F(17, 8, inFrontOfTag, leftOfTag, Math.PI),
+    G(18, 7, inFrontOfTag, rightOfTag, Math.PI),
+    H(18, 7, inFrontOfTag, leftOfTag, Math.PI),
+    I(19, 6, inFrontOfTag, rightOfTag, Math.PI),
+    J(19, 6, inFrontOfTag, leftOfTag, Math.PI),
+    K(20, 11, inFrontOfTag, rightOfTag, Math.PI),
+    L(20, 11, inFrontOfTag, leftOfTag, Math.PI),
+    INTAKE_LEFT(13, 1, 0, 0, 0),
+    INTAKE_RIGHT(12, 2, 0, 0, 0),;
 
     private final int tagBlueId;
     private final int tagRedId;
     private final double away;
     private final double side;
+    private final double rotation; //in radians
 
-    FieldPose(int tagBlueId, int tagRedId, double away, double side) {
+    FieldPose(int tagBlueId, int tagRedId, double away, double side, double rotation) {
       this.tagBlueId = tagBlueId;
       this.tagRedId = tagRedId;
       this.away = away;
       this.side = side;
+      this.rotation = rotation;
     }
 
     public int getTagId() {
@@ -88,7 +92,7 @@ public final class MutableFieldPose {
       newX += side * -sin;
       newY += side * cos;
 
-      newPose = new Pose3d(new Translation3d(newX, newY, 0), new Rotation3d(0, 0, tagAngle + Math.PI));
+      newPose = new Pose3d(new Translation3d(newX, newY, 0), new Rotation3d(0, 0, tagAngle + rotation));
 
       return newPose;
     }
