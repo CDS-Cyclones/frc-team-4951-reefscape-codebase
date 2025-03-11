@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
@@ -104,11 +105,11 @@ public class RobotContainer {
     pivot = new Pivot();
     intake = new Intake();
 
-    // Set up PP auton routines
+    registerNamedCommands();
+
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     setupSysIdRoutines();
-    registerNamedCommands();
     configureBindings();
   }
 
@@ -215,6 +216,20 @@ public class RobotContainer {
     NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, PivotPosition.L3));
     NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, PivotPosition.L4));
     NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, PivotPosition.BARGE));
+
+
+    NamedCommands.registerCommand("align__tagA", new AutoDriveToPoseCommand(drive, vision, FieldPose.A));
+    NamedCommands.registerCommand("align__tagB", new AutoDriveToPoseCommand(drive, vision, FieldPose.B));
+    NamedCommands.registerCommand("align__tagC", new AutoDriveToPoseCommand(drive, vision, FieldPose.C));
+    NamedCommands.registerCommand("align__tagD", new AutoDriveToPoseCommand(drive, vision, FieldPose.D));
+    NamedCommands.registerCommand("align__tagE", new AutoDriveToPoseCommand(drive, vision, FieldPose.E));
+    NamedCommands.registerCommand("align__tagF", new AutoDriveToPoseCommand(drive, vision, FieldPose.F));
+    NamedCommands.registerCommand("align__tagG", new AutoDriveToPoseCommand(drive, vision, FieldPose.G));
+    NamedCommands.registerCommand("align__tagH", new AutoDriveToPoseCommand(drive, vision, FieldPose.H));
+    NamedCommands.registerCommand("align__tagI", new AutoDriveToPoseCommand(drive, vision, FieldPose.I));
+    NamedCommands.registerCommand("align__tagJ", new AutoDriveToPoseCommand(drive, vision, FieldPose.J));
+    NamedCommands.registerCommand("align__tagK", new AutoDriveToPoseCommand(drive, vision, FieldPose.K));
+    NamedCommands.registerCommand("align__tagL", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));
   }
 
   /**

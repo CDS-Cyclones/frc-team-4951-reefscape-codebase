@@ -127,14 +127,14 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for profiled controllers
-    public static final double anglePPIDCKp = 5.0;
+    public static final double anglePPIDCKp = 6.0;
     public static final double anglePPIDCKd = 0.4;
     public static final double anglePPIDCMaxVel = 8; // Radians per second
     public static final double anglePPIDCMaxAccel = 20; // Radians per second squared
-    public static final double translationPPIDCKp = 5;
-    public static final double translationPPIDCKd = 0.0;
-    public static final double translationPPIDCMaxVel = 1.5; // Meters per second
-    public static final double translationPPIDCMaxAccel = 1; // Meters per second squared
+    public static final double translationPPIDCKp = 4;
+    public static final double translationPPIDCKd = 0.1;
+    public static final double translationPPIDCMaxVel = 6; // Meters per second
+    public static final double translationPPIDCMaxAccel = 15; // Meters per second squared
 
 
     // PathPlanner configuration

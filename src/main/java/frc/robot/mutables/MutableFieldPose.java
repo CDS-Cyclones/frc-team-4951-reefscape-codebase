@@ -17,8 +17,8 @@ import frc.robot.Constants;
 public final class MutableFieldPose {
   private static final double inFrontOfTag = 0.1;
   private static final double inFrontOfTagSim = 0.5;
-  private static final double leftOfTag = -0.3;
-  private static final double rightOfTag = 0.3;
+  private static final double leftOfTag = -0.14;
+  private static final double rightOfTag = 0.14;
 
   /**
    * An enum to represent all desired field poses of the robot.
