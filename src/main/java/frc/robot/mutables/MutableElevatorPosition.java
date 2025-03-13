@@ -1,5 +1,6 @@
 package frc.robot.mutables;
 
+import frc.robot.utils.TunableValues.TunableNum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,8 @@ import lombok.Setter;
  * A mutable class to represent the desired elevator pose of the robot.
  */
 public final class MutableElevatorPosition {
+  private static TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
+
   /**
    * An enum to represent all desired elevator positions.
    */
@@ -24,7 +27,7 @@ public final class MutableElevatorPosition {
       this.position = position;
     }
 
-    public double getPosition() {
+    public double getAsDouble() {
       return position;
     }
   }
@@ -32,4 +35,23 @@ public final class MutableElevatorPosition {
   @Getter
   @Setter
   private static ElevatorPosition mutableElevatorPosition = ElevatorPosition.DOWN;
+
+  /**
+   * Returns the desired elevator position as a double.
+   *
+   * @return the desired elevator position as a double
+   */
+  public static double getMutableElevatorPositionAsDouble() {
+    return mutableElevatorPosition.getAsDouble();
+  }
+
+  /**
+   * Get the tunable elevator position. To be used in test mode to figure out
+   * desired elevator positions.
+   * 
+   * @return the tunable pivot position
+   */
+  public static double getTunableElevatorPositionAsDouble() {
+    return tunableElevatorPosition.getAsDouble();
+  }
 }

@@ -7,28 +7,25 @@ package frc.robot.commands.elevator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.mutables.MutableElevatorPosition;
-import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
+import java.util.function.DoubleSupplier;
+
 public class ElevatorToPositionCommand extends Command {
   private final Elevator elevator;
   private final Pivot pivot;
-  private final ElevatorPosition desiredPosition;
-  private final ProfiledPIDController controller;
+  private final DoubleSupplier desiredPositionSupplier;
+  private ProfiledPIDController controller;
 
   /**
    * A command that moves the elevator to a desired position using a {@link ProfiledPIDController}.
-   * The position is determined in {@link MutableElevatorPosition}.
    */
-  public ElevatorToPositionCommand(Elevator elevator, Pivot pivot, ElevatorPosition desiredPosition) {
+  public ElevatorToPositionCommand(Elevator elevator, Pivot pivot, DoubleSupplier desiredPositionSupplier) {
     this.elevator = elevator;
     this.pivot = pivot;
-    this.desiredPosition = desiredPosition;
-    
-    controller = new ProfiledPIDController(elevatorKp, 0.0, elevatorKd, new TrapezoidProfile.Constraints(elevatorMaxSpeed, elevatorMaxAcceleration));
+    this.desiredPositionSupplier = desiredPositionSupplier;
 
     addRequirements(this.elevator);
   }
@@ -36,10 +33,20 @@ public class ElevatorToPositionCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    controller.setGoal(desiredPosition.getPosition());
-    controller.setTolerance(elevatorPIDTolerance);
+    controller = new ProfiledPIDController(
+      elevatorKp.getAsDouble(),
+      0,
+      elevatorKd.getAsDouble(),
+      new TrapezoidProfile.Constraints(
+        elevatorMaxSpeed.getAsDouble(),
+        elevatorMaxAcceleration.getAsDouble()
+      )
+    );
 
-    MutableElevatorPosition.setMutableElevatorPosition(desiredPosition);
+    controller.setGoal(desiredPositionSupplier.getAsDouble());
+    controller.setTolerance(
+      elevatorPIDTolerance.getAsDouble()
+    );
   }
 
   // Called every time the scheduler runs while the command is scheduled.

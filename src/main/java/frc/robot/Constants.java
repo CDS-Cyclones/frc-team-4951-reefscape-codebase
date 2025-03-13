@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.utils.TunableValues.TunableNum;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean constants. This
@@ -56,8 +57,8 @@ public final class Constants {
   public class DriveConstants {
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(27.0);
-    public static final double wheelBase = Units.inchesToMeters(32.5);
+    public static final double trackWidth = Units.inchesToMeters(27.0);  // TODO measure
+    public static final double wheelBase = Units.inchesToMeters(32.5);  // TODO measure
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final Translation2d[] moduleTranslations =
         new Translation2d[] {
@@ -89,7 +90,7 @@ public final class Constants {
 
     // Drive motor configuration
     public static final int driveMotorCurrentLimit = 80;
-    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
+    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);  // TODO Run Drive Wheel Radius Characterization
     public static final double driveMotorReduction = (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
@@ -98,10 +99,10 @@ public final class Constants {
     public static final double driveEncoderVelocityFactor = (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.0;
-    public static final double driveKd = 0.0;
-    public static final double driveKs = 0.0;
-    public static final double driveKv = 0.1;
+    public static final TunableNum driveKp = new TunableNum("Drive/drive/p", 0.0);  // TODO tune
+    public static final TunableNum driveKd = new TunableNum("Drive/drive/d", 0.0);  // TODO tune
+    public static final double driveKs = 0.0;  // TODO Run Drive Wheel Radius Characterization
+    public static final double driveKv = 0.0;  // TODO Run Drive Wheel Radius Characterization
     public static final double driveSimP = 0.0;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.04038;
@@ -119,30 +120,31 @@ public final class Constants {
     public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
     // Turn PID configuration
-    public static final double turnKp = 2.0;
-    public static final double turnKd = 0.0;
+    public static final TunableNum turnKp = new TunableNum("Drive/turn/p", 2.0);  // TODO tune
+    public static final TunableNum turnKd = new TunableNum("Drive/turn/d", 0.1);  // TODO tune
     public static final double turnSimP = 10;
     public static final double turnSimD = 0.2;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
-    // Configuration for profiled controllers
-    public static final double anglePPIDCKp = 6.0;
-    public static final double anglePPIDCKd = 0.4;
-    public static final double anglePPIDCMaxVel = 8; // Radians per second
-    public static final double anglePPIDCMaxAccel = 20; // Radians per second squared
-    public static final double translationPPIDCKp = 4;
-    public static final double translationPPIDCKd = 0.1;
-    public static final double translationPPIDCMaxVel = 6; // Meters per second
-    public static final double translationPPIDCMaxAccel = 15; // Meters per second squared
-
+    // Configuration for PID controllers
+    public static final TunableNum anglePIDCKp = new TunableNum("Drive/PIDController/angle/p", 6.0);  // TODO tune
+    public static final TunableNum anglePIDCKd = new TunableNum("Drive/PIDController/angle/d", 0.4);  // TODO tune
+    public static final TunableNum anglePIDCMaxVel = new TunableNum("Drive/PIDController/angle/maxVel", 8);  // TODO tune // Radians per second
+    public static final TunableNum anglePIDCMaxAccel = new TunableNum("Drive/PIDController/angle/maxAccel", 20);  // TODO tune // Radians per second squared
+    public static final TunableNum anglePIDTolerance = new TunableNum("Drive/PIDController/angle/errorTolerance", 0.05);  // TODO tune
+    public static final TunableNum translationPIDCKp = new TunableNum("Drive/PIDController/translation/p", 4);  // TODO tune
+    public static final TunableNum translationPIDCKd = new TunableNum("Drive/PIDController/translation/d", 0.1);  // TODO tune
+    public static final TunableNum translationPIDCMaxVel = new TunableNum("Drive/PIDController/translation/maxVel", 6);  // TODO tune // Meters per second
+    public static final TunableNum translationPIDCMaxAccel = new TunableNum("Drive/PIDController/translation/maxAccel", 15);  // TODO tune // Meters per second squared
+    public static final TunableNum translationPIDTolerance = new TunableNum("Drive/PIDController/translation/errorTolerance", 0.05);  // TODO tune
 
     // PathPlanner configuration
-    public static final double robotMassKg = 52;
-    public static final double robotMOI = 6.883;
+    public static final double robotMassKg = 52;  // TODO measure
+    public static final double robotMOI = 6.883;  // TODO calculate w/ formula after running SysId
     public static final double wheelCOF = 1.2;
-    public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
-    public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);
+    public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
+    public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
     public static final RobotConfig ppConfig =
       new RobotConfig(
         robotMassKg,
@@ -170,7 +172,7 @@ public final class Constants {
         Volts.of(0.1),
         Volts.of(0.1),
         Meters.of(wheelRadiusMeters),
-        KilogramSquareMeters.of(0.02),
+        KilogramSquareMeters.of(robotMOI),
         wheelCOF
       )
     );
@@ -251,35 +253,36 @@ public final class Constants {
       .inverted(false);
 
     // Elevator constants
-    public static final double elevatorMinPosition = 0.0;
-    public static final double elevatorMaxPosition = 1.0;
-    public static final double elevatorMaxSpeed = 0.5;
-    public static final double elevatorMaxAcceleration = 0.5;
-    public static final double elevatorKp = 0.5;
-    public static final double elevatorKd = 0.0;
-    public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.0;
-    public static final double elevatorKv = 0.0;
-    public static final double elevatorKa = 0.0;
-    public static final double elevatorPIDTolerance = 0.01;
+    public static final double elevatorMinPosition = 0.0;  // TODO figure out
+    public static final double elevatorMaxPosition = 1.0;  // TODO figure out
+    public static TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.5);  // TODO tune
+    public static final TunableNum elevatorMaxAcceleration = new TunableNum("Elevator/MaxAcceleration", 0.5);  // TODO tune
+    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.5);
+    public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);
+    public static final double elevatorKs = 0.0;  // TODO figure out
+    public static final double elevatorKg = 0.0;  // TODO figure out
+    public static final double elevatorKv = 0.0;  // TODO figure out
+    public static final double elevatorKa = 0.0;  // TODO figure out
+    public static final TunableNum elevatorPIDTolerance =new TunableNum("Elevator/ErrorTolerance", 0.01);  // TODO tune
 
     // Pivot constants
-    public static final double pivotMinPosition = 0.0;
-    public static final double pivotMaxPosition = 0.586;
-    public static final double pivotMaxSpeed = 0.5;
-    public static final double pivotMaxAcceleration = 0.5;
-    public static final double pivotKp = 0.5;
-    public static final double pivotKd = 0.0;
-    public static final double pivotKs = 0.0;
-    public static final double pivotKg = 0.0;
-    public static final double pivotKv = 0.0;
-    public static final double pivotKa = 0.0;
-    public static final double pivotPIDTolerance = 0.01;
-    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+    public static final double pivotMinPosition = 0.0;  // TODO figure out
+    public static final double pivotMaxPosition = 1.0;  // TODO figure out
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.5);  // TODO tune
+    public static final TunableNum pivotMaxAcceleration = new TunableNum("Pivot/MaxAcceleration", 0.5);  // TODO tune
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.5);  // TODO tune
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);  // TODO tune
+    public static final double pivotKs = 0.0;  // TODO figure out
+    public static final double pivotKg = 0.0;  // TODO figure out
+    public static final double pivotKv = 0.0;  // TODO figure out
+    public static final double pivotKa = 0.0;  // TODO figure out
+    public static final TunableNum pivotPIDTolerance = new TunableNum("Pivot/ErrorTolerance", 0.0);  // TODO tune
+    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure out
 
     public static final double intakeRangeSensorThreshold = 0.05; // in m TODO figure this out
-    public static final double coralIntakeSpeed = 0.3;
-    public static final double coralScoringTime = 0.5; // in sec
+    public static final TunableNum coralIntakeSpeed = new TunableNum("Intake/CoralIntakeSpeed", 0.2);  // TODO tune
+    public static final TunableNum coralScoringTime = new TunableNum("Intake/CoralScoringTime", 0.5);  // TODO tune // in sec
+    public static final TunableNum coralScoringSpeed = new TunableNum("Intake/CoralScoringSpeed", 0.2);  // TODO tune
   }
 
   public static class CANdleConstants {

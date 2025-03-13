@@ -114,8 +114,8 @@ public class ModuleIOSpark implements ModuleIO {
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pidf(
-            driveKp, 0.0,
-            driveKd, 0.0);
+            driveKp.getAsDouble(), 0.0,
+            driveKd.getAsDouble(), 0.0);
     driveConfig
         .signals
         .primaryEncoderPositionAlwaysOn(true)
@@ -151,7 +151,7 @@ public class ModuleIOSpark implements ModuleIO {
         .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
-        .pidf(turnKp, 0.0, turnKd, 0.0);
+        .pidf(turnKp.getAsDouble(), 0.0, turnKd.getAsDouble(), 0.0);
     turnConfig
         .signals
         .absoluteEncoderPositionAlwaysOn(true)
@@ -174,6 +174,46 @@ public class ModuleIOSpark implements ModuleIO {
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
     turnPositionQueue =
         SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder::getPosition);
+    
+    driveKp.onChange(() -> {
+        driveConfig.closedLoop.pidf(driveKp.getAsDouble(), 0.0, driveKd.getAsDouble(), 0.0);
+        tryUntilOk(
+            driveSpark,
+            5,
+            () ->
+                driveSpark.configure(
+                    driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    });
+
+    driveKd.onChange(() -> {
+        driveConfig.closedLoop.pidf(driveKp.getAsDouble(), 0.0, driveKd.getAsDouble(), 0.0);
+        tryUntilOk(
+            driveSpark,
+            5,
+            () ->
+                driveSpark.configure(
+                    driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    });
+
+    turnKp.onChange(() -> {
+        turnConfig.closedLoop.pidf(turnKp.getAsDouble(), 0.0, turnKd.getAsDouble(), 0.0);
+        tryUntilOk(
+            turnSpark,
+            5,
+            () ->
+                turnSpark.configure(
+                    turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    });
+
+    turnKd.onChange(() -> {
+        turnConfig.closedLoop.pidf(turnKp.getAsDouble(), 0.0, turnKd.getAsDouble(), 0.0);
+        tryUntilOk(
+            turnSpark,
+            5,
+            () ->
+                turnSpark.configure(
+                    turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    });
   }
 
   @Override

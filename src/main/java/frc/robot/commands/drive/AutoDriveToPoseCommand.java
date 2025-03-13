@@ -26,9 +26,9 @@ public class AutoDriveToPoseCommand extends Command {
   private final Vision vision;
   private final FieldPose desiredFieldPose;
 
-  private final ProfiledPIDController angleController;
-  private final PIDController translationXController;
-  private final PIDController translationYController;
+  private ProfiledPIDController angleController;
+  private PIDController translationXController;
+  private PIDController translationYController;
 
   private ChassisSpeeds speeds;
   private boolean isFlipped;
@@ -40,20 +40,40 @@ public class AutoDriveToPoseCommand extends Command {
     this.desiredFieldPose = desiredFieldPose;
 
     addRequirements(this.drive, this.vision);
-
-    angleController = new ProfiledPIDController(anglePPIDCKp, 0.0, anglePPIDCKd, new TrapezoidProfile.Constraints(anglePPIDCMaxVel, anglePPIDCMaxAccel));
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
-
-    translationXController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
-    translationYController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    angleController = new ProfiledPIDController(
+      anglePIDCKp.getAsDouble(),
+      0.0,
+      anglePIDCKd.getAsDouble(),
+      new TrapezoidProfile.Constraints(
+        anglePIDCMaxVel.getAsDouble(),
+        anglePIDCMaxAccel.getAsDouble()
+      )
+    );
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    translationXController = new PIDController(
+      translationPIDCKp.getAsDouble(),
+      0.0,
+      translationPIDCKd.getAsDouble()
+    );
+    translationYController = new PIDController(
+      translationPIDCKp.getAsDouble(),
+      0.0,
+      translationPIDCKd.getAsDouble()
+    );
+  
     angleController.reset(drive.getRotation().getRadians());
     translationXController.reset();
     translationYController.reset();
+
+    angleController.setTolerance(anglePIDTolerance.getAsDouble());
+    translationXController.setTolerance(translationPIDTolerance.getAsDouble());
+    translationYController.setTolerance(translationPIDTolerance.getAsDouble());
 
     // Check if red alliance
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
@@ -70,7 +90,7 @@ public class AutoDriveToPoseCommand extends Command {
     double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPose.getDesiredRotation2d().getRadians());
   
-    speeds =  new ChassisSpeeds(isFlipped ? -velocityX : velocityX, isFlipped ? -velocityY : velocityY, omega);
+    speeds = new ChassisSpeeds(isFlipped ? -velocityX : velocityX, isFlipped ? -velocityY : velocityY, omega);
 
     drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
   }

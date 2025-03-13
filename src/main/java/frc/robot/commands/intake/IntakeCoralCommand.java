@@ -29,7 +29,7 @@ public class IntakeCoralCommand extends Command {
   @Override
   public void execute() {
     // Set the speed of the intake
-    intake.setSpeed(coralIntakeSpeed);
+    intake.setSpeed(coralIntakeSpeed.getAsDouble());
   }
 
   // Called once the command ends or is interrupted.

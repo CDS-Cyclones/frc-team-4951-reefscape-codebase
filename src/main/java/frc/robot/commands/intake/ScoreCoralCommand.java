@@ -35,7 +35,7 @@ public class ScoreCoralCommand extends Command {
   @Override
   public void execute() {
     // Set the speed of the intake
-    intake.setSpeed(coralIntakeSpeed);
+    intake.setSpeed(coralScoringSpeed.getAsDouble());
   }
 
   // Called once the command ends or is interrupted.
@@ -47,6 +47,6 @@ public class ScoreCoralCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.hasElapsed(coralScoringTime);
+    return timer.hasElapsed(coralScoringTime.getAsDouble());
   }
 }

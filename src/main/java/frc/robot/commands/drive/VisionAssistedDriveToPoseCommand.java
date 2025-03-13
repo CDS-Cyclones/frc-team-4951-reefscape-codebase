@@ -34,9 +34,9 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private final DoubleSupplier ySupplier;
   private final Supplier<FieldPose> desiredFieldPoseSupplier;
 
-  private final ProfiledPIDController angleController;
-  private final PIDController translationXController;
-  private final PIDController translationYController;
+  private ProfiledPIDController angleController;
+  private PIDController translationXController;
+  private PIDController translationYController;
 
   private ChassisSpeeds speeds;
   private boolean isFlipped;
@@ -51,17 +51,33 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     this.desiredFieldPoseSupplier = desiredFieldPoseSupplier;
 
     addRequirements(this.drive, this.vision);
-
-    angleController = new ProfiledPIDController(anglePPIDCKp, 0.0, anglePPIDCKd, new TrapezoidProfile.Constraints(anglePPIDCMaxVel, anglePPIDCMaxAccel));
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
-
-    translationXController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
-    translationYController = new PIDController(translationPPIDCKp, 0.0, translationPPIDCKd);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    angleController = new ProfiledPIDController(
+      anglePIDCKp.getAsDouble(),
+      0.0,
+      anglePIDCKd.getAsDouble(),
+      new TrapezoidProfile.Constraints(
+        anglePIDCMaxVel.getAsDouble(),
+        anglePIDCMaxAccel.getAsDouble()
+      )
+    );
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    translationXController = new PIDController(
+      translationPIDCKp.getAsDouble(),
+      0.0,
+      translationPIDCKd.getAsDouble()
+    );
+    translationYController = new PIDController(
+      translationPIDCKp.getAsDouble(),
+      0.0,
+      translationPIDCKd.getAsDouble()
+    );
+
     angleController.reset(drive.getRotation().getRadians());
     translationXController.reset();
     translationYController.reset();
