@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -37,7 +38,6 @@ import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
-import frc.robot.sequences.ScoreSequence;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -54,6 +54,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
+import static frc.robot.Constants.ManipulatorConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -148,20 +149,49 @@ public class RobotContainer {
     pivot.setDefaultCommand(new HoldPivotPositionCommand(pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
-    new JoystickButton(OI.m_driverController, Button.kLeftBumper.value).whileTrue(new VisionAssistedDriveToPoseCommand(
-      drive,
-      vision,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      MutableFieldPose::getMutableFieldPose
-    ));
+    new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
+      .whileTrue(new VisionAssistedDriveToPoseCommand(
+        drive,
+        vision,
+        () -> -OI.m_driverController.getLeftY(),
+        () -> -OI.m_driverController.getLeftX(),
+        MutableFieldPose::getMutableFieldPose
+      ));
 
-    // Run scoring sequence whenever right bumper is clicked
-    new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(
-      elevator,
-      pivot,
-      intake
-    ));
+    // Scoring sequence
+    new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
+      .whileTrue(
+        Commands.sequence(
+          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
+            new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
+            Commands.none(),
+            () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+          ),
+          Commands.parallel( // Get elevator and pivot to scoring positions
+            new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getMutableElevatorPositionAsDouble),
+            new PivotToPositionCommand(pivot, MutablePivotPosition::getMutablePivotPositionAsDouble)
+          ),
+          new ConditionalCommand( // If trigger is held, score coral
+            new ManualIntakeCommand(intake, ManipulatorConstants.coralScoringSpeed),
+            Commands.none(),
+            () -> OI.m_driverController.getRightTriggerAxis() > 0.5
+          )
+        )
+      )
+      .onFalse( // Once let go, retract
+        Commands.sequence(
+        new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
+          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
+          Commands.none(),
+          () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+        ),
+        Commands.parallel(
+          new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN::getAsDouble),
+          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble)
+        ),
+        new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY::getAsDouble)
+        )
+      );
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
