@@ -172,7 +172,7 @@ public final class Constants {
         Volts.of(0.1),
         Volts.of(0.1),
         Meters.of(wheelRadiusMeters),
-        KilogramSquareMeters.of(robotMOI),
+        KilogramSquareMeters.of(0.02),
         wheelCOF
       )
     );
