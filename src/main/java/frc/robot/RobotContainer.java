@@ -47,6 +47,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.vision.Vision;
@@ -68,6 +69,7 @@ public class RobotContainer {
   private final Elevator elevator;
   private final Pivot pivot;
   private final Intake intake;
+  @SuppressWarnings("unused") private final Candle candle;
 
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -108,10 +110,11 @@ public class RobotContainer {
         break;
     }
 
-    // Instantiate manipulator subsystems
+    // Instantiate other subsystems
     elevator = new Elevator();
     pivot = new Pivot();
     intake = new Intake();
+    candle = new Candle();
 
     registerNamedCommands();
 
