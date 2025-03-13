@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.utils.TunableValues.TunableNum;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean constants. This
@@ -251,35 +252,36 @@ public final class Constants {
       .inverted(false);
 
     // Elevator constants
-    public static final double elevatorMinPosition = 0.0;
-    public static final double elevatorMaxPosition = 1.0;
-    public static final double elevatorMaxSpeed = 0.5;
-    public static final double elevatorMaxAcceleration = 0.5;
-    public static final double elevatorKp = 0.5;
-    public static final double elevatorKd = 0.0;
-    public static final double elevatorKs = 0.0;
-    public static final double elevatorKg = 0.0;
-    public static final double elevatorKv = 0.0;
-    public static final double elevatorKa = 0.0;
-    public static final double elevatorPIDTolerance = 0.01;
+    public static final double elevatorMinPosition = 0.0;  // TODO figure out
+    public static final double elevatorMaxPosition = 1.0;  // TODO figure out
+    public static TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.5);
+    public static final TunableNum elevatorMaxAcceleration = new TunableNum("Elevator/MaxAcceleration", 0.5);
+    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.5);
+    public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);
+    public static final double elevatorKs = 0.0;  // TODO figure out
+    public static final double elevatorKg = 0.0;  // TODO figure out
+    public static final double elevatorKv = 0.0;  // TODO figure out
+    public static final double elevatorKa = 0.0;  // TODO figure out
+    public static final TunableNum elevatorPIDTolerance =new TunableNum("Elevator/ErrorTolerance", 0.01);
 
     // Pivot constants
-    public static final double pivotMinPosition = 0.0;
-    public static final double pivotMaxPosition = 0.586;
-    public static final double pivotMaxSpeed = 0.5;
-    public static final double pivotMaxAcceleration = 0.5;
-    public static final double pivotKp = 0.5;
-    public static final double pivotKd = 0.0;
-    public static final double pivotKs = 0.0;
-    public static final double pivotKg = 0.0;
-    public static final double pivotKv = 0.0;
-    public static final double pivotKa = 0.0;
-    public static final double pivotPIDTolerance = 0.01;
-    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure this out
+    public static final double pivotMinPosition = 0.0;  // TODO figure out
+    public static final double pivotMaxPosition = 1.0;  // TODO figure out
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.5);
+    public static final TunableNum pivotMaxAcceleration = new TunableNum("Pivot/MaxAcceleration", 0.5);
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.5);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);
+    public static final double pivotKs = 0.0;  // TODO figure out
+    public static final double pivotKg = 0.0;  // TODO figure out
+    public static final double pivotKv = 0.0;  // TODO figure out
+    public static final double pivotKa = 0.0;  // TODO figure out
+    public static final TunableNum pivotPIDTolerance = new TunableNum("Pivot/ErrorTolerance", 0.0);
+    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure out
 
     public static final double intakeRangeSensorThreshold = 0.05; // in m TODO figure this out
-    public static final double coralIntakeSpeed = 0.3;
-    public static final double coralScoringTime = 0.5; // in sec
+    public static final TunableNum coralIntakeSpeed = new TunableNum("Intake/CoralIntakeSpeed", 0.2);
+    public static final TunableNum coralScoringTime = new TunableNum("Intake/CoralScoringTime", 0.5); // in sec
+    public static final TunableNum coralScoringSpeed = new TunableNum("Intake/CoralScoringSpeed", 0.2);
   }
 
   public static class CANdleConstants {

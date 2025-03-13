@@ -157,9 +157,7 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(  // TODO once tested switch to onTrue
       elevator,
       pivot,
-      intake,
-      MutableElevatorPosition::getMutableElevatorPosition,
-      MutablePivotPosition::getMutablePivotPosition
+      intake
     ));
 
     // Switch to X pattern when X button is pressed
@@ -213,8 +211,6 @@ public class RobotContainer {
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
     }));
 
-
-
     // Bindings for manual manipulator controller
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
       .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.2));
@@ -228,6 +224,11 @@ public class RobotContainer {
       .whileTrue(new ManualIntakeCommand(intake, () -> 0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+
+    new JoystickButton(OI.m_manipulatorController, Button.kA.value)
+      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getTunableElevatorPositionAsDouble));
+    new JoystickButton(OI.m_manipulatorController, Button.kB.value)
+      .whileTrue(new PivotToPositionCommand(pivot, MutablePivotPosition::getTunablePivotPositionAsDouble));
   }
 
   /**
@@ -254,21 +255,20 @@ public class RobotContainer {
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("elevator__down", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN));
-    NamedCommands.registerCommand("elevator__l1", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L1));
-    NamedCommands.registerCommand("elevator__l2", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L2));
-    NamedCommands.registerCommand("elevator__l3", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L3));
-    NamedCommands.registerCommand("elevator__l4", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.L4));
-    NamedCommands.registerCommand("elevator__barge", new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.BARGE));
+    NamedCommands.registerCommand("elevator__down", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.DOWN.getAsDouble()));
+    NamedCommands.registerCommand("elevator__l1", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L1.getAsDouble()));
+    NamedCommands.registerCommand("elevator__l2", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L2.getAsDouble()));
+    NamedCommands.registerCommand("elevator__l3", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L3.getAsDouble()));
+    NamedCommands.registerCommand("elevator__l4", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L4.getAsDouble()));
+    NamedCommands.registerCommand("elevator__barge", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.BARGE.getAsDouble()));
 
-    NamedCommands.registerCommand("pivot__intake_ready", new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY));
-    NamedCommands.registerCommand("pivot__elevator_clear", new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR));
-    NamedCommands.registerCommand("pivot__l1", new PivotToPositionCommand(pivot, PivotPosition.L1));
-    NamedCommands.registerCommand("pivot__l2", new PivotToPositionCommand(pivot, PivotPosition.L2));
-    NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, PivotPosition.L3));
-    NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, PivotPosition.L4));
-    NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, PivotPosition.BARGE));
-
+    NamedCommands.registerCommand("pivot__intake_ready", new PivotToPositionCommand(pivot, () -> PivotPosition.INTAKE_READY.getAsDouble()));
+    NamedCommands.registerCommand("pivot__elevator_clear", new PivotToPositionCommand(pivot, () -> PivotPosition.ELEVATOR_CLEAR.getAsDouble()));
+    NamedCommands.registerCommand("pivot__l1", new PivotToPositionCommand(pivot, () -> PivotPosition.L1.getAsDouble()));
+    NamedCommands.registerCommand("pivot__l2", new PivotToPositionCommand(pivot, () -> PivotPosition.L2.getAsDouble()));
+    NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, () -> PivotPosition.L3.getAsDouble()));
+    NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, () -> PivotPosition.L4.getAsDouble()));
+    NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, () -> PivotPosition.BARGE.getAsDouble()));
 
     NamedCommands.registerCommand("align__tagA", new AutoDriveToPoseCommand(drive, vision, FieldPose.A));
     NamedCommands.registerCommand("align__tagB", new AutoDriveToPoseCommand(drive, vision, FieldPose.B));

@@ -8,36 +8,41 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.subsystems.pivot.Pivot;
-import frc.robot.mutables.MutablePivotPosition;
 import static frc.robot.Constants.ManipulatorConstants.*;
+
+import java.util.function.DoubleSupplier;
 
 public class PivotToPositionCommand extends Command {
   private final Pivot pivot;
-  private final PivotPosition desiredPosition;
-  private final ProfiledPIDController controller;
+  private final DoubleSupplier desiredPositionSupplier;
+  private ProfiledPIDController controller;
 
   /**
    * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
-   * The position is determined in {@link MutablePivotPosition}.
    */
-  public PivotToPositionCommand(Pivot pivot, PivotPosition desiredPosition) {
+  public PivotToPositionCommand(Pivot pivot, DoubleSupplier desiredPositionSupplier) {
     this.pivot = pivot;
-    this.desiredPosition = desiredPosition;
+    this.desiredPositionSupplier = desiredPositionSupplier;
     
-    controller = new ProfiledPIDController(pivotKp, 0.0, pivotKd, new TrapezoidProfile.Constraints(pivotMaxSpeed, pivotMaxAcceleration));
-
     addRequirements(this.pivot);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    controller.setGoal(desiredPosition.getPosition());
-    controller.setTolerance(pivotPIDTolerance);
+    controller = new ProfiledPIDController(
+      pivotKp.getAsDouble(),
+      0.0,
+      pivotKd.getAsDouble(),
+      new TrapezoidProfile.Constraints(
+        pivotMaxSpeed.getAsDouble(),
+        pivotMaxAcceleration.getAsDouble()
+      )
+    );
 
-    MutablePivotPosition.setMutablePivotPosition(desiredPosition);
+    controller.setGoal(desiredPositionSupplier.getAsDouble());
+    controller.setTolerance(pivotPIDTolerance.getAsDouble());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
