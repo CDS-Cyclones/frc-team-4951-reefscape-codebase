@@ -54,7 +54,7 @@ public class TunableValues {
     }
 
     public double get() {
-      return DriverStation.isTest() ? entry.get(defaultValue) : defaultValue;
+      return tuningMode ? entry.get(defaultValue) : defaultValue;
     }
 
     @Override

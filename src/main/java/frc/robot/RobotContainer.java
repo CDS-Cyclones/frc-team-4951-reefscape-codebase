@@ -53,6 +53,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.utils.TunableValues;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -118,6 +119,8 @@ public class RobotContainer {
     setupSysIdRoutines();
     setMutableDefaults();
     configureBindings();
+
+    TunableValues.setTuningMode(true);  // TODO turn off for competition
   }
 
   public void setMutableDefaults() {
@@ -154,7 +157,7 @@ public class RobotContainer {
     ));
 
     // Run scoring sequence whenever right bumper is clicked
-    new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(  // TODO once tested switch to onTrue
+    new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(
       elevator,
       pivot,
       intake
