@@ -363,8 +363,6 @@ public class RobotContainer {
     NamedCommands.registerCommand("manipulator_position_l3", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3));
     NamedCommands.registerCommand("manipulator_position_l2", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2));
     NamedCommands.registerCommand("manipulator_position_l1", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1));
-    
-
   }
 
   /**
