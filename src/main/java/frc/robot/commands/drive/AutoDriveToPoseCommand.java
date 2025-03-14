@@ -45,6 +45,9 @@ public class AutoDriveToPoseCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    if(desiredFieldPose.isOrientationOnly())
+      throw new IllegalArgumentException("Desired field pose must have a translation component for AutoDriveToPoseCommand");
+
     angleController = new ProfiledPIDController(
       anglePIDCKp.getAsDouble(),
       0.0,

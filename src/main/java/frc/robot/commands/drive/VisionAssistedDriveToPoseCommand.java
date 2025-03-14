@@ -96,7 +96,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     // Calculate angular speed
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
 
-    if(!hasDetectedDesiredTag) {
+    if(!hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
       // Check if vision system detects desired tag
       int[] detectedTagIds = vision.getTagIds(0);
       for (int tagId : detectedTagIds) {
@@ -109,7 +109,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     }
 
     // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
-    if(hasDetectedDesiredTag) {
+    if(hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
       if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
         MutableCandleState.setMutableCandleState(CandleState.AT_POSE);
       }
