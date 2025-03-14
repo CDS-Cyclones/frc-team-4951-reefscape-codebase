@@ -20,7 +20,8 @@ public final class MutablePivotPosition {
     L2(0.2),
     L3(0.4),
     L4(0.6),
-    BARGE(0.8);
+    BARGE(0.8),
+    PROCESSOR(0.2);
 
     private final double position;
 

@@ -19,7 +19,8 @@ public final class MutableElevatorPosition {
     L2(0.2),
     L3(0.3),
     L4(0.4),
-    BARGE(0.5);
+    BARGE(0.5),
+    PROCESSOR(0.6);
 
     private final double position;
 

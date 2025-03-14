@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -37,7 +38,6 @@ import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
-import frc.robot.sequences.ScoreSequence;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -47,6 +47,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.vision.Vision;
@@ -54,6 +55,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
+import static frc.robot.Constants.ManipulatorConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -67,8 +69,14 @@ public class RobotContainer {
   private final Elevator elevator;
   private final Pivot pivot;
   private final Intake intake;
+  @SuppressWarnings("unused") private final Candle candle;
 
   private SwerveDriveSimulation driveSimulation = null;
+
+  /**
+   * If true, coral scoring poses will be cenetered so as to pick up algae.
+   */
+  private boolean useZonePoses = false;
 
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -107,10 +115,11 @@ public class RobotContainer {
         break;
     }
 
-    // Instantiate manipulator subsystems
+    // Instantiate other subsystems
     elevator = new Elevator();
     pivot = new Pivot();
     intake = new Intake();
+    candle = new Candle();
 
     registerNamedCommands();
 
@@ -148,20 +157,49 @@ public class RobotContainer {
     pivot.setDefaultCommand(new HoldPivotPositionCommand(pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
-    new JoystickButton(OI.m_driverController, Button.kLeftBumper.value).whileTrue(new VisionAssistedDriveToPoseCommand(
-      drive,
-      vision,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      MutableFieldPose::getMutableFieldPose
-    ));
+    new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
+      .whileTrue(new VisionAssistedDriveToPoseCommand(
+        drive,
+        vision,
+        () -> -OI.m_driverController.getLeftY(),
+        () -> -OI.m_driverController.getLeftX(),
+        MutableFieldPose::getMutableFieldPose
+      ));
 
-    // Run scoring sequence whenever right bumper is clicked
-    new JoystickButton(OI.m_driverController, Button.kRightBumper.value).whileTrue(new ScoreSequence(
-      elevator,
-      pivot,
-      intake
-    ));
+    // Scoring sequence
+    new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
+      .whileTrue(
+        Commands.sequence(
+          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
+            new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
+            Commands.none(),
+            () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+          ),
+          Commands.parallel( // Get elevator and pivot to scoring positions
+            new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getMutableElevatorPositionAsDouble),
+            new PivotToPositionCommand(pivot, MutablePivotPosition::getMutablePivotPositionAsDouble)
+          ),
+          new ConditionalCommand( // If trigger is held, score coral
+            new ManualIntakeCommand(intake, ManipulatorConstants.coralScoringSpeed),
+            Commands.none(),
+            () -> OI.m_driverController.getRightTriggerAxis() > 0.5
+          )
+        )
+      )
+      .onFalse( // Once let go, retract
+        Commands.sequence(
+        new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
+          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
+          Commands.none(),
+          () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+        ),
+        Commands.parallel(
+          new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN::getAsDouble),
+          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble)
+        ),
+        new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY::getAsDouble)
+        )
+      );
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -172,47 +210,109 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // Operator board bindings
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.A)));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.B)));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.C)));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.D)));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.E)));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.F)));
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.G)));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.H)));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.I)));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.J)));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.K)));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.L)));
-    new JoystickButton(OI.m_operatorBoard, 13).onTrue(
-      Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.INTAKE_LEFT)),
-          new IntakeCoralCommand(intake)
-      )
-    );
-    new JoystickButton(OI.m_operatorBoard, 14).onTrue(
-      Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.INTAKE_RIGHT)),
-          new IntakeCoralCommand(intake)
-      )
-    );
-    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
-    }));
+    // OPBoard - Reef poses (coral & algae)
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.A)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.B)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.C)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.D)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.E)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.F)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.G)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.H)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.I)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.J)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.K)
+    ));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> 
+      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.L)
+    ));
+
+    // OPBoard - Coral scoring elevator and pivot positions
     new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4); 
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
     }));
     new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3); 
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
     }));
     new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2); 
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1); 
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
     }));
+  
+    // OPBoard - Coral stations (rotation + intake)
+    new JoystickButton(OI.m_operatorBoard, 13).onTrue(
+      Commands.sequence(
+          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_LEFT)),
+          new IntakeCoralCommand(intake)
+      )
+    );
+    new JoystickButton(OI.m_operatorBoard, 14).onTrue(
+      Commands.sequence(
+          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_RIGHT)),
+          new IntakeCoralCommand(intake)
+      )
+    );
+
+    // OPBoard - Processor (rotation + elevator + pivot)
+    new JoystickButton(OI.m_operatorBoard, 15).onTrue(Commands.runOnce(() -> {
+      MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
+    }));
+
+    // OPBoard - Barge (rotation + elevator + pivot)
+    new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> {
+      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_LEFT);
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> {
+      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_RIGHT);
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+    }));
+
+    // Switch whether to use zone poses or not
+    new JoystickButton(OI.m_operatorBoard, 29).onTrue(
+      Commands.runOnce(() -> {
+        useZonePoses = true;
+        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
+        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, true));
+      })
+    ).onFalse(
+      Commands.runOnce(() -> {
+        useZonePoses = false;
+        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
+        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, false));
+      })
+    );
 
     // Bindings for manual manipulator controller
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
@@ -228,6 +328,7 @@ public class RobotContainer {
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
+    // Testing mode bindings for tunable positions
     new JoystickButton(OI.m_manipulatorController, Button.kA.value)
       .whileTrue(new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getTunableElevatorPositionAsDouble));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)

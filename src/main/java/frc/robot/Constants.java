@@ -285,8 +285,9 @@ public final class Constants {
     public static final TunableNum coralScoringSpeed = new TunableNum("Intake/CoralScoringSpeed", 0.2);  // TODO tune
   }
 
-  public static class CANdleConstants {
-    public static final int CANid = 40;
-    public static final String CANbus = "pigeonbus";
+  public static class CandleConstants {
+    public static final int candleId = 40;
+    public static final String candleBus = "pigeonbus";
+    public static double candleBrightness = 0.5;
   }
 }
