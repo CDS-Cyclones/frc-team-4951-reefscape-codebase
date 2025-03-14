@@ -39,13 +39,4 @@ public final class MutablePivotPosition {
   @Getter
   @Setter
   private static PivotPosition mutablePivotPosition = PivotPosition.ELEVATOR_CLEAR;
-
-  /**
-   * Returns the mutable pivot position as a double.
-   *
-   * @return the mutable pivot position as a double
-   */
-  public static double getMutablePivotPositionAsDouble() {
-    return mutablePivotPosition.getAsDouble();
-  }
 }

@@ -38,6 +38,8 @@ import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
+import frc.robot.sequences.PositionManipulator;
+import frc.robot.sequences.RetractManipulator;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -126,16 +128,9 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     setupSysIdRoutines();
-    setMutableDefaults();
     configureBindings();
 
     TunableValues.setTuningMode(true);  // TODO turn off for competition
-  }
-
-  public void setMutableDefaults() {
-    MutableFieldPose.setMutableFieldPose(FieldPose.I);
-    MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
-    MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
   }
 
   /**
@@ -170,14 +165,11 @@ public class RobotContainer {
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
         Commands.sequence(
-          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
-            new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
-            Commands.none(),
-            () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
-          ),
-          Commands.parallel( // Get elevator and pivot to scoring positions
-            new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getMutableElevatorPositionAsDouble),
-            new PivotToPositionCommand(pivot, MutablePivotPosition::getMutablePivotPositionAsDouble)
+          new PositionManipulator(
+            elevator,
+            pivot,
+            MutableElevatorPosition::getMutableElevatorPosition,
+            MutablePivotPosition::getMutablePivotPosition
           ),
           new ConditionalCommand( // If trigger is held, score coral
             new ManualIntakeCommand(intake, ManipulatorConstants.coralScoringSpeed),
@@ -186,20 +178,7 @@ public class RobotContainer {
           )
         )
       )
-      .onFalse( // Once let go, retract
-        Commands.sequence(
-        new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
-          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
-          Commands.none(),
-          () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
-        ),
-        Commands.parallel(
-          new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN::getAsDouble),
-          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble)
-        ),
-        new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY::getAsDouble)
-        )
-      );
+      .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -330,9 +309,9 @@ public class RobotContainer {
 
     // Testing mode bindings for tunable positions
     new JoystickButton(OI.m_manipulatorController, Button.kA.value)
-      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getTunableElevatorPositionAsDouble));
+      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
-      .whileTrue(new PivotToPositionCommand(pivot, MutablePivotPosition::getTunablePivotPositionAsDouble));
+      .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
   }
 
   /**
@@ -359,36 +338,33 @@ public class RobotContainer {
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("elevator__down", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.DOWN.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l1", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L1.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l2", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L2.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l3", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L3.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l4", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L4.getAsDouble()));
-    NamedCommands.registerCommand("elevator__barge", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.BARGE.getAsDouble()));
+    NamedCommands.registerCommand("align_to_tag_A", new AutoDriveToPoseCommand(drive, vision, FieldPose.A));
+    NamedCommands.registerCommand("align_to_tag_B", new AutoDriveToPoseCommand(drive, vision, FieldPose.B));
+    NamedCommands.registerCommand("align_to_tag_C", new AutoDriveToPoseCommand(drive, vision, FieldPose.C));
+    NamedCommands.registerCommand("align_to_tag_D", new AutoDriveToPoseCommand(drive, vision, FieldPose.D));
+    NamedCommands.registerCommand("align_to_tag_E", new AutoDriveToPoseCommand(drive, vision, FieldPose.E));
+    NamedCommands.registerCommand("align_to_tag_F", new AutoDriveToPoseCommand(drive, vision, FieldPose.F));
+    NamedCommands.registerCommand("align_to_tag_G", new AutoDriveToPoseCommand(drive, vision, FieldPose.G));
+    NamedCommands.registerCommand("align_to_tag_H", new AutoDriveToPoseCommand(drive, vision, FieldPose.H));
+    NamedCommands.registerCommand("align_to_tag_I", new AutoDriveToPoseCommand(drive, vision, FieldPose.I));
+    NamedCommands.registerCommand("align_to_tag_J", new AutoDriveToPoseCommand(drive, vision, FieldPose.J));
+    NamedCommands.registerCommand("align_to_tag_K", new AutoDriveToPoseCommand(drive, vision, FieldPose.K));
+    NamedCommands.registerCommand("align_to_tag_L", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));    
 
-    NamedCommands.registerCommand("pivot__intake_ready", new PivotToPositionCommand(pivot, () -> PivotPosition.INTAKE_READY.getAsDouble()));
-    NamedCommands.registerCommand("pivot__elevator_clear", new PivotToPositionCommand(pivot, () -> PivotPosition.ELEVATOR_CLEAR.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l1", new PivotToPositionCommand(pivot, () -> PivotPosition.L1.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l2", new PivotToPositionCommand(pivot, () -> PivotPosition.L2.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, () -> PivotPosition.L3.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, () -> PivotPosition.L4.getAsDouble()));
-    NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, () -> PivotPosition.BARGE.getAsDouble()));
-
-    NamedCommands.registerCommand("align__tagA", new AutoDriveToPoseCommand(drive, vision, FieldPose.A));
-    NamedCommands.registerCommand("align__tagB", new AutoDriveToPoseCommand(drive, vision, FieldPose.B));
-    NamedCommands.registerCommand("align__tagC", new AutoDriveToPoseCommand(drive, vision, FieldPose.C));
-    NamedCommands.registerCommand("align__tagD", new AutoDriveToPoseCommand(drive, vision, FieldPose.D));
-    NamedCommands.registerCommand("align__tagE", new AutoDriveToPoseCommand(drive, vision, FieldPose.E));
-    NamedCommands.registerCommand("align__tagF", new AutoDriveToPoseCommand(drive, vision, FieldPose.F));
-    NamedCommands.registerCommand("align__tagG", new AutoDriveToPoseCommand(drive, vision, FieldPose.G));
-    NamedCommands.registerCommand("align__tagH", new AutoDriveToPoseCommand(drive, vision, FieldPose.H));
-    NamedCommands.registerCommand("align__tagI", new AutoDriveToPoseCommand(drive, vision, FieldPose.I));
-    NamedCommands.registerCommand("align__tagJ", new AutoDriveToPoseCommand(drive, vision, FieldPose.J));
-    NamedCommands.registerCommand("align__tagK", new AutoDriveToPoseCommand(drive, vision, FieldPose.K));
-    NamedCommands.registerCommand("align__tagL", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));
-
+    // Intake and scoring commands
     NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake));
     NamedCommands.registerCommand("score_coral", new ScoreCoralCommand(intake));
+
+    // Elevator and pivot positioning
+    NamedCommands.registerCommand("manipulator_retract", new RetractManipulator(elevator, pivot));
+    NamedCommands.registerCommand("manipulator_position_barge", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE));
+    NamedCommands.registerCommand("manipulator_position_processor", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR));
+    NamedCommands.registerCommand("manipulator_position_l4", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4));
+    NamedCommands.registerCommand("manipulator_position_l3", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3));
+    NamedCommands.registerCommand("manipulator_position_l2", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2));
+    NamedCommands.registerCommand("manipulator_position_l1", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1));
+    
+
   }
 
   /**

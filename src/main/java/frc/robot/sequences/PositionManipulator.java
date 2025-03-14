@@ -18,6 +18,8 @@ public class PositionManipulator extends SequentialCommandGroup {
    * 
    * @param elevator
    * @param pivot
+   * @param elevatorPositionSupplier
+   * @param pivotPositionSupplier
    */
   public PositionManipulator(Elevator elevator, Pivot pivot, Supplier<ElevatorPosition> elevatorPositionSupplier, Supplier<PivotPosition> pivotPositionSupplier) {
     addCommands(

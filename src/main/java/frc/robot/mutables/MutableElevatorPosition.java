@@ -37,14 +37,5 @@ public final class MutableElevatorPosition {
 
   @Getter
   @Setter
-  private static ElevatorPosition mutableElevatorPose = ElevatorPosition.DOWN;
-
-  /**
-   * Returns the mutable elevator pose as a double.
-   *
-   * @return the mutable elevator pose as a double
-   */
-  public static double getMutableElevatorPoseAsDouble() {
-    return mutableElevatorPose.getAsDouble();
-  }
+  private static ElevatorPosition mutableElevatorPosition = ElevatorPosition.DOWN;
 }
