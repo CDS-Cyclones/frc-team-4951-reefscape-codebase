@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ManipulatorConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
@@ -258,13 +259,9 @@ public class RobotContainer {
           new IntakeCoralCommand(intake)
       )
     );
-
-    // OPBoard - Processor (rotation + elevator + pivot)
-    new JoystickButton(OI.m_operatorBoard, 15).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
-    }));
+    new JoystickButton(OI.m_operatorBoard, 15).onTrue( // Stop intake
+      Commands.runOnce(() -> new ManualIntakeCommand(intake, () -> 0).withTimeout(0.1).schedule())
+    );
 
     // OPBoard - Barge (rotation + elevator + pivot)
     new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> {
@@ -276,6 +273,13 @@ public class RobotContainer {
       MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_RIGHT);
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+    }));
+
+    // OPBoard - Processor (rotation + elevator + pivot)
+    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
+      MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
+      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
+      MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
     }));
 
     // Switch whether to use zone poses or not

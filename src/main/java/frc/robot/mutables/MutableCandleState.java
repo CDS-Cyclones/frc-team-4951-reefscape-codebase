@@ -13,8 +13,10 @@ public class MutableCandleState {
   public enum CandleState {
     OFF(0, 0, 0),
     TARGET_FOUND(255, 188, 0), // orange
-    AT_POSE(128, 255, 0);  // green
-
+    AT_POSE(128, 255, 0),  // green
+    WAITIING_FOR_CORAL(255, 248, 43),  // yellow
+    CORAL_DETECTED(0, 157, 255);  // blue
+ 
     @Getter private final int red;
     @Getter private final int green;
     @Getter private final int blue;
