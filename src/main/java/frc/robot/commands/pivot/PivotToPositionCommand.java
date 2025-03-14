@@ -7,23 +7,26 @@ package frc.robot.commands.pivot;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.subsystems.pivot.Pivot;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class PivotToPositionCommand extends Command {
   private final Pivot pivot;
-  private final DoubleSupplier desiredPositionSupplier;
+  private final Supplier<PivotPosition> pivotPositionSupplier;
   private ProfiledPIDController controller;
 
   /**
-   * A command that moves the elevator to a desired position using a {@link ProfiledPIDController} and keeps it there.
+   * A command that moves the elevator to a desired position using a {@link ProfiledPIDController}
+   * 
+   * @param pivot The pivot subsystem.
+   * @param pivotPositionSupplier A supplier that provides the desired pivot position as {@link PivotPosition}.
    */
-  public PivotToPositionCommand(Pivot pivot, DoubleSupplier desiredPositionSupplier) {
+  public PivotToPositionCommand(Pivot pivot, Supplier<PivotPosition> pivotPositionSupplier) {
     this.pivot = pivot;
-    this.desiredPositionSupplier = desiredPositionSupplier;
+    this.pivotPositionSupplier = pivotPositionSupplier;
     
     addRequirements(this.pivot);
   }
@@ -41,7 +44,7 @@ public class PivotToPositionCommand extends Command {
       )
     );
 
-    controller.setGoal(desiredPositionSupplier.getAsDouble());
+    controller.setGoal(pivotPositionSupplier.get().getAsDouble());
     controller.setTolerance(pivotPIDTolerance.getAsDouble());
   }
 
