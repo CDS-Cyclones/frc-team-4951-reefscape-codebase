@@ -139,6 +139,9 @@ public final class Constants {
     public static final TunableNum translationPIDCMaxAccel = new TunableNum("Drive/PIDController/translation/maxAccel", 15);  // TODO tune // Meters per second squared
     public static final TunableNum translationPIDTolerance = new TunableNum("Drive/PIDController/translation/errorTolerance", 0.05);  // TODO tune
 
+    // Drive command configuration
+    public static final double fineTuneSpeedMultiplier = 0.35;
+
     // PathPlanner configuration
     public static final double robotMassKg = 52;  // TODO measure
     public static final double robotMOI = 6.883;  // TODO calculate w/ formula after running SysId

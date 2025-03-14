@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.ManipulatorConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
@@ -59,6 +58,7 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
 import static frc.robot.Constants.ManipulatorConstants;
+import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -141,10 +141,10 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(new JoystickDriveCommand(
       drive,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      () -> -OI.m_driverController.getRightX())
-    );
+      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1)
+    ));
 
     // Default command for elevator, hold position
     elevator.setDefaultCommand(new HoldElevatorPositionCommand(elevator));
@@ -157,8 +157,8 @@ public class RobotContainer {
       .whileTrue(new VisionAssistedDriveToPoseCommand(
         drive,
         vision,
-        () -> -OI.m_driverController.getLeftY(),
-        () -> -OI.m_driverController.getLeftX(),
+        () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+        () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
         MutableFieldPose::getMutableFieldPose
       ));
 
