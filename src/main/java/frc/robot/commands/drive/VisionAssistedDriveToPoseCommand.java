@@ -21,6 +21,8 @@ import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
+import frc.robot.mutables.MutableCandleState;
+import frc.robot.mutables.MutableCandleState.CandleState;
 import static frc.robot.Constants.DriveConstants.*;
 
 /*
@@ -100,14 +102,18 @@ public class VisionAssistedDriveToPoseCommand extends Command {
       for (int tagId : detectedTagIds) {
         if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
           hasDetectedDesiredTag = true;
+          MutableCandleState.setMutableCandleState(CandleState.TARGET_FOUND);
           break;
         }
       }
-      
     }
 
     // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
     if(hasDetectedDesiredTag) {
+      if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
+        MutableCandleState.setMutableCandleState(CandleState.AT_POSE);
+      }
+
       Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
       
       // Calculate translation speed
@@ -141,7 +147,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    // TODO indicate with candle that its ready to shoot
+    MutableCandleState.setMutableCandleState(CandleState.OFF);
   }
 
   // Returns true when the command should end.

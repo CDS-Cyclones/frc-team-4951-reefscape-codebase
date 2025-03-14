@@ -18,6 +18,11 @@ public class MutableCandleState {
     @Getter private final int red;
     @Getter private final int green;
     @Getter private final int blue;
+
+    @Override
+    public String toString() {
+      return "RGB: (" + red + ", " + green + ", " + blue + ")";
+    }
   }
 
   @Getter @Setter

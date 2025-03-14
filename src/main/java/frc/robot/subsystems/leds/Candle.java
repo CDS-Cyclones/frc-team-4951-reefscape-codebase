@@ -9,6 +9,7 @@ import com.ctre.phoenix.led.*;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.littletonrobotics.junction.Logger;
@@ -75,6 +76,12 @@ public class Candle extends SubsystemBase implements CandleIO {
 
     updateInputs(candleInputs);
     Logger.processInputs("Candle", candleInputs);
+
+    try {
+      SmartDashboard.putString("CANDLE COLOR", state.toString());
+    } catch (Exception e) {
+  
+    }
   }
 
   @Override
