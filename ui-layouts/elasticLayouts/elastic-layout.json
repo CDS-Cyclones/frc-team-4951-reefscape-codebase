@@ -29,8 +29,7 @@
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/simCam-raw",
-              "period": 0.06,
-              "rotation_turns": 0
+              "period": 0.06
             }
           },
           {
@@ -83,6 +82,348 @@
       }
     },
     {
+      "name": "States",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Candle State",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 512.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Candle State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Elevator Position",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Elevator Position",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Intake Action",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Intake Action",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Intake State",
+            "x": 384.0,
+            "y": 256.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Intake State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Pivot Position",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Pivot Position",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tuning: PIDC Drive",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "angle",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 10.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxVel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/maxVel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 20.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxAccel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/maxAccel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 20.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "transation",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 10.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxVel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/maxVel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 20.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxAccel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/maxAccel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 20.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "drive",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/drive/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 10.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/drive/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "turn",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/turn/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 10.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/turn/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          }
+        ],
+        "containers": []
+      }
+    },
+    {
       "name": "Tuning: Manipulator",
       "grid_layout": {
         "layouts": [
@@ -91,7 +432,7 @@
             "x": 0.0,
             "y": 0.0,
             "width": 512.0,
-            "height": 640.0,
+            "height": 768.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -181,6 +522,23 @@
                   "divisions": 5,
                   "update_continuously": true
                 }
+              },
+              {
+                "title": "TuneablePosition",
+                "x": 128.0,
+                "y": 512.0,
+                "width": 384.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Elevator/TuneablePosition",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 10.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
               }
             ]
           },
@@ -189,7 +547,7 @@
             "x": 512.0,
             "y": 0.0,
             "width": 512.0,
-            "height": 640.0,
+            "height": 768.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -206,8 +564,8 @@
                   "topic": "/TunableValues/Pivot/P",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": -1.0,
-                  "max_value": 1.0,
+                  "min_value": 0.0,
+                  "max_value": 10.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
@@ -223,25 +581,8 @@
                   "topic": "/TunableValues/Pivot/D",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": -1.0,
-                  "max_value": 1.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "ErrorTolerance",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Pivot/ErrorTolerance",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": -1.0,
-                  "max_value": 1.0,
+                  "min_value": 0.0,
+                  "max_value": 2.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
@@ -257,8 +598,8 @@
                   "topic": "/TunableValues/Pivot/MaxSpeed",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": -1.0,
-                  "max_value": 1.0,
+                  "min_value": 0.0,
+                  "max_value": 5.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
@@ -274,7 +615,41 @@
                   "topic": "/TunableValues/Pivot/MaxAcceleration",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": -1.0,
+                  "min_value": 0.0,
+                  "max_value": 5.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "ErrorTolerance",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Pivot/ErrorTolerance",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 0.5,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "TuneablePosition",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Pivot/TuneablePosition",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": -0.5,
                   "max_value": 1.0,
                   "divisions": 5,
                   "update_continuously": true
@@ -287,59 +662,42 @@
             "x": 1024.0,
             "y": 0.0,
             "width": 512.0,
-            "height": 640.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
             },
             "children": [
               {
-                "title": "CoralIntakeSpeed",
+                "title": "TunableSpeed",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/CoralIntakeSpeed",
+                  "topic": "/TunableValues/Intake/TunableSpeed",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
+                  "min_value": -1.0,
                   "max_value": 1.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
               },
               {
-                "title": "CoralScoringSpeed",
+                "title": "TunableTime",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/CoralScoringSpeed",
+                  "topic": "/TunableValues/Intake/TunableTime",
                   "period": 0.06,
                   "data_type": "double",
                   "min_value": 0.0,
-                  "max_value": 1.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "CoralScoringTIme",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Intake/CoralScoringTIme",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
+                  "max_value": 5.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
