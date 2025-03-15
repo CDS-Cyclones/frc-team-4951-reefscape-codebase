@@ -70,6 +70,6 @@ public class PivotToPositionCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return controller.atGoal();
   }
 }
