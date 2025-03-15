@@ -6,19 +6,27 @@ package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import frc.robot.mutables.MutableIntakeAction.IntakeAction;
+import frc.robot.mutables.MutableIntakeState;
 import frc.robot.subsystems.intake.Intake;
-import static frc.robot.Constants.ManipulatorConstants.*;
 
-public class ScoreCoralCommand extends Command {
+import java.util.function.Supplier;
+
+public class IntakeCommand extends Command {
   private final Intake intake;
+  private final Supplier<IntakeAction> intakeActionSupplier;
   private final Timer timer;
+  
 
   /** 
-   * Outtake coral for a set amount of time.
+   * A command that allows to control the intake.
+   * 
+   * @param intake The intake subsystem
+   * @param intakeActionSupplier A supplier that supplies the intake action
    */
-  public ScoreCoralCommand(Intake intake) {
+  public IntakeCommand(Intake intake, Supplier<IntakeAction> intakeActionSupplier) {
     this.intake = intake;
+    this.intakeActionSupplier = intakeActionSupplier;
     this.timer = new Timer();
     
     addRequirements(this.intake);
@@ -35,7 +43,7 @@ public class ScoreCoralCommand extends Command {
   @Override
   public void execute() {
     // Set the speed of the intake
-    intake.setSpeed(coralScoringSpeed.getAsDouble());
+    intake.setSpeed(intakeActionSupplier.get().getSpeed());
   }
 
   // Called once the command ends or is interrupted.
@@ -47,6 +55,11 @@ public class ScoreCoralCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.hasElapsed(coralScoringTime.getAsDouble());
+    if (intakeActionSupplier.get().isTimed())
+      return timer.hasElapsed(intakeActionSupplier.get().getTime());
+    else if (intakeActionSupplier.get().isConditional())
+      return intakeActionSupplier.get().getEndState() == MutableIntakeState.getMutableIntakeState();
+    
+    return false;
   }
 }

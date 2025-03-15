@@ -26,17 +26,18 @@ import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
-import frc.robot.commands.intake.IntakeCoralCommand;
+import frc.robot.commands.intake.IntakeCommand;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.intake.ScoreCoralCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.mutables.MutableElevatorPosition;
 import frc.robot.mutables.MutableFieldPose;
+import frc.robot.mutables.MutableIntakeAction;
 import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutableFieldPose.FieldPose;
+import frc.robot.mutables.MutableIntakeAction.IntakeAction;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.sequences.PositionManipulator;
 import frc.robot.sequences.RetractManipulator;
@@ -233,35 +234,39 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4); 
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L4_ENDLESS);
     }));
     new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L3_ENDLESS);
     }));
     new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2); 
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L2_ENDLESS);
     }));
     new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1); 
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L1_ENDLESS);
     }));
   
     // OPBoard - Coral stations (rotation + intake)
     new JoystickButton(OI.m_operatorBoard, 13).onTrue(
       Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_LEFT)),
-          new IntakeCoralCommand(intake)
+        Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_LEFT)),
+        new IntakeCommand(intake, () -> IntakeAction.INTAKE_CORAL_CONDITIONAL)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 14).onTrue(
       Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_RIGHT)),
-          new IntakeCoralCommand(intake)
+        Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_RIGHT)),
+        new IntakeCommand(intake, () -> IntakeAction.INTAKE_CORAL_CONDITIONAL)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 15).onTrue( // Stop intake
-      Commands.runOnce(() -> new ManualIntakeCommand(intake, () -> 0).withTimeout(0.1).schedule())
+      Commands.runOnce(() -> new IntakeCommand(intake, () -> IntakeAction.STOP).withTimeout(0.1).schedule())
     );
 
     // OPBoard - Barge (rotation + elevator + pivot)
@@ -269,11 +274,13 @@ public class RobotContainer {
       MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_LEFT);
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
     }));
     new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> {
       MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_RIGHT);
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
     }));
 
     // OPBoard - Processor (rotation + elevator + pivot)
@@ -281,6 +288,7 @@ public class RobotContainer {
       MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
       MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
       MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
+      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_PROCESSOR_ENDLESS);
     }));
 
     // Switch whether to use zone poses or not
@@ -317,6 +325,8 @@ public class RobotContainer {
       .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
       .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value)
+      .whileTrue(new IntakeCommand(intake, () -> IntakeAction.TUNABLE));
   }
 
   /**
@@ -357,17 +367,81 @@ public class RobotContainer {
     NamedCommands.registerCommand("align_to_tag_L", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));    
 
     // Intake and scoring commands
-    NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake));
-    NamedCommands.registerCommand("score_coral", new ScoreCoralCommand(intake));
+    NamedCommands.registerCommand("intake_coral", new IntakeCommand(intake, () -> IntakeAction.INTAKE_CORAL_CONDITIONAL));
+    NamedCommands.registerCommand("score_coral_l4", Commands.sequence(
+      Commands.runOnce(() -> MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L4_ENDLESS)),
+      new IntakeCommand(intake, () -> IntakeAction.SCORE_L4_TIMED)
+    ));
+    NamedCommands.registerCommand("score_coral_l3", Commands.sequence(
+      Commands.runOnce(() -> MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L3_ENDLESS)),
+      new IntakeCommand(intake, () -> IntakeAction.SCORE_L3_TIMED)
+    ));
+    NamedCommands.registerCommand("score_coral_l2", Commands.sequence(
+      Commands.runOnce(() -> MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L2_ENDLESS)),
+      new IntakeCommand(intake, () -> IntakeAction.SCORE_L2_TIMED)
+    ));
+    NamedCommands.registerCommand("score_coral_l1", Commands.sequence(
+      Commands.runOnce(() -> MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L1_ENDLESS)),
+      new IntakeCommand(intake, () -> IntakeAction.SCORE_L1_TIMED)
+    ));
 
     // Elevator and pivot positioning
-    NamedCommands.registerCommand("manipulator_retract", new RetractManipulator(elevator, pivot));
-    NamedCommands.registerCommand("manipulator_position_barge", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE));
-    NamedCommands.registerCommand("manipulator_position_processor", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR));
-    NamedCommands.registerCommand("manipulator_position_l4", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4));
-    NamedCommands.registerCommand("manipulator_position_l3", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3));
-    NamedCommands.registerCommand("manipulator_position_l2", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2));
-    NamedCommands.registerCommand("manipulator_position_l1", new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1));
+    NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.DOWN);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.INTAKE_READY);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.STOP);
+      }),
+      new RetractManipulator(elevator, pivot)
+    ));
+    NamedCommands.registerCommand("manipulator_position_barge", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
+    ));
+    NamedCommands.registerCommand("manipulator_position_processor", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_PROCESSOR_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l4", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L4_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
+    ));
+    NamedCommands .registerCommand("manipulator_position_l3", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L3_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l2", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L2_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l1", Commands.sequence(
+      Commands.runOnce(() -> {
+        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1);
+        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L1);
+        MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L1_ENDLESS);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1)
+    ));
   }
 
   /**

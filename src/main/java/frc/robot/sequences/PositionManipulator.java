@@ -7,8 +7,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
-import frc.robot.mutables.MutableElevatorPosition;
-import frc.robot.mutables.MutablePivotPosition;
 import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.subsystems.elevator.Elevator;
@@ -25,10 +23,6 @@ public class PositionManipulator extends SequentialCommandGroup {
    */
   public PositionManipulator(Elevator elevator, Pivot pivot, Supplier<ElevatorPosition> elevatorPositionSupplier, Supplier<PivotPosition> pivotPositionSupplier) {
     addCommands(
-      Commands.runOnce(() -> { // Assure that mutable positions are set to current positions
-        MutableElevatorPosition.setMutableElevatorPosition(elevatorPositionSupplier.get());
-        MutablePivotPosition.setMutablePivotPosition(pivotPositionSupplier.get());
-    }),
       new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
         new PivotToPositionCommand(pivot, () -> PivotPosition.ELEVATOR_CLEAR),
         Commands.none(),
