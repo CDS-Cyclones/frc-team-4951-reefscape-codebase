@@ -41,6 +41,7 @@ import frc.robot.mutables.MutableIntakeAction.IntakeAction;
 import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.sequences.PositionManipulator;
 import frc.robot.sequences.RetractManipulator;
+import frc.robot.subsystems.Manager;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -58,7 +59,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
-import static frc.robot.Constants.ManipulatorConstants;
 import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
 
 import org.ironmaple.simulation.SimulatedArena;
@@ -74,6 +74,7 @@ public class RobotContainer {
   private final Pivot pivot;
   private final Intake intake;
   @SuppressWarnings("unused") private final Candle candle;
+  @SuppressWarnings("unused") private final Manager manager;
 
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -124,6 +125,7 @@ public class RobotContainer {
     pivot = new Pivot();
     intake = new Intake();
     candle = new Candle();
+    manager = new Manager();
 
     registerNamedCommands();
 
@@ -175,7 +177,7 @@ public class RobotContainer {
             MutablePivotPosition::getMutablePivotPosition
           ),
           new ConditionalCommand( // If trigger is held, score coral
-            new ManualIntakeCommand(intake, ManipulatorConstants.coralScoringSpeed),
+            new IntakeCommand(intake, MutableIntakeAction::getMutableIntakeAction),
             Commands.none(),
             () -> OI.m_driverController.getRightTriggerAxis() > 0.5
           )

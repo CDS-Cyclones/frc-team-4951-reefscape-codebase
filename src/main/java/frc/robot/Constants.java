@@ -284,9 +284,6 @@ public final class Constants {
 
     public static final double intakeRangeForCoral = 0.05; // in m TODO figure this out
     public static final double intakeRangeForAlga = 0.2; // in m TODO figure this out
-    public static final TunableNum coralIntakeSpeed = new TunableNum("Intake/CoralIntakeSpeed", 0.2);  // TODO tune
-    public static final TunableNum coralScoringTime = new TunableNum("Intake/CoralScoringTime", 0.5);  // TODO tune // in sec
-    public static final TunableNum coralScoringSpeed = new TunableNum("Intake/CoralScoringSpeed", 0.2);  // TODO tune
   }
 
   public static class CandleConstants {
