@@ -184,6 +184,11 @@ public final class MutableFieldPose {
     public boolean isOrientationOnly() {
       return orientationOnly;
     }
+
+    @Override
+    public String toString() {
+      return name();
+    }
   }
 
   @Getter @Setter private static FieldPose mutableFieldPose = FieldPose.A;

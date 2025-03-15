@@ -125,6 +125,11 @@ public final class MutableIntakeAction {
     public boolean isConditional() {
       return state != null;
     }
+
+    @Override
+    public String toString() {
+      return name() + " (" + getSpeed() + ", " + getTime() + ", " + getEndState() + ")";
+    }
   }
 
   @Getter

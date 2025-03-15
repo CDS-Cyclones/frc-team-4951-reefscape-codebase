@@ -16,4 +16,9 @@ public class MutableIntakeState {
   public static void setMutableIntakeState(IntakeState state) {
     mutableIntakeState = state;
   }
+
+  @Override
+  public String toString() {
+    return mutableIntakeState.name();
+  }
 }

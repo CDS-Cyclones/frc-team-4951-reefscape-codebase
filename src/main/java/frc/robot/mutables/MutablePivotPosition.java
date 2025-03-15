@@ -34,6 +34,11 @@ public final class MutablePivotPosition {
       }
       return position;
     }
+
+    @Override
+    public String toString() {
+      return name() + " (" + getAsDouble() + ")";
+    }
   }
 
   @Getter

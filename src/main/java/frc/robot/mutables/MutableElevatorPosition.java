@@ -33,6 +33,11 @@ public final class MutableElevatorPosition {
       }
       return position;
     }
+
+    @Override
+    public String toString() {
+      return name() + " (" + getAsDouble() + ")";
+    }
   }
 
   @Getter
