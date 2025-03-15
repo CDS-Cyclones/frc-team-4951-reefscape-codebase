@@ -11,6 +11,8 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.mutables.MutableIntakeState;
+import frc.robot.mutables.MutableIntakeState.IntakeState;
 
 import static edu.wpi.first.units.Units.Meters;
 import static frc.robot.Constants.ManipulatorConstants.*;
@@ -29,6 +31,8 @@ public class Intake extends SubsystemBase implements IntakeIO {
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
+    MutableIntakeState.setMutableIntakeState(determineIntakeState());
+
     updateInputs(intakeInputs);
     Logger.processInputs("Intake", intakeInputs);
   }
@@ -43,12 +47,20 @@ public class Intake extends SubsystemBase implements IntakeIO {
   }
 
   /**
-   * Returns whether the coral is in the intake.
-   *
-   * @return Whether the coral is in the intake.
+   * Detrmines whether intake is empty, has coral, or has alga.
+   * 
+   * @return The current state of the intake.
    */
-  public boolean isCoralInIntake() {
-    return rangeSensor.getDistance().getValue().in(Meters) < intakeRangeSensorThreshold;
+  public IntakeState determineIntakeState() {
+    double sensorValue = rangeSensor.getDistance().getValue().in(Meters);
+    
+    if (sensorValue < intakeRangeForCoral) {
+      return IntakeState.CORAL;
+    } else if (sensorValue < intakeRangeForAlga) {
+      return IntakeState.ALGA;
+    } else {
+      return IntakeState.EMPTY;
+    }
   }
 
   /**
@@ -66,7 +78,7 @@ public class Intake extends SubsystemBase implements IntakeIO {
     inputs.intakeVoltage = intakeMotor.getBusVoltage();
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
     inputs.canrangeConnected = rangeSensor.isConnected();
-    inputs.coralInIntake = isCoralInIntake();
     inputs.intakeDistance = rangeSensor.getDistance().getValue().in(Meters);
+    inputs.intakeState = MutableIntakeState.getMutableIntakeState();
   }
 }

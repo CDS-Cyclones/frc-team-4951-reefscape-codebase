@@ -282,7 +282,8 @@ public final class Constants {
     public static final TunableNum pivotPIDTolerance = new TunableNum("Pivot/ErrorTolerance", 0.0);  // TODO tune
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure out
 
-    public static final double intakeRangeSensorThreshold = 0.05; // in m TODO figure this out
+    public static final double intakeRangeForCoral = 0.05; // in m TODO figure this out
+    public static final double intakeRangeForAlga = 0.2; // in m TODO figure this out
     public static final TunableNum coralIntakeSpeed = new TunableNum("Intake/CoralIntakeSpeed", 0.2);  // TODO tune
     public static final TunableNum coralScoringTime = new TunableNum("Intake/CoralScoringTime", 0.5);  // TODO tune // in sec
     public static final TunableNum coralScoringSpeed = new TunableNum("Intake/CoralScoringSpeed", 0.2);  // TODO tune
