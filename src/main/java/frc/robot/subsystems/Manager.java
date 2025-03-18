@@ -6,11 +6,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.mutables.MutableCandleState;
-import frc.robot.mutables.MutableElevatorPosition;
-import frc.robot.mutables.MutableIntakeAction;
-import frc.robot.mutables.MutableIntakeState;
-import frc.robot.mutables.MutablePivotPosition;
+import frc.robot.RobotStateManager;
 
 public class Manager extends SubsystemBase {
   /** Creates a new Manager. */
@@ -20,11 +16,12 @@ public class Manager extends SubsystemBase {
   public void periodic() {
     // Print values of all mutables to SmartDashboard
     try {
-      SmartDashboard.putString("Mutables/Elevator Position", MutableElevatorPosition.getMutableElevatorPosition().toString());
-      SmartDashboard.putString("Mutables/Pivot Position", MutablePivotPosition.getMutablePivotPosition().toString());
-      SmartDashboard.putString("Mutables/Candle State", MutableCandleState.getMutableCandleState().toString());
-      SmartDashboard.putString("Mutables/Intake Action", MutableIntakeAction.getMutableIntakeAction().toString());
-      SmartDashboard.putString("Mutables/Intake State", MutableIntakeState.getMutableIntakeState().toString());
+      SmartDashboard.putString("Mutables/Elevator Position", RobotStateManager.getDesiredElevatorPosition().toString());
+      SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
+    //   SmartDashboard.putString("Mutables/Candle State", MutableCandleState.getMutableCandleState().toString());
+    //   SmartDashboard.putString("Mutables/Intake Action", MutableIntakeAction.getMutableIntakeAction().toString());
+    //   SmartDashboard.putString("Mutables/Intake State", MutableIntakeState.getMutableIntakeState().toString());
+      SmartDashboard.putString("Mutables/Field Pose", RobotStateManager.getDesiredFieldPose().toString());
     } catch (Exception e) {}
   }
 }

@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.RobotStateConstants.ReefHeight;
+import frc.robot.Constants.RobotStateConstants.RobotAction;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
@@ -31,14 +33,11 @@ import frc.robot.commands.intake.ManualIntakeCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
-import frc.robot.mutables.MutableElevatorPosition;
-import frc.robot.mutables.MutableFieldPose;
 import frc.robot.mutables.MutableIntakeAction;
-import frc.robot.mutables.MutablePivotPosition;
-import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
-import frc.robot.mutables.MutableFieldPose.FieldPose;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
+import frc.robot.Constants.RobotStateConstants.FieldPose;
+import frc.robot.Constants.RobotStateConstants.PivotPosition;
 import frc.robot.mutables.MutableIntakeAction.IntakeAction;
-import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.sequences.PositionManipulator;
 import frc.robot.sequences.RetractManipulator;
 import frc.robot.subsystems.Manager;
@@ -77,11 +76,6 @@ public class RobotContainer {
   @SuppressWarnings("unused") private final Manager manager;
 
   private SwerveDriveSimulation driveSimulation = null;
-
-  /**
-   * If true, coral scoring poses will be cenetered so as to pick up algae.
-   */
-  private boolean useZonePoses = false;
 
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -135,6 +129,12 @@ public class RobotContainer {
     configureBindings();
 
     TunableValues.setTuningMode(true);  // TODO turn off for competition
+
+    // Set up default states
+    RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    RobotStateManager.setReefHeight(ReefHeight.L4);
+    RobotStateManager.setAlignForAlgaePickup(false);
+    RobotStateManager.setCoralScoringPose(FieldPose.J);
   }
 
   /**
@@ -163,7 +163,7 @@ public class RobotContainer {
         vision,
         () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
         () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
-        MutableFieldPose::getMutableFieldPose
+        RobotStateManager::getDesiredFieldPose
       ));
 
     // Scoring sequence
@@ -173,8 +173,8 @@ public class RobotContainer {
           new PositionManipulator(
             elevator,
             pivot,
-            MutableElevatorPosition::getMutableElevatorPosition,
-            MutablePivotPosition::getMutablePivotPosition
+            RobotStateManager::getDesiredElevatorPosition,
+            RobotStateManager::getDesiredPivotPosition
           ),
           new ConditionalCommand( // If trigger is held, score coral
             new IntakeCommand(intake, MutableIntakeAction::getMutableIntakeAction),
@@ -194,76 +194,72 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // OPBoard - Reef poses (coral & algae)
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.A)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.B)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.C)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.D)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.E)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.F)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.G)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.H)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.I)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.J)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.K)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.L)
-    ));
+    // OPBoard - Reef poses
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.A);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.B);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.C);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.D);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.E);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.F);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.G);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.H);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.I);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.J);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.K);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.L);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
 
-    // OPBoard - Coral scoring elevator and pivot positions
-    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L4_ENDLESS);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L3_ENDLESS);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L2_ENDLESS);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L1_ENDLESS);
-    }));
+    // OPBoard - Selecting desired reef height
+    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L4);}));
+    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L3);}));
+    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L2);}));
+    new JoystickButton(OI.m_operatorBoard, 22).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L1);}));
   
     // OPBoard - Coral stations (rotation + intake)
     new JoystickButton(OI.m_operatorBoard, 13).onTrue(
       Commands.sequence(
-        Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_LEFT)),
+        Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_LEFT)),
         new IntakeCommand(intake, () -> IntakeAction.INTAKE_CORAL_CONDITIONAL)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 14).onTrue(
       Commands.sequence(
-        Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_RIGHT)),
+        Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_RIGHT)),
         new IntakeCommand(intake, () -> IntakeAction.INTAKE_CORAL_CONDITIONAL)
       )
     );
@@ -271,40 +267,27 @@ public class RobotContainer {
       Commands.runOnce(() -> new IntakeCommand(intake, () -> IntakeAction.STOP).withTimeout(0.1).schedule())
     );
 
-    // OPBoard - Barge (rotation + elevator + pivot)
+    // OPBoard - Barge
     new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_LEFT);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
+      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT);
     }));
     new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_RIGHT);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
+      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT);
     }));
 
-    // OPBoard - Processor (rotation + elevator + pivot)
+    // OPBoard - Processor
     new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
-      MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_PROCESSOR_ENDLESS);
+      RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR);
     }));
 
-    // Switch whether to use zone poses or not
+    // Switch whether score coral or intake alga
     new JoystickButton(OI.m_operatorBoard, 29).onTrue(
       Commands.runOnce(() -> {
-        useZonePoses = true;
-        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
-        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, true));
+        RobotStateManager.setAlignForAlgaePickup(true);
       })
     ).onFalse(
       Commands.runOnce(() -> {
-        useZonePoses = false;
-        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
-        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, false));
+        RobotStateManager.setAlignForAlgaePickup(false);
       })
     );
 
@@ -390,56 +373,42 @@ public class RobotContainer {
     // Elevator and pivot positioning
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.DOWN);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.INTAKE_READY);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.STOP);
       }),
       new RetractManipulator(elevator, pivot)
     ));
     NamedCommands.registerCommand("manipulator_position_barge", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_BARGE_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
     ));
     NamedCommands.registerCommand("manipulator_position_processor", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_PROCESSOR_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR)
     ));
     NamedCommands.registerCommand("manipulator_position_l4", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L4_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
     ));
     NamedCommands .registerCommand("manipulator_position_l3", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L3_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
     ));
     NamedCommands.registerCommand("manipulator_position_l2", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L2_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
     ));
     NamedCommands.registerCommand("manipulator_position_l1", Commands.sequence(
       Commands.runOnce(() -> {
-        MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1);
-        MutablePivotPosition.setMutablePivotPosition(PivotPosition.L1);
         MutableIntakeAction.setMutableIntakeAction(IntakeAction.SCORE_L1_ENDLESS);
       }),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1)
