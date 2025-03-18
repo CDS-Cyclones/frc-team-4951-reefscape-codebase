@@ -89,7 +89,7 @@
           {
             "title": "Candle State",
             "x": 768.0,
-            "y": 256.0,
+            "y": 384.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Text Display",
@@ -117,7 +117,7 @@
           {
             "title": "Intake Action",
             "x": 0.0,
-            "y": 256.0,
+            "y": 384.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Text Display",
@@ -131,7 +131,7 @@
           {
             "title": "Intake State",
             "x": 384.0,
-            "y": 256.0,
+            "y": 384.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Text Display",
@@ -169,6 +169,20 @@
               "data_type": "string",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "Current Sys Id Routine",
+            "x": 1280.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Current Sys Id Routine",
+              "period": 0.033,
+              "data_type": "double",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -179,9 +193,9 @@
         "layouts": [
           {
             "title": "angle",
-            "x": 768.0,
+            "x": 0.0,
             "y": 0.0,
-            "width": 384.0,
+            "width": 512.0,
             "height": 512.0,
             "type": "List Layout",
             "properties": {
@@ -194,49 +208,12 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Number Slider",
+                "type": "Text Display",
                 "properties": {
                   "topic": "/TunableValues/Drive/angle/p",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 10.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "d",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/angle/d",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "maxVel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/angle/maxVel",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 20.0,
-                  "divisions": 5,
-                  "update_continuously": true
+                  "show_submit_button": false
                 }
               },
               {
@@ -245,24 +222,49 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Number Slider",
+                "type": "Text Display",
                 "properties": {
                   "topic": "/TunableValues/Drive/angle/maxAccel",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 20.0,
-                  "divisions": 5,
-                  "update_continuously": true
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "maxVel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/maxVel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
                 }
               }
             ]
           },
           {
             "title": "transation",
-            "x": 1152.0,
+            "x": 512.0,
             "y": 0.0,
-            "width": 384.0,
+            "width": 512.0,
             "height": 512.0,
             "type": "List Layout",
             "properties": {
@@ -270,54 +272,17 @@
             },
             "children": [
               {
-                "title": "p",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/transation/p",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 10.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
                 "title": "d",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Number Slider",
+                "type": "Text Display",
                 "properties": {
                   "topic": "/TunableValues/Drive/transation/d",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "maxVel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/transation/maxVel",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 20.0,
-                  "divisions": 5,
-                  "update_continuously": true
+                  "show_submit_button": false
                 }
               },
               {
@@ -326,109 +291,40 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Number Slider",
+                "type": "Text Display",
                 "properties": {
                   "topic": "/TunableValues/Drive/transation/maxAccel",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 20.0,
-                  "divisions": 5,
-                  "update_continuously": true
+                  "show_submit_button": false
                 }
-              }
-            ]
-          },
-          {
-            "title": "drive",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 384.0,
-            "height": 512.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
+              },
+              {
+                "title": "maxVel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/maxVel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
               {
                 "title": "p",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Number Slider",
+                "type": "Text Display",
                 "properties": {
-                  "topic": "/TunableValues/Drive/drive/p",
+                  "topic": "/TunableValues/Drive/transation/p",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 10.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "d",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/drive/d",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              }
-            ]
-          },
-          {
-            "title": "turn",
-            "x": 384.0,
-            "y": 0.0,
-            "width": 384.0,
-            "height": 512.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "p",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/turn/p",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 10.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "d",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Drive/turn/d",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
-                  "divisions": 5,
-                  "update_continuously": true
+                  "show_submit_button": false
                 }
               }
             ]
@@ -683,35 +579,52 @@
             },
             "children": [
               {
-                "title": "TunableSpeed",
+                "title": "CoralIntakeSpeed",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/TunableSpeed",
+                  "topic": "/TunableValues/Intake/CoralIntakeSpeed",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": -1.0,
+                  "min_value": 0.0,
                   "max_value": 1.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
               },
               {
-                "title": "TunableTime",
+                "title": "CoralScoringSpeed",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/TunableTime",
+                  "topic": "/TunableValues/Intake/CoralScoringSpeed",
                   "period": 0.06,
                   "data_type": "double",
                   "min_value": 0.0,
-                  "max_value": 5.0,
+                  "max_value": 1.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "CoralScoringTime",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Intake/CoralScoringTime",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
                   "divisions": 5,
                   "update_continuously": true
                 }

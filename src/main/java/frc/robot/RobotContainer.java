@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -74,6 +75,8 @@ public class RobotContainer {
   @SuppressWarnings("unused") private final Candle candle;
 
   private SwerveDriveSimulation driveSimulation = null;
+
+  private byte sysIdRoutineId = 1;
 
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -329,6 +332,77 @@ public class RobotContainer {
     autoChooser.addOption("Pivot SysId (Quasistatic Reverse)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Pivot SysId (Dynamic Forward)", pivot.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption("Pivot SysId (Dynamic Reverse)", pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+  
+    try {
+      SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+    } catch (Exception e) {}
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kA.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+        new ConditionalCommand(
+          elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+          pivot.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kB.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+        new ConditionalCommand(
+          elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+          pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kX.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdDynamic(SysIdRoutine.Direction.kForward),
+        new ConditionalCommand(
+          elevator.sysIdDynamic(SysIdRoutine.Direction.kForward),
+          pivot.sysIdDynamic(SysIdRoutine.Direction.kForward),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kY.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+        new ConditionalCommand(
+          elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+          pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    // pressing right bumer gupos id left bumper lowers id, whenever updated proint to smartdashbord
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kRightBumper.value).whileTrue(
+      Commands.runOnce(() -> {
+        sysIdRoutineId++;
+        try {
+          SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+        } catch (Exception e) {}
+      })
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kLeftBumper.value).whileTrue(
+      Commands.runOnce(() -> {
+        sysIdRoutineId--;
+        try {
+          SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+        } catch (Exception e) {}
+      })
+    );
   }
 
   /**

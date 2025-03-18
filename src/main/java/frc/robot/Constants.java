@@ -225,6 +225,7 @@ public final class Constants {
     public static final int kOperatorBoardPort = 1;
     public static final int kOperatorControllerPort = 2;
     public static final int kOperatorControllerManualPort = 3;
+    public static final int kSysIDRoutinesControllerPort = 4;
 
     // Joystick axis deadband
     public static final double kJoystickAxisDeadband = 0.1;
