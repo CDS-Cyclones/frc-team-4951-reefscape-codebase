@@ -2,6 +2,7 @@ package frc.robot;
 
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
+import frc.robot.Constants.RobotStateConstants.IntakeAction;
 import frc.robot.Constants.RobotStateConstants.PivotPosition;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -15,6 +16,7 @@ public class RobotStateManager {
   @Setter private static ReefHeight reefHeight;
   @Setter private static boolean alignForAlgaePickup;
   @Setter private static FieldPose coralScoringPose;
+  @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
 
   public static RobotState getRobotState() {
     return new RobotState(robotAction, reefHeight, alignForAlgaePickup, coralScoringPose);
@@ -31,11 +33,20 @@ public class RobotStateManager {
   public static PivotPosition getDesiredPivotPosition() {
     return getRobotState().getPivotPosition();
   }
+  
+  public static IntakeAction getDesiredIntakeAction() {
+    if(intakeOccupied) {
+      return IntakeAction.OCCUPIED;
+    }
+    
+    return getRobotState().getIntakeAction();
+  }
 
   public static class RobotState {
     @Getter private final ElevatorPosition elevatorPosition;
     @Getter private final PivotPosition pivotPosition;
     @Getter private final FieldPose fieldPose;
+    @Getter private final IntakeAction intakeAction;
 
     /**
      * Constructor for the RobotState class.
@@ -51,6 +62,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.PROCESSOR;
           pivotPosition = PivotPosition.PROCESSOR;
           fieldPose = FieldPose.PROCESSOR;
+          intakeAction = IntakeAction.SCORE_PROCESSOR;
           break;
         }
 
@@ -58,6 +70,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.BARGE;
           pivotPosition = PivotPosition.BARGE;
           fieldPose = FieldPose.BARGE_LEFT;
+          intakeAction = IntakeAction.SCORE_BARGE;
           break;
         }
 
@@ -65,6 +78,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.BARGE;
           pivotPosition = PivotPosition.BARGE;
           fieldPose = FieldPose.BARGE_RIGHT;
+          intakeAction = IntakeAction.SCORE_BARGE;
           break;
         }
 
@@ -72,6 +86,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.DOWN;
           pivotPosition = PivotPosition.INTAKE_READY;
           fieldPose = FieldPose.STATION_LEFT;
+          intakeAction = IntakeAction.INTAKE_CORAL;
           break;
         }
 
@@ -79,6 +94,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.DOWN;
           pivotPosition = PivotPosition.INTAKE_READY;
           fieldPose = FieldPose.STATION_RIGHT;
+          intakeAction = IntakeAction.INTAKE_CORAL;
           break;
         }
 
@@ -87,6 +103,7 @@ public class RobotStateManager {
             elevatorPosition = ElevatorPosition.REEF_ALGA;
             pivotPosition = PivotPosition.REEF_ALGA;
             fieldPose = getCorrespondingPose(coralScoringPose);
+            intakeAction = IntakeAction.INTAKE_REEF_ALGA;
           } else {
             fieldPose = coralScoringPose;
 
@@ -94,29 +111,34 @@ public class RobotStateManager {
               case L1: {
                 elevatorPosition = ElevatorPosition.L1;
                 pivotPosition = PivotPosition.L1;
+                intakeAction = IntakeAction.SCORE_L1;
                 break;
               }
 
               case L2: {
                 elevatorPosition = ElevatorPosition.L2;
                 pivotPosition = PivotPosition.L2;
+                intakeAction = IntakeAction.SCORE_L2;
                 break;
               }
 
               case L3: {
                 elevatorPosition = ElevatorPosition.L3;
                 pivotPosition = PivotPosition.L3;
+                intakeAction = IntakeAction.SCORE_L3;
                 break;
               }
 
               case L4: {
                 elevatorPosition = ElevatorPosition.L4;
                 pivotPosition = PivotPosition.L4;
+                intakeAction = IntakeAction.SCORE_L4;
                 break;
               }
               default:
                 elevatorPosition = ElevatorPosition.DOWN;
                 pivotPosition = PivotPosition.INTAKE_READY;
+                intakeAction = IntakeAction.NONE;
                 break;
             }
           }
@@ -126,6 +148,7 @@ public class RobotStateManager {
           elevatorPosition = ElevatorPosition.DOWN;
           pivotPosition = PivotPosition.INTAKE_READY;
           fieldPose = FieldPose.A;
+          intakeAction = IntakeAction.NONE;
           break;
         }
       }

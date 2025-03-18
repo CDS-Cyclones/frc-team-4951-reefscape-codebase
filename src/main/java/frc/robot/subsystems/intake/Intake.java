@@ -12,7 +12,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.RobotStateConstants.IntakeState;
+import frc.robot.RobotStateManager;
 import lombok.Getter;
 
 import static edu.wpi.first.units.Units.Meters;
@@ -23,27 +23,27 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase implements IntakeIO {
   private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
   private final SparkMax intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
-  private final CANrange rangeSensor = new CANrange(canrangeCanId, canrangeCanBus);
-  
-  @Getter private IntakeState intakeState;
+  private final CANrange coralCanrange = new CANrange(coralCanrangeCanId);
+
+  @Getter boolean coralDetected = false;
 
   public Intake() {
     intakeMotor.configure(intakeWheelsMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-
-    updateIntakeState();
   }
 
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
-    updateIntakeState();
+    updateSensorStatus();
 
     updateInputs(intakeInputs);
     Logger.processInputs("Intake", intakeInputs);
 
     try {
-      SmartDashboard.putString("Mutables/Intake State", intakeState.toString());
-    } catch (Exception e) {}
+      String intakeStateString = "coral present: " + (coralDetected ? "yes" : "no");
+      SmartDashboard.putString("Mutables/Intake State", intakeStateString);
+      SmartDashboard.putString("Mutables/Intake Action", RobotStateManager.getDesiredIntakeAction().toString());
+    } catch(Exception e) {}
   }
 
   /**
@@ -56,23 +56,24 @@ public class Intake extends SubsystemBase implements IntakeIO {
   }
 
   /**
-   * Updates the intake state based on the range sensor.
+   *  Checks if Canrange detects a coral.
+   *  If sensor is not connected, returns false.
+   * 
+   * @return True if a coral is detected.
    */
-  private void updateIntakeState() {
-    if (!rangeSensor.isConnected()) {
-      intakeState = IntakeState.UNKNOWN;
-      return;
+  private boolean detectCoral() {
+    if (!coralCanrange.isConnected()) {
+      return false;
     }
-    
-    double sensorValue = rangeSensor.getDistance().getValue().in(Meters);
-    
-    if (sensorValue < intakeRangeForCoral) {
-      intakeState = IntakeState.CORAL;
-    } else if (sensorValue < intakeRangeForAlga) {
-      intakeState = IntakeState.ALGA;
-    } else {
-      intakeState = IntakeState.EMPTY;
-    }
+
+    return coralCanrange.getDistance().getValue().in(Meters) < coralCanrangeDistanceThreshold;
+  }
+
+  /**
+   * Updates the intake state.
+   */
+  private void updateSensorStatus() {
+    coralDetected = detectCoral();
   }
 
   /**
@@ -89,8 +90,9 @@ public class Intake extends SubsystemBase implements IntakeIO {
     inputs.intakeCurrent = intakeMotor.getOutputCurrent();
     inputs.intakeVoltage = intakeMotor.getBusVoltage();
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
-    inputs.canrangeConnected = rangeSensor.isConnected();
-    inputs.intakeDistance = rangeSensor.getDistance().getValue().in(Meters);
-    inputs.intakeState = intakeState;
+    inputs.intakeAction = RobotStateManager.getDesiredIntakeAction();
+    inputs.coralCanrangeConnected = coralCanrange.isConnected();
+    inputs.coralCanrangeDistance = coralCanrange.getDistance().getValue().in(Meters);
+    inputs.coralDetected = coralDetected;
   }
 }

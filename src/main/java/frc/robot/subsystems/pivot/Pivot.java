@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotStateManager;
 
 public class Pivot extends SubsystemBase implements PivotIO {
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
@@ -34,7 +35,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
 
   public Pivot() {
     encoder = motor.getAbsoluteEncoder();
-    SmartDashboard.putNumber("bababui", 0.2);
+  
     motor.configure(pivotMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
   }
 
@@ -43,6 +44,10 @@ public class Pivot extends SubsystemBase implements PivotIO {
   public void periodic() {
     updateInputs(pivotInputs);
     Logger.processInputs("Pivot", pivotInputs);
+
+    try {
+      SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
+    } catch (Exception e) {}
   }
 
   /**

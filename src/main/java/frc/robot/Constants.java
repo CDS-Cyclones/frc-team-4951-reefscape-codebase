@@ -33,6 +33,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.utils.TunableValues.TunableNum;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -234,8 +236,8 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
-    public static final int canrangeCanId = 40;
-    public static final String canrangeCanBus = "pigeonbus";
+    public static final int coralCanrangeCanId = 40;
+    public static final int algaCanrangeCanId = 41;
 
     // Motor configurations
     public static final SparkBaseConfig elevatorMotor1Config = new SparkMaxConfig()
@@ -286,8 +288,11 @@ public final class Constants {
     public static final TunableNum pivotPIDTolerance = new TunableNum("Pivot/ErrorTolerance", 0.0);  // TODO tune
     public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure out
 
-    public static final double intakeRangeForCoral = 0.05; // in m TODO figure this out
-    public static final double intakeRangeForAlga = 0.2; // in m TODO figure this out
+    // Intake constants
+    public static final double coralCanrangeDistanceThreshold = 0.05; // in m TODO figure this out
+    public static final double algaCanrangeDistanceThreshold = 0.2; // in m TODO figure this out
+
+    
   }
 
   public static class CandleConstants {
@@ -297,46 +302,27 @@ public final class Constants {
   }
 
   public static class RobotStateConstants{
+    // Constants for field poses
+    private static final double inFrontOfTag = 0.05;
+    private static final double inFrontOfTagSim = 0.4;
+    private static final double leftOfTag = -0.2;
+    private static final double rightOfTag = 0.2;
 
+    /** A tunable pivot position */
+    private static TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
+    
+    /** A tunable elevator position */
+    private static TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
+    
+    /** A tunable intake speed */
+    private static TunableNum tunableIntakeSpeed = new TunableNum("Intake/TunableSpeed", 0.0);
+    
+    /** A tunable intake time */
+    private static TunableNum tunableIntakeTime = new TunableNum("Intake/TunableTime", 0.0);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /** 
+     * An enum to represent all desired robot actions.
+     */
     public static enum RobotAction {
       REEF_ACTION,  // Either score coral or intake an alga from the reef
       SCORE_BARGE_LEFT,  // Score an alga in the barge on the left
@@ -346,18 +332,15 @@ public final class Constants {
       INTAKE_STATION_RIGHT,  // Intake a coral from the station on the right
     }
 
+    /**
+     * An enum to represent all desired reef heights.
+     */
     public static enum ReefHeight {
       L1,
       L2,
       L3,
       L4
     }
-
-    /** A tunable pivot position */
-    private static TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
-    
-    /** A tunable elevator position */
-    private static TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
 
     /**
      * An enum to represent all desired pivot positions.
@@ -419,11 +402,6 @@ public final class Constants {
         return name() + " (" + getAsDouble() + ")";
       }
     }
-
-    private static final double inFrontOfTag = 0.05;
-    private static final double inFrontOfTagSim = 0.4;
-    private static final double leftOfTag = -0.2;
-    private static final double rightOfTag = 0.2;
 
     /**
      * An enum to represent all desired field poses of the robot.
@@ -595,14 +573,76 @@ public final class Constants {
       }
     } 
   
+
     /**
-     * An enum to represent if the intake is empty, has a coral, or has an alga.
+     * An enum to represent the states of the CANdle.
      */
-    public enum IntakeState {
-      EMPTY,
-      CORAL,
-      ALGA,
-      UNKNOWN
+    @RequiredArgsConstructor
+    public enum CandleState {
+      OFF(0, 0, 0),
+      TARGET_FOUND(255, 188, 0), // orange
+      AT_POSE(128, 255, 0),  // green
+      WAITIING_FOR_CORAL(255, 248, 43),  // yellow
+      CORAL_DETECTED(0, 157, 255);  // blue
+   
+      @Getter private final int red;
+      @Getter private final int green;
+      @Getter private final int blue;
+  
+      @Override
+      public String toString() {
+        return "RGB: (" + red + ", " + green + ", " + blue + ")";
+      }
+    }
+  
+    /**
+     * An enum to represent all desired intake actions.
+     */
+    @AllArgsConstructor
+    public static enum IntakeAction {
+      NONE(0.0, 0.0),
+      OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
+      SCORE_L1(0.2, 3.0),  // TODO tune
+      SCORE_L2(0.2, 3.0),  // TODO tune
+      SCORE_L3(0.2, 3.0),  // TODO tune
+      SCORE_L4(0.2, 3.0),  // TODO tune
+      SCORE_BARGE(1.0, 2.0),  // TODO tune
+      SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
+      INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune
+      INTAKE_CORAL(0.2, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
+      TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
+  
+      private final double speed;
+      private final Double time;
+  
+      /**
+       * Returns the speed at which this action should run.
+       * 
+       * @return The speed at which this action should run.
+       */
+      public double getSpeed() {
+        if (this == TUNABLE) {
+          return tunableIntakeSpeed.getAsDouble();
+        }
+        return speed;
+      }
+  
+      /**
+       * Returns the time for which this action should run.
+       * 
+       * @return The time for which this action should run.
+       */
+      public Double getTime() {
+        if (this == TUNABLE) {
+          return tunableIntakeTime.getAsDouble();
+        }
+        return time;
+      }
+  
+      @Override
+      public String toString() {
+        return name() + " (" + getSpeed() + ", " + getTime() + ")";
+      }
     }
   }
 }

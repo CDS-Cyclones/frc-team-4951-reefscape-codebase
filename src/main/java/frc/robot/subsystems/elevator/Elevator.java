@@ -14,10 +14,12 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotStateManager;
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
   private final SparkMax motor1 = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
@@ -45,6 +47,10 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   public void periodic() {
     updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
+
+    try {
+      SmartDashboard.putString("Mutables/Elevator Position", RobotStateManager.getDesiredElevatorPosition().toString());
+    } catch (Exception e) {}
   }
 
   /**
