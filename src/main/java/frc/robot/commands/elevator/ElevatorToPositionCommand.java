@@ -7,7 +7,7 @@ package frc.robot.commands.elevator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
 import static frc.robot.Constants.ManipulatorConstants.*;

@@ -11,17 +11,20 @@ import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.RobotStateConstants.CandleState;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.littletonrobotics.junction.Logger;
 
-import frc.robot.mutables.MutableCandleState;
-import frc.robot.mutables.MutableCandleState.CandleState;
 import static frc.robot.Constants.CandleConstants.*;
 
 
 public class Candle extends SubsystemBase implements CandleIO {
   private final CANdle candle = new CANdle(candleId, candleBus);
   private final CandleIOInputsAutoLogged candleInputs = new CandleIOInputsAutoLogged();
+
+  @Setter @Getter private CandleState state = CandleState.OFF;
 
   public Candle() {
     CANdleConfiguration configAll = new CANdleConfiguration();
@@ -59,29 +62,34 @@ public class Candle extends SubsystemBase implements CandleIO {
     candle.configStatusLedState(offWhenActive, 0);
   }
 
-  public void setLEDs(int red, int green, int blue) {
+  public void setLEDs(int r, int g, int b) {
     // Clamp the values to 0-255
-    red = Math.max(0, Math.min(255, red));
-    green = Math.max(0, Math.min(255, green));
-    blue = Math.max(0, Math.min(255, blue));
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
 
-    candle.setLEDs(red, green, blue);
+    candle.setLEDs(r, g, b);
+  }
+
+  public void setLEDs(CandleState state) {
+    // Clamp the values to 0-255
+    int r = Math.max(0, Math.min(255, state.getRed()));
+    int g = Math.max(0, Math.min(255, state.getGreen()));
+    int b = Math.max(0, Math.min(255, state.getBlue()));
+
+    candle.setLEDs(r, g, b);
   }
 
   @Override
   public void periodic() {
-    CandleState state = MutableCandleState.getMutableCandleState();
-
-    setLEDs(state.getRed(), state.getGreen(), state.getBlue());
+    setLEDs(state);
 
     updateInputs(candleInputs);
     Logger.processInputs("Candle", candleInputs);
 
     try {
-      SmartDashboard.putString("CANDLE COLOR", state.toString());
-    } catch (Exception e) {
-  
-    }
+    SmartDashboard.putString("Mutables/Candle State", state.toString());
+    } catch (Exception e) {}
   }
 
   @Override
@@ -91,6 +99,6 @@ public class Candle extends SubsystemBase implements CandleIO {
     inputs.railVoltage = get5V();
     inputs.current = getCurrent();
     inputs.brightness = candle.configGetParameter(ParamEnum.eBrightnessCoefficient, 0);
-    inputs.state = MutableCandleState.getMutableCandleState();
+    inputs.state = state;
   }
 }

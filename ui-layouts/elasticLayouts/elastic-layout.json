@@ -89,9 +89,9 @@
           {
             "title": "Candle State",
             "x": 768.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 512.0,
+            "y": 256.0,
+            "width": 384.0,
+            "height": 256.0,
             "type": "Text Display",
             "properties": {
               "topic": "/SmartDashboard/Mutables/Candle State",
@@ -102,7 +102,7 @@
           },
           {
             "title": "Elevator Position",
-            "x": 0.0,
+            "x": 384.0,
             "y": 0.0,
             "width": 384.0,
             "height": 256.0,
@@ -144,13 +144,27 @@
           },
           {
             "title": "Pivot Position",
-            "x": 384.0,
+            "x": 768.0,
             "y": 0.0,
             "width": 384.0,
             "height": 256.0,
             "type": "Text Display",
             "properties": {
               "topic": "/SmartDashboard/Mutables/Pivot Position",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Field Pose",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Mutables/Field Pose",
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false

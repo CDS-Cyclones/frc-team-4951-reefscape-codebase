@@ -17,12 +17,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.mutables.MutableFieldPose.FieldPose;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
-import frc.robot.mutables.MutableCandleState;
-import frc.robot.mutables.MutableCandleState.CandleState;
+import frc.robot.Constants.RobotStateConstants.CandleState;
+import frc.robot.Constants.RobotStateConstants.FieldPose;
 import static frc.robot.Constants.DriveConstants.*;
 
 /*
@@ -32,6 +32,7 @@ import static frc.robot.Constants.DriveConstants.*;
 public class VisionAssistedDriveToPoseCommand extends Command {
   private final Drive drive;
   private final Vision vision;
+  private final Candle candle;
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
   private final Supplier<FieldPose> desiredFieldPoseSupplier;
@@ -45,9 +46,10 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private boolean hasDetectedDesiredTag;
 
   /** Creates a new JoystickDriveAtAngleCommand. */
-  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
+  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, Candle candle, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
     this.drive = drive;
     this.vision = vision;
+    this.candle = candle;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
     this.desiredFieldPoseSupplier = desiredFieldPoseSupplier;
@@ -102,7 +104,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
       for (int tagId : detectedTagIds) {
         if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
           hasDetectedDesiredTag = true;
-          MutableCandleState.setMutableCandleState(CandleState.TARGET_FOUND);
+          candle.setState(CandleState.TARGET_FOUND);
+          
           break;
         }
       }
@@ -111,7 +114,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
     if(hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
       if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
-        MutableCandleState.setMutableCandleState(CandleState.AT_POSE);
+        candle.setState(CandleState.AT_POSE);
       }
 
       Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
@@ -147,7 +150,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    MutableCandleState.setMutableCandleState(CandleState.OFF);
+    candle.setState(CandleState.OFF);
   }
 
   // Returns true when the command should end.

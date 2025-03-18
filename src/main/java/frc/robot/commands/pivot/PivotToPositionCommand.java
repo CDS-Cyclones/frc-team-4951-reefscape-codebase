@@ -7,7 +7,7 @@ package frc.robot.commands.pivot;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.mutables.MutablePivotPosition.PivotPosition;
+import frc.robot.Constants.RobotStateConstants.PivotPosition;
 import frc.robot.subsystems.pivot.Pivot;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
@@ -70,6 +70,6 @@ public class PivotToPositionCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return controller.atGoal();
   }
 }

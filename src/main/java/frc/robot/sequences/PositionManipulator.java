@@ -5,10 +5,10 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
+import frc.robot.Constants.RobotStateConstants.PivotPosition;
 import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
-import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
-import frc.robot.mutables.MutablePivotPosition.PivotPosition;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
 
