@@ -193,9 +193,9 @@
         "layouts": [
           {
             "title": "angle",
-            "x": 0.0,
+            "x": 1152.0,
             "y": 0.0,
-            "width": 512.0,
+            "width": 384.0,
             "height": 512.0,
             "type": "List Layout",
             "properties": {
@@ -208,40 +208,15 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Number Slider",
                 "properties": {
                   "topic": "/TunableValues/Drive/angle/p",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "maxAccel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/TunableValues/Drive/angle/maxAccel",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "maxVel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/TunableValues/Drive/angle/maxVel",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 0.0,
+                  "max_value": 7.0,
+                  "divisions": 5,
+                  "update_continuously": true
                 }
               },
               {
@@ -250,21 +225,58 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Number Slider",
                 "properties": {
                   "topic": "/TunableValues/Drive/angle/d",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxVel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/maxVel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 17.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "maxAccel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/angle/maxAccel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 17.0,
+                  "divisions": 5,
+                  "update_continuously": true
                 }
               }
             ]
           },
           {
             "title": "transation",
-            "x": 512.0,
+            "x": 768.0,
             "y": 0.0,
-            "width": 512.0,
+            "width": 384.0,
             "height": 512.0,
             "type": "List Layout",
             "properties": {
@@ -272,31 +284,37 @@
             },
             "children": [
               {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 7.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
                 "title": "d",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Number Slider",
                 "properties": {
                   "topic": "/TunableValues/Drive/transation/d",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "maxAccel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/TunableValues/Drive/transation/maxAccel",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
                 }
               },
               {
@@ -305,26 +323,126 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Number Slider",
                 "properties": {
                   "topic": "/TunableValues/Drive/transation/maxVel",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 0.0,
+                  "max_value": 17.0,
+                  "divisions": 5,
+                  "update_continuously": true
                 }
               },
+              {
+                "title": "maxAccel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/transation/maxAccel",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 17.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "drive",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
               {
                 "title": "p",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Drive/transation/p",
+                  "topic": "/TunableValues/Drive/drive/p",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 0.0,
+                  "max_value": 7.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/drive/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "turn",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 512.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "p",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/turn/p",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 7.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
+                "title": "d",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Drive/turn/d",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 0.0,
+                  "max_value": 2.0,
+                  "divisions": 5,
+                  "update_continuously": true
                 }
               }
             ]
