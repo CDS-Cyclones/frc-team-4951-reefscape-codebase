@@ -408,6 +408,7 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public static enum FieldPose {
+      // CORAL SCORING POSES MUST REMAIN FIRST 12!
       A(21, 10, inFrontOfTag, rightOfTag, Math.PI, false),
       B(21, 10, inFrontOfTag, leftOfTag, Math.PI, false),
       C(22, 9, inFrontOfTag, rightOfTag, Math.PI, false),
