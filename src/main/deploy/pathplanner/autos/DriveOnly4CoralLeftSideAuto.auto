@@ -15,13 +15,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "path__barge_k"
+                        "pathName": "barge_to_K"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "align__tagK"
+                        "name": "align_to_tag_K"
                       }
                     }
                   ]
@@ -33,7 +33,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.7
+            "waitTime": 0.4
           }
         },
         {
@@ -43,16 +43,10 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "path__k_il"
+                  "pathName": "K_to_leftStation"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.7
           }
         },
         {
@@ -66,13 +60,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "path__il_j"
+                        "pathName": "leftStation_to_J"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "align__tagJ"
+                        "name": "align_to_tag_J"
                       }
                     }
                   ]
@@ -84,7 +78,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.7
+            "waitTime": 0.4
           }
         },
         {
@@ -94,16 +88,10 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "path__j_il"
+                  "pathName": "J_to_leftStation"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.7
           }
         },
         {
@@ -117,19 +105,70 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "path__il_i"
+                        "pathName": "leftStation_to_I"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "align__tagI"
+                        "name": "align_to_tag_I"
                       }
                     }
                   ]
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.4
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "I_to_leftStation"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "leftStation_to_H"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "align_to_tag_H"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.4
           }
         }
       ]

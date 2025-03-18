@@ -4,6 +4,7 @@
 
 package frc.robot.commands.drive;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
@@ -25,13 +26,15 @@ public class JoystickDriveCommand extends Command {
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
   private final DoubleSupplier omegaSupplier;
+  private final BooleanSupplier fieldRelative;
 
   /** Creates a new JoystickDriveCommand. */
-  public JoystickDriveCommand(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+  public JoystickDriveCommand(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, BooleanSupplier fieldRelative) {
     this.drive = drive;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
     this.omegaSupplier = omegaSupplier;
+    this.fieldRelative = fieldRelative;
 
     addRequirements(this.drive);
   }
@@ -59,8 +62,16 @@ public class JoystickDriveCommand extends Command {
       omega * drive.getMaxAngularSpeedRadPerSec()
     );
     boolean isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-    
-    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+
+    // Determine robot angle based on whether the robot is in field relative mode or not
+    // Always keeping angle as 0 is analogous to setting the robot as robot relative
+    Rotation2d robotAngle;
+    if (fieldRelative.getAsBoolean())
+      robotAngle = isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation();
+    else
+      robotAngle = new Rotation2d();
+
+    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotAngle));
   }
 
   // Called once the command ends or is interrupted.

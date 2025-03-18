@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -19,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.RobotStateConstants.ReefHeight;
+import frc.robot.Constants.RobotStateConstants.RobotAction;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
@@ -26,18 +29,18 @@ import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
-import frc.robot.commands.intake.IntakeCoralCommand;
+import frc.robot.commands.intake.IntakeCommand;
+import frc.robot.commands.intake.IntakeCoral;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.intake.ScoreCoralCommand;
 import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
-import frc.robot.mutables.MutableElevatorPosition;
-import frc.robot.mutables.MutableFieldPose;
-import frc.robot.mutables.MutablePivotPosition;
-import frc.robot.mutables.MutableElevatorPosition.ElevatorPosition;
-import frc.robot.mutables.MutableFieldPose.FieldPose;
-import frc.robot.mutables.MutablePivotPosition.PivotPosition;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
+import frc.robot.Constants.RobotStateConstants.FieldPose;
+import frc.robot.Constants.RobotStateConstants.IntakeAction;
+import frc.robot.Constants.RobotStateConstants.PivotPosition;
+import frc.robot.sequences.PositionManipulator;
+import frc.robot.sequences.RetractManipulator;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -55,7 +58,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
-import static frc.robot.Constants.ManipulatorConstants;
+import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
+import static frc.robot.Constants.RobotStateConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -73,10 +77,7 @@ public class RobotContainer {
 
   private SwerveDriveSimulation driveSimulation = null;
 
-  /**
-   * If true, coral scoring poses will be cenetered so as to pick up algae.
-   */
-  private boolean useZonePoses = false;
+  private byte sysIdRoutineId = 1;
 
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -126,16 +127,22 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     setupSysIdRoutines();
-    setMutableDefaults();
     configureBindings();
 
     TunableValues.setTuningMode(true);  // TODO turn off for competition
-  }
 
-  public void setMutableDefaults() {
-    MutableFieldPose.setMutableFieldPose(FieldPose.I);
-    MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4);
-    MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
+    // Set up default states
+    RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    RobotStateManager.setReefHeight(ReefHeight.L4);
+    RobotStateManager.setAlignForAlgaePickup(false);
+    RobotStateManager.setCoralScoringPose(FieldPose.J);
+    RobotStateManager.setIntakeOccupied(false);
+
+    // Call these to make sure the tunable values are loaded
+    RobotStateConstants.tunableElevatorPosition.get();
+    RobotStateConstants.tunablePivotPosition.get();
+    RobotStateConstants.tunableIntakeSpeed.get();
+    RobotStateConstants.tunableIntakeTime.get();
   }
 
   /**
@@ -145,10 +152,11 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(new JoystickDriveCommand(
       drive,
-      () -> -OI.m_driverController.getLeftY(),
-      () -> -OI.m_driverController.getLeftX(),
-      () -> -OI.m_driverController.getRightX())
-    );
+      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+      () -> OI.m_operatorBoard.getRawButton(25)
+    ));
 
     // Default command for elevator, hold position
     elevator.setDefaultCommand(new HoldElevatorPositionCommand(elevator));
@@ -161,45 +169,30 @@ public class RobotContainer {
       .whileTrue(new VisionAssistedDriveToPoseCommand(
         drive,
         vision,
-        () -> -OI.m_driverController.getLeftY(),
-        () -> -OI.m_driverController.getLeftX(),
-        MutableFieldPose::getMutableFieldPose
+        candle,
+        () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+        () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+        RobotStateManager::getDesiredFieldPose
       ));
 
     // Scoring sequence
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
         Commands.sequence(
-          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
-            new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
-            Commands.none(),
-            () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+          new PositionManipulator(
+            elevator,
+            pivot,
+            RobotStateManager::getDesiredElevatorPosition,
+            RobotStateManager::getDesiredPivotPosition
           ),
-          Commands.parallel( // Get elevator and pivot to scoring positions
-            new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getMutableElevatorPositionAsDouble),
-            new PivotToPositionCommand(pivot, MutablePivotPosition::getMutablePivotPositionAsDouble)
-          ),
-          new ConditionalCommand( // If trigger is held, score coral
-            new ManualIntakeCommand(intake, ManipulatorConstants.coralScoringSpeed),
+          new ConditionalCommand( // If trigger is held and intake is not occupied, score coral
+            new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true),
             Commands.none(),
-            () -> OI.m_driverController.getRightTriggerAxis() > 0.5
+            () -> (OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED)
           )
         )
       )
-      .onFalse( // Once let go, retract
-        Commands.sequence(
-        new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
-          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble),
-          Commands.none(),
-          () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
-        ),
-        Commands.parallel(
-          new ElevatorToPositionCommand(elevator, pivot, ElevatorPosition.DOWN::getAsDouble),
-          new PivotToPositionCommand(pivot, PivotPosition.ELEVATOR_CLEAR::getAsDouble)
-        ),
-        new PivotToPositionCommand(pivot, PivotPosition.INTAKE_READY::getAsDouble)
-        )
-      );
+      .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -210,107 +203,100 @@ public class RobotContainer {
       : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
     new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    // OPBoard - Reef poses (coral & algae)
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.A)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z1 : FieldPose.B)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.C)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z2 : FieldPose.D)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.E)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z3 : FieldPose.F)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.G)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z4 : FieldPose.H)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.I)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z5 : FieldPose.J)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.K)
-    ));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> 
-      MutableFieldPose.setMutableFieldPose(useZonePoses ? FieldPose.Z6 : FieldPose.L)
-    ));
+    // OPBoard - Reef poses
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.A);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.B);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.C);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.D);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.E);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.F);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.G);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.H);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.I);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.J);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.K);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> { 
+      RobotStateManager.setCoralScoringPose(FieldPose.L);
+      RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
+    }));
 
-    // OPBoard - Coral scoring elevator and pivot positions
-    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L4); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L4);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L3);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L2); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L3);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.L1); 
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.L2);
-    }));
+    // OPBoard - Selecting desired reef height
+    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L4);}));
+    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L3);}));
+    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L2);}));
+    new JoystickButton(OI.m_operatorBoard, 22).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L1);}));
   
     // OPBoard - Coral stations (rotation + intake)
     new JoystickButton(OI.m_operatorBoard, 13).onTrue(
       Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_LEFT)),
-          new IntakeCoralCommand(intake)
+        Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_LEFT)),
+        new IntakeCoral(intake, candle)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 14).onTrue(
       Commands.sequence(
-          Commands.runOnce(() -> MutableFieldPose.setMutableFieldPose(FieldPose.STATION_RIGHT)),
-          new IntakeCoralCommand(intake)
+        Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_RIGHT)),
+        new IntakeCoral(intake, candle)
       )
     );
+    new JoystickButton(OI.m_operatorBoard, 15).onTrue( // Stop intake
+      Commands.runOnce(() -> new ManualIntakeCommand(intake, () -> 0).withTimeout(0.05).schedule())
+    );
 
-    // OPBoard - Processor (rotation + elevator + pivot)
-    new JoystickButton(OI.m_operatorBoard, 15).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.PROCESSOR);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.PROCESSOR);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.PROCESSOR);
-    }));
-
-    // OPBoard - Barge (rotation + elevator + pivot)
+    // OPBoard - Barge
     new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_LEFT);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT);
     }));
     new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> {
-      MutableFieldPose.setMutableFieldPose(FieldPose.BARGE_RIGHT);
-      MutableElevatorPosition.setMutableElevatorPosition(ElevatorPosition.BARGE);
-      MutablePivotPosition.setMutablePivotPosition(PivotPosition.BARGE);
+      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT);
     }));
 
-    // Switch whether to use zone poses or not
+    // OPBoard - Processor
+    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
+      RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR);
+    }));
+
+    // Switch whether score coral or intake alga
     new JoystickButton(OI.m_operatorBoard, 29).onTrue(
       Commands.runOnce(() -> {
-        useZonePoses = true;
-        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
-        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, true));
+        RobotStateManager.setAlignForAlgaePickup(true);
       })
     ).onFalse(
       Commands.runOnce(() -> {
-        useZonePoses = false;
-        FieldPose currentPose = MutableFieldPose.getMutableFieldPose();
-        MutableFieldPose.setMutableFieldPose(MutableFieldPose.getCorrespondingPose(currentPose, false));
+        RobotStateManager.setAlignForAlgaePickup(false);
       })
     );
 
@@ -330,9 +316,11 @@ public class RobotContainer {
 
     // Testing mode bindings for tunable positions
     new JoystickButton(OI.m_manipulatorController, Button.kA.value)
-      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, MutableElevatorPosition::getTunableElevatorPositionAsDouble));
+      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
-      .whileTrue(new PivotToPositionCommand(pivot, MutablePivotPosition::getTunablePivotPositionAsDouble));
+      .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kX.value)
+      .whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
   }
 
   /**
@@ -353,42 +341,155 @@ public class RobotContainer {
     autoChooser.addOption("Pivot SysId (Quasistatic Reverse)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption("Pivot SysId (Dynamic Forward)", pivot.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption("Pivot SysId (Dynamic Reverse)", pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+  
+    try {
+      SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+    } catch (Exception e) {}
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kA.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+        new ConditionalCommand(
+          elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+          pivot.sysIdQuasistatic(SysIdRoutine.Direction.kForward),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kB.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+        new ConditionalCommand(
+          elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+          pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kX.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdDynamic(SysIdRoutine.Direction.kForward),
+        new ConditionalCommand(
+          elevator.sysIdDynamic(SysIdRoutine.Direction.kForward),
+          pivot.sysIdDynamic(SysIdRoutine.Direction.kForward),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kY.value).whileTrue(
+      new ConditionalCommand(
+        drive.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+        new ConditionalCommand(
+          elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+          pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse),
+          () -> sysIdRoutineId == 2
+        ),
+        () -> sysIdRoutineId == 1
+      )
+    );
+
+    // pressing right bumer gupos id left bumper lowers id, whenever updated proint to smartdashbord
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kRightBumper.value).whileTrue(
+      Commands.runOnce(() -> {
+        sysIdRoutineId++;
+        try {
+          SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+        } catch (Exception e) {}
+      })
+    );
+
+    new JoystickButton(OI.m_sysIdRoutinesController, Button.kLeftBumper.value).whileTrue(
+      Commands.runOnce(() -> {
+        sysIdRoutineId--;
+        try {
+          SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
+        } catch (Exception e) {}
+      })
+    );
   }
 
   /**
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("elevator__down", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.DOWN.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l1", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L1.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l2", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L2.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l3", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L3.getAsDouble()));
-    NamedCommands.registerCommand("elevator__l4", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.L4.getAsDouble()));
-    NamedCommands.registerCommand("elevator__barge", new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.BARGE.getAsDouble()));
+    // Drive commands
+    for (FieldPose pose : FieldPose.values()) {
+      if (pose.ordinal() >= 12) break; // make sure only reef coral scoring poses are registered
 
-    NamedCommands.registerCommand("pivot__intake_ready", new PivotToPositionCommand(pivot, () -> PivotPosition.INTAKE_READY.getAsDouble()));
-    NamedCommands.registerCommand("pivot__elevator_clear", new PivotToPositionCommand(pivot, () -> PivotPosition.ELEVATOR_CLEAR.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l1", new PivotToPositionCommand(pivot, () -> PivotPosition.L1.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l2", new PivotToPositionCommand(pivot, () -> PivotPosition.L2.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l3", new PivotToPositionCommand(pivot, () -> PivotPosition.L3.getAsDouble()));
-    NamedCommands.registerCommand("pivot__l4", new PivotToPositionCommand(pivot, () -> PivotPosition.L4.getAsDouble()));
-    NamedCommands.registerCommand("pivot__barge", new PivotToPositionCommand(pivot, () -> PivotPosition.BARGE.getAsDouble()));
+      String commandName = "align_to_tag_" + pose.name();
+      NamedCommands.registerCommand(commandName, Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
+        new AutoDriveToPoseCommand(drive, vision, pose)
+      ));
+    }
+    
+    // Intake and scoring commands
+    NamedCommands.registerCommand("intake_coral", new IntakeCoral(intake, candle));
+    NamedCommands.registerCommand("score_coral_l4", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
+    ));
+    NamedCommands.registerCommand("score_coral_l3", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
+    ));
+    NamedCommands.registerCommand("score_coral_l2", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
+    ));
+    NamedCommands.registerCommand("score_coral_l1", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
+    ));
 
-    NamedCommands.registerCommand("align__tagA", new AutoDriveToPoseCommand(drive, vision, FieldPose.A));
-    NamedCommands.registerCommand("align__tagB", new AutoDriveToPoseCommand(drive, vision, FieldPose.B));
-    NamedCommands.registerCommand("align__tagC", new AutoDriveToPoseCommand(drive, vision, FieldPose.C));
-    NamedCommands.registerCommand("align__tagD", new AutoDriveToPoseCommand(drive, vision, FieldPose.D));
-    NamedCommands.registerCommand("align__tagE", new AutoDriveToPoseCommand(drive, vision, FieldPose.E));
-    NamedCommands.registerCommand("align__tagF", new AutoDriveToPoseCommand(drive, vision, FieldPose.F));
-    NamedCommands.registerCommand("align__tagG", new AutoDriveToPoseCommand(drive, vision, FieldPose.G));
-    NamedCommands.registerCommand("align__tagH", new AutoDriveToPoseCommand(drive, vision, FieldPose.H));
-    NamedCommands.registerCommand("align__tagI", new AutoDriveToPoseCommand(drive, vision, FieldPose.I));
-    NamedCommands.registerCommand("align__tagJ", new AutoDriveToPoseCommand(drive, vision, FieldPose.J));
-    NamedCommands.registerCommand("align__tagK", new AutoDriveToPoseCommand(drive, vision, FieldPose.K));
-    NamedCommands.registerCommand("align__tagL", new AutoDriveToPoseCommand(drive, vision, FieldPose.L));
-
-    NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake));
-    NamedCommands.registerCommand("score_coral", new ScoreCoralCommand(intake));
+    // // Elevator and pivot positioning
+    NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
+      new RetractManipulator(elevator, pivot)
+    ));
+    NamedCommands.registerCommand("manipulator_position_barge_left", Commands.sequence(
+      Commands.runOnce(() -> {
+        RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
+    ));
+    NamedCommands.registerCommand("manipulator_position_barge_right", Commands.sequence(
+      Commands.runOnce(() -> {
+        RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
+    ));
+    NamedCommands.registerCommand("manipulator_position_processor", Commands.sequence(
+      Commands.runOnce(() -> {
+        RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR);
+      }),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l4", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
+    ));
+    NamedCommands .registerCommand("manipulator_position_l3", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l2", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
+    ));
+    NamedCommands.registerCommand("manipulator_position_l1", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L1)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1)
+    ));
   }
 
   /**

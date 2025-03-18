@@ -13,8 +13,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.mutables.MutableFieldPose;
-import frc.robot.mutables.MutableFieldPose.FieldPose;
+import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import static frc.robot.Constants.DriveConstants.*;
@@ -80,8 +79,6 @@ public class AutoDriveToPoseCommand extends Command {
 
     // Check if red alliance
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-
-    MutableFieldPose.setMutableFieldPose(desiredFieldPose);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

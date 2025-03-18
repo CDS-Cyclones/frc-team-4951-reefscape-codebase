@@ -2,7 +2,7 @@ package frc.robot.subsystems.leds;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import frc.robot.mutables.MutableCandleState.CandleState;
+import frc.robot.Constants.RobotStateConstants.CandleState;
 
 public interface CandleIO {
   @AutoLog

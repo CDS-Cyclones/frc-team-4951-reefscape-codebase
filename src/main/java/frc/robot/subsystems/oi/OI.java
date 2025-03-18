@@ -12,4 +12,5 @@ public class OI {
     public static GenericHID m_operatorBoard = new GenericHID(OIConstants.kOperatorBoardPort);
     public static XboxController m_manipulatorController = new XboxController(OIConstants.kOperatorControllerPort);
     public static XboxController m_mainpulatorControllerManual = new XboxController(OIConstants.kOperatorControllerManualPort);
+    public static XboxController m_sysIdRoutinesController = new XboxController(OIConstants.kSysIDRoutinesControllerPort);
 }
