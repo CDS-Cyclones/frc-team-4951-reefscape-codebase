@@ -594,5 +594,15 @@ public final class Constants {
         return name();
       }
     } 
+  
+    /**
+     * An enum to represent if the intake is empty, has a coral, or has an alga.
+     */
+    public enum IntakeState {
+      EMPTY,
+      CORAL,
+      ALGA,
+      UNKNOWN
+    }
   }
 }

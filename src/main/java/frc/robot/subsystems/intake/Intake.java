@@ -10,9 +10,10 @@ import com.revrobotics.spark.SparkMax;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.mutables.MutableIntakeState;
-import frc.robot.mutables.MutableIntakeState.IntakeState;
+import frc.robot.Constants.RobotStateConstants.IntakeState;
+import lombok.Getter;
 
 import static edu.wpi.first.units.Units.Meters;
 import static frc.robot.Constants.ManipulatorConstants.*;
@@ -23,18 +24,26 @@ public class Intake extends SubsystemBase implements IntakeIO {
   private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
   private final SparkMax intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
   private final CANrange rangeSensor = new CANrange(canrangeCanId, canrangeCanBus);
+  
+  @Getter private IntakeState intakeState;
 
   public Intake() {
     intakeMotor.configure(intakeWheelsMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+
+    updateIntakeState();
   }
 
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
-    MutableIntakeState.setMutableIntakeState(determineIntakeState());
+    updateIntakeState();
 
     updateInputs(intakeInputs);
     Logger.processInputs("Intake", intakeInputs);
+
+    try {
+      SmartDashboard.putString("Mutables/Intake State", intakeState.toString());
+    } catch (Exception e) {}
   }
 
   /**
@@ -47,19 +56,22 @@ public class Intake extends SubsystemBase implements IntakeIO {
   }
 
   /**
-   * Detrmines whether intake is empty, has coral, or has alga.
-   * 
-   * @return The current state of the intake.
+   * Updates the intake state based on the range sensor.
    */
-  public IntakeState determineIntakeState() {
+  private void updateIntakeState() {
+    if (!rangeSensor.isConnected()) {
+      intakeState = IntakeState.UNKNOWN;
+      return;
+    }
+    
     double sensorValue = rangeSensor.getDistance().getValue().in(Meters);
     
     if (sensorValue < intakeRangeForCoral) {
-      return IntakeState.CORAL;
+      intakeState = IntakeState.CORAL;
     } else if (sensorValue < intakeRangeForAlga) {
-      return IntakeState.ALGA;
+      intakeState = IntakeState.ALGA;
     } else {
-      return IntakeState.EMPTY;
+      intakeState = IntakeState.EMPTY;
     }
   }
 
@@ -79,6 +91,6 @@ public class Intake extends SubsystemBase implements IntakeIO {
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
     inputs.canrangeConnected = rangeSensor.isConnected();
     inputs.intakeDistance = rangeSensor.getDistance().getValue().in(Meters);
-    inputs.intakeState = MutableIntakeState.getMutableIntakeState();
+    inputs.intakeState = intakeState;
   }
 }

@@ -20,7 +20,6 @@ public class Manager extends SubsystemBase {
       SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
     //   SmartDashboard.putString("Mutables/Candle State", MutableCandleState.getMutableCandleState().toString());
     //   SmartDashboard.putString("Mutables/Intake Action", MutableIntakeAction.getMutableIntakeAction().toString());
-    //   SmartDashboard.putString("Mutables/Intake State", MutableIntakeState.getMutableIntakeState().toString());
       SmartDashboard.putString("Mutables/Field Pose", RobotStateManager.getDesiredFieldPose().toString());
     } catch (Exception e) {}
   }

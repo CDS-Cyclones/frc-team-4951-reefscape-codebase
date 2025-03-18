@@ -1,6 +1,6 @@
 package frc.robot.mutables;
 
-import frc.robot.mutables.MutableIntakeState.IntakeState;
+import frc.robot.Constants.RobotStateConstants.IntakeState;
 import frc.robot.utils.TunableValues.TunableNum;
 import lombok.Getter;
 import lombok.Setter;

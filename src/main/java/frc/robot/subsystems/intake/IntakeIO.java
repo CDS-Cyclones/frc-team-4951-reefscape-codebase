@@ -2,7 +2,7 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import frc.robot.mutables.MutableIntakeState.IntakeState;
+import frc.robot.Constants.RobotStateConstants.IntakeState;
 
 public interface IntakeIO {
   @AutoLog
@@ -16,7 +16,7 @@ public interface IntakeIO {
     public boolean canrangeConnected = false;
     public double intakeDistance = 0.0;
 
-    public IntakeState intakeState = IntakeState.EMPTY;
+    public IntakeState intakeState = IntakeState.UNKNOWN;
   }
 
   public default void updateInputs(IntakeIOInputs inputs) {}

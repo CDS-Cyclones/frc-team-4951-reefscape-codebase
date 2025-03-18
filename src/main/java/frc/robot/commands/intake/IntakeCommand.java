@@ -7,7 +7,6 @@ package frc.robot.commands.intake;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.mutables.MutableIntakeAction.IntakeAction;
-import frc.robot.mutables.MutableIntakeState;
 import frc.robot.subsystems.intake.Intake;
 
 import java.util.function.Supplier;
@@ -17,7 +16,6 @@ public class IntakeCommand extends Command {
   private final Supplier<IntakeAction> intakeActionSupplier;
   private final Timer timer;
   
-
   /** 
    * A command that allows to control the intake.
    * 
@@ -58,7 +56,7 @@ public class IntakeCommand extends Command {
     if (intakeActionSupplier.get().isTimed())
       return timer.hasElapsed(intakeActionSupplier.get().getTime());
     else if (intakeActionSupplier.get().isConditional())
-      return intakeActionSupplier.get().getEndState() == MutableIntakeState.getMutableIntakeState();
+      return intakeActionSupplier.get().getEndState() == intake.getIntakeState();
     
     return false;
   }
