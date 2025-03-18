@@ -59,6 +59,7 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.utils.TunableValues;
 import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
+import static frc.robot.Constants.RobotStateConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -136,6 +137,12 @@ public class RobotContainer {
     RobotStateManager.setAlignForAlgaePickup(false);
     RobotStateManager.setCoralScoringPose(FieldPose.J);
     RobotStateManager.setIntakeOccupied(false);
+
+    // Call these to make sure the tunable values are loaded
+    RobotStateConstants.tunableElevatorPosition.get();
+    RobotStateConstants.tunablePivotPosition.get();
+    RobotStateConstants.tunableIntakeSpeed.get();
+    RobotStateConstants.tunableIntakeTime.get();
   }
 
   /**
@@ -312,6 +319,8 @@ public class RobotContainer {
       .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
       .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kX.value)
+      .whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
   }
 
   /**

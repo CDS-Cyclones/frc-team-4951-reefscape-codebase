@@ -697,52 +697,35 @@
             },
             "children": [
               {
-                "title": "CoralIntakeSpeed",
+                "title": "TunableSpeed",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/CoralIntakeSpeed",
+                  "topic": "/TunableValues/Intake/TunableSpeed",
                   "period": 0.06,
                   "data_type": "double",
-                  "min_value": 0.0,
+                  "min_value": -1.0,
                   "max_value": 1.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
               },
               {
-                "title": "CoralScoringSpeed",
+                "title": "TunableTime",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Intake/CoralScoringSpeed",
+                  "topic": "/TunableValues/Intake/TunableTime",
                   "period": 0.06,
                   "data_type": "double",
                   "min_value": 0.0,
-                  "max_value": 1.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "CoralScoringTime",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Intake/CoralScoringTime",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 2.0,
+                  "max_value": 5.0,
                   "divisions": 5,
                   "update_continuously": true
                 }

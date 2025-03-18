@@ -60,7 +60,7 @@ public final class Constants {
     REPLAY
   }
 
-  public class DriveConstants {
+  public static final class DriveConstants {
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(27.0);  // TODO measure
@@ -187,7 +187,7 @@ public final class Constants {
     );
   }
 
-  public class VisionConstants {
+  public static final class VisionConstants {
     // AprilTag layout
     public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
@@ -296,13 +296,13 @@ public final class Constants {
     
   }
 
-  public static class CandleConstants {
+  public static final class CandleConstants {
     public static final int candleId = 40;
     public static final String candleBus = "pigeonbus";
     public static double candleBrightness = 0.5;
   }
 
-  public static class RobotStateConstants{
+  public static final class RobotStateConstants {
     // Constants for field poses
     private static final double inFrontOfTag = 0.05;
     private static final double inFrontOfTagSim = 0.4;
@@ -310,16 +310,16 @@ public final class Constants {
     private static final double rightOfTag = 0.2;
 
     /** A tunable pivot position */
-    private static TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
+    public static final TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
     
     /** A tunable elevator position */
-    private static TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
+    public static final TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePositionBababui", 0.0);
     
     /** A tunable intake speed */
-    private static TunableNum tunableIntakeSpeed = new TunableNum("Intake/TunableSpeed", 0.0);
+    public static final TunableNum tunableIntakeSpeed = new TunableNum("Intake/TunableSpeed", 0.0);
     
     /** A tunable intake time */
-    private static TunableNum tunableIntakeTime = new TunableNum("Intake/TunableTime", 0.0);
+    public static final TunableNum tunableIntakeTime = new TunableNum("Intake/TunableTime", 0.0);
 
     /** 
      * An enum to represent all desired robot actions.
