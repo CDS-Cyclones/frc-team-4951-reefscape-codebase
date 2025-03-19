@@ -1,5 +1,7 @@
 package frc.robot.subsystems.pivot;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ManipulatorConstants.*;
@@ -205,6 +207,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
 
   public void logMotors(SysIdRoutineLog log) {
     log.motor("pivot-motor").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("pivot-motor").angularPosition(Radians.of(encoder.getPosition()));
+    log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(encoder.getVelocity()));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
