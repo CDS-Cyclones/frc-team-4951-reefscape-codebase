@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.PivotPosition;
-import frc.robot.commands.elevator.ElevatorToPositionCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
@@ -29,7 +28,7 @@ public class PositionManipulator extends SequentialCommandGroup {
         () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
       ),
       Commands.parallel( // Get elevator and pivot to scoring positions
-        new ElevatorToPositionCommand(elevator, pivot, elevatorPositionSupplier),
+        elevator.moveToPosition(pivot, elevatorPositionSupplier),
         new PivotToPositionCommand(pivot, pivotPositionSupplier)
       )
     );

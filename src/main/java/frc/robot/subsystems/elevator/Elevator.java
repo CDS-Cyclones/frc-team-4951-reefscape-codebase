@@ -1,15 +1,25 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond; 
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ManipulatorConstants.*;
 
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.units.measure.Voltage;
@@ -17,15 +27,25 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotStateManager;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
-  private final SparkMax motor1 = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
-  private final SparkMax motor2 = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
+
+  private final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
+  private final SparkMax motorFollower = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
+
+  private final RelativeEncoder encoder, encoderFollower;
+  private final SparkClosedLoopController motorController;
+
+  public static final SparkBaseConfig motorConfig = new SparkMaxConfig();
+  public static final SparkBaseConfig motorConfigFollower = new SparkMaxConfig();
+
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(elevatorKs, elevatorKg, elevatorKv, elevatorKa);
-  private final RelativeEncoder encoder1, encoder2;
 
   private final SysIdRoutine routine = new SysIdRoutine(
     new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.1), null),
@@ -33,13 +53,46 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   );
 
   public Elevator() {
-    encoder1 = motor1.getEncoder();
-    encoder2 = motor2.getEncoder();
-
-    motor1.configure(elevatorMotor1Config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-    motor2.configure(elevatorMotor2Config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-
+    configMotors();
     zeroEncoders();
+
+    encoder = motor.getEncoder();
+    encoderFollower = motorFollower.getEncoder();
+
+    motorController = motor.getClosedLoopController();
+  }
+
+  /**
+   * Configures the motor controllers for the elevator.
+   */
+  public void configMotors() {
+    motorConfig
+    .smartCurrentLimit(80)
+    .secondaryCurrentLimit(90)
+    .idleMode(SparkBaseConfig.IdleMode.kBrake)
+    .inverted(elevatorMotorInverted);
+    motorConfig.softLimit
+    .forwardSoftLimitEnabled(true)
+    .forwardSoftLimit(elevatorMaxPosition)
+    .reverseSoftLimitEnabled(true)
+    .reverseSoftLimit(elevatorMaxPosition);
+    motorConfig.encoder
+    .positionConversionFactor(elevatorDistancePerRevolution)
+    .velocityConversionFactor(elevatorVelocityMetersPerSecond);
+    motorConfig.closedLoop
+    .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+    .pidf(elevatorKp.getAsDouble(), 0.0, elevatorKd.getAsDouble(), elevatorKff)
+    .outputRange(elevatorMinSpeed.getAsDouble(), elevatorMaxSpeed.getAsDouble());
+    motorConfig.closedLoop.maxMotion
+    // .maxVelocity(maxVel)
+    // .maxAcceleration(maxAccel)
+    .allowedClosedLoopError(elevatorPositionTolerance.getAsDouble());
+    motorConfigFollower
+    .apply(motorConfig)
+    .inverted(elevatorMotorFollowerInverted)
+    .follow(motor);
+    motor.configure(motorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+    motorFollower.configure(motorConfigFollower, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
   }
 
   // This method will be called once per scheduler run
@@ -60,8 +113,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    *     elevator up, negative values move the elevator down.
    */
   public void setSpeed(double speed) {
-    motor1.set(speed);
-    motor2.set(speed);
+    motor.set(speed);
   }
 
   /**
@@ -71,8 +123,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    *     move the elevator up, negative values move the elevator down.
    */
   public void setVoltage(double voltage) {
-    motor1.setVoltage(voltage);
-    motor2.setVoltage(voltage);
+    motor.setVoltage(voltage);
   }
 
   /**
@@ -82,14 +133,14 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    *     values move the elevator up, negative values move the elevator down.
    */
   public void setVoltage(Voltage voltage) {
-    motor1.setVoltage(voltage);
-    motor2.setVoltage(voltage);
+    motor.setVoltage(voltage);
   }
 
-  /** Stops the elevator motors. */
+  /**
+   * Stops the elevator motors.
+   */
   public void stop() {
-    motor1.stopMotor();
-    motor2.stopMotor();
+    motor.stopMotor();
   }
 
   /**
@@ -98,32 +149,74 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @return The position of the elevator.
    */
   public double getPosition() {
-    return (encoder1.getPosition() + encoder2.getPosition()) / 2;
+    return (encoder.getPosition() + encoderFollower.getPosition()) / 2.0;
+  }
+
+  /**
+   * Gets the velocity of the elevator.
+   *
+   * @return The velocity of the elevator.
+   */
+  public double getVelocity() {
+    return (encoder.getVelocity() + encoderFollower.getVelocity()) / 2.0;
   }
 
   /**
    * Reset the encoder positions of the elevator to zero.
    */
   public void zeroEncoders() {
-    encoder1.setPosition(0);
-    encoder2.setPosition(0);
+    encoder.setPosition(0);
   }
 
   /**
-   * Calculate the feedforward voltage for the elevator.
+   * Sets the position of the elevator.
    *
-   * @param velocity The velocity of the elevator.
-   *
-   * @return The feedforward voltage as a double.
+   * @param position The position to set the elevator to.
    */
-  public double calculateFeedforward(double velocity) {
-    return feedforward.calculate(velocity);
+  public void setReference(double position) {
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(getVelocity()));
   }
 
+  /**
+   * Sets the position of the elevator.
+   *
+   * @param position The {@link ElevatorPosition} to set the elevator to.
+   */
+  public void setReference(ElevatorPosition position) {
+    motorController.setReference(position.getAsDouble(), ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(getVelocity()));
+  }
+
+  /**
+   * Moves the elevator to a specific position.
+   *
+   * @param position The {@link ElevatorPosition} to move the elevator to.
+   * @param position The {@link ElevatorPosition} to move the elevator to.
+   * @return The command to move the elevator to the position.
+   */
+  public Command moveToPosition(Pivot pivot, Supplier<ElevatorPosition> position) {
+    return Commands.run(() -> {
+      double targetPosition = position.get().getAsDouble();
+
+      setReference(targetPosition);
+    }, this)
+    .onlyIf(() -> {
+      if (!pivot.isOutOfElevatorWay())
+        return false;
+
+      return true;
+    })
+    .until(() -> 
+      Math.abs(getPosition() - position.get().getAsDouble()) < elevatorPositionTolerance.getAsDouble()
+    );
+}
 
   public void logMotors(SysIdRoutineLog log) {
-    log.motor("elevator-motor-1").voltage(Volts.of(motor1.getBusVoltage() * RobotController.getBatteryVoltage()));
-    log.motor("elevator-motor-2").voltage(Volts.of(motor2.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("elevator-motor-1").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("elevator-motor-1").linearPosition(Meters.of(encoder.getPosition()));
+    log.motor("elevator-motor-1").linearVelocity(MetersPerSecond.of(encoder.getVelocity()));
+    log.motor("elevator-motor-2").voltage(Volts.of(motorFollower.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("elevator-motor-2").linearPosition(Meters.of(encoderFollower.getPosition()));
+    log.motor("elevator-motor-2").linearVelocity(MetersPerSecond.of(encoderFollower.getVelocity()));
     }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -136,19 +229,19 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    inputs.motorConnected[0] = motor1.getFirmwareVersion() != 0;
-    inputs.motorConnected[1] = motor2.getFirmwareVersion() != 0;
-    inputs.motorSpeed[0] = motor1.getAppliedOutput();
-    inputs.motorSpeed[1] = motor2.getAppliedOutput();
-    inputs.motorCurrent[0] = motor1.getOutputCurrent();
-    inputs.motorCurrent[1] = motor2.getOutputCurrent();
-    inputs.motorVoltage[0] = motor1.getBusVoltage();
-    inputs.motorVoltage[1] = motor2.getBusVoltage();
-    inputs.motorTemperature[0] = motor1.getMotorTemperature();
-    inputs.motorTemperature[1] = motor2.getMotorTemperature();
-    inputs.motorPosition[0] = encoder1.getPosition();
-    inputs.motorPosition[1] = encoder2.getPosition();
-    inputs.motorVelocity[0] = encoder1.getVelocity();
-    inputs.motorVelocity[1] = encoder2.getVelocity();
+    inputs.motorConnected[0] = motor.getFirmwareVersion() != 0;
+    inputs.motorConnected[1] = motorFollower.getFirmwareVersion() != 0;
+    inputs.motorSpeed[0] = motor.getAppliedOutput();
+    inputs.motorSpeed[1] = motorFollower.getAppliedOutput();
+    inputs.motorCurrent[0] = motor.getOutputCurrent();
+    inputs.motorCurrent[1] = motorFollower.getOutputCurrent();
+    inputs.motorVoltage[0] = motor.getBusVoltage();
+    inputs.motorVoltage[1] = motorFollower.getBusVoltage();
+    inputs.motorTemperature[0] = motor.getMotorTemperature();
+    inputs.motorTemperature[1] = motorFollower.getMotorTemperature();
+    inputs.motorPosition[0] = encoder.getPosition();
+    inputs.motorPosition[1] = encoderFollower.getPosition();
+    inputs.motorVelocity[0] = encoder.getVelocity();
+    inputs.motorVelocity[1] = encoderFollower.getVelocity();
   }
 }

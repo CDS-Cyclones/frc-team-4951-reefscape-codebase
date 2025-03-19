@@ -26,13 +26,12 @@ import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-import frc.robot.commands.elevator.ElevatorToPositionCommand;
-import frc.robot.commands.elevator.HoldElevatorPositionCommand;
+// import frc.robot.commands.elevator.ElevatorToPositionCommand;
+// import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
 import frc.robot.commands.intake.IntakeCommand;
 import frc.robot.commands.intake.IntakeCoral;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
@@ -73,7 +72,7 @@ public class RobotContainer {
   private final Elevator elevator;
   private final Pivot pivot;
   private final Intake intake;
-  @SuppressWarnings("unused") private final Candle candle;
+  private final Candle candle;
 
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -157,12 +156,6 @@ public class RobotContainer {
       () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
       () -> OI.m_operatorBoard.getRawButton(25)
     ));
-
-    // Default command for elevator, hold position
-    elevator.setDefaultCommand(new HoldElevatorPositionCommand(elevator));
-
-    // Default command for pivot, hold position
-    pivot.setDefaultCommand(new HoldPivotPositionCommand(pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
@@ -315,8 +308,11 @@ public class RobotContainer {
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
     // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kA.value)
-      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kA.value).onTrue(
+      new ConditionalCommand(
+        getAutonomousCommand(), getAutonomousCommand(), null
+      )
+    );
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
       .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kX.value)
