@@ -48,6 +48,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.oi.OI;
@@ -87,6 +88,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
         vision = new Vision(drive, new VisionIOLimelight(VisionConstants.cameraName, drive::getRotation));
+        elevator = new Elevator();
         break;
 
       case SIM:
@@ -106,17 +108,18 @@ public class RobotContainer {
           driveSimulation::setSimulationWorldPose
         );
         vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, driveSimulation::getSimulatedDriveTrainPose));
+        elevator = new ElevatorSim();
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, (pose) -> {});
         vision = new Vision(drive, new VisionIO() {});
+        elevator = new Elevator();
         break;
     }
 
     // Instantiate other subsystems
-    elevator = new Elevator();
     pivot = new Pivot();
     intake = new Intake();
     candle = new Candle();
@@ -308,11 +311,7 @@ public class RobotContainer {
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
     // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kA.value).onTrue(
-      new ConditionalCommand(
-        getAutonomousCommand(), getAutonomousCommand(), null
-      )
-    );
+    new JoystickButton(OI.m_manipulatorController, Button.kA.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value)
       .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kX.value)

@@ -291,7 +291,12 @@ public final class Constants {
     public static final double coralCanrangeDistanceThreshold = 0.05; // in m TODO figure this out
     public static final double algaCanrangeDistanceThreshold = 0.2; // in m TODO figure this out
 
-    // Potentiall redundant constants
+    // Elevator simulation constants
+    public static final double elevatorGearing = 1.0;
+    public static final double elevatorCarriageMass = 1.0;
+    public static final double elevatorDrumRadius = 0.0254;
+    public static final double elevatorMinHeightMetres = 0.0;
+    public static final double elevatorMaxHeightMetres = 2.2;
 
   }
 
