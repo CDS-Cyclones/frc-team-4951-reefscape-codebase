@@ -35,18 +35,13 @@ import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
-
   protected final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
   protected final SparkMax motorFollower = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
-
   private final RelativeEncoder encoder, encoderFollower;
   private final SparkClosedLoopController motorController;
-
   private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
   private static final SparkBaseConfig motorConfigFollower = new SparkMaxConfig();
-
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(elevatorKs, elevatorKg, elevatorKv, elevatorKa);
-
   private final SysIdRoutine routine = new SysIdRoutine(
     new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.1), null),
     new SysIdRoutine.Mechanism(this::setVoltage, this::logMotors, this)
@@ -70,7 +65,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   }
 
   /**
-   * Configures the motor controllers for the elevator.
+   * Configures the motors for the elevator.
    */
   public void configMotors() {
     motorConfig
@@ -82,7 +77,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
     .forwardSoftLimitEnabled(true)
     .forwardSoftLimit(elevatorMaxPosition)
     .reverseSoftLimitEnabled(true)
-    .reverseSoftLimit(elevatorMaxPosition);
+    .reverseSoftLimit(elevatorMinPosition);
     motorConfig.encoder
     .positionConversionFactor(elevatorDistancePerRevolution)
     .velocityConversionFactor(elevatorVelocityMetersPerSecond);
