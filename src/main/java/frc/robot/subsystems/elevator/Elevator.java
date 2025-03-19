@@ -165,6 +165,17 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   }
 
   /**
+   * Calculate the feedforward voltage for the elevator.
+   *
+   * @param velocity The velocity setpoint.
+   *
+   * @return The feedforward voltage as a double.
+   */
+  public double calculateFeedforward() {
+    return feedforward.calculate(getVelocity());
+  }
+
+  /**
    * Reset the encoder positions of the elevator to zero.
    */
   public void zeroEncoders() {
@@ -177,7 +188,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(getVelocity()));
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
   }
 
   /**
@@ -186,7 +197,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @param position The {@link ElevatorPosition} to set the elevator to.
    */
   public void setReference(ElevatorPosition position) {
-    motorController.setReference(position.getAsDouble(), ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward.calculate(getVelocity()));
+    motorController.setReference(position.getAsDouble(), ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
   }
 
   /**

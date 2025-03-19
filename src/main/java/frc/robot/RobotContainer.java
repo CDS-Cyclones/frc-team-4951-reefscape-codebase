@@ -160,6 +160,8 @@ public class RobotContainer {
       () -> OI.m_operatorBoard.getRawButton(25)
     ));
 
+    elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward()), elevator));
+
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(new VisionAssistedDriveToPoseCommand(
