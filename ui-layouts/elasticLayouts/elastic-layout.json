@@ -501,6 +501,23 @@
                 }
               },
               {
+                "title": "MinSpeed",
+                "x": 640.0,
+                "y": 384.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Number Slider",
+                "properties": {
+                  "topic": "/TunableValues/Elevator/MinSpeed",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": -1.0,
+                  "max_value": 0.0,
+                  "divisions": 5,
+                  "update_continuously": true
+                }
+              },
+              {
                 "title": "MaxSpeed",
                 "x": 512.0,
                 "y": 384.0,
@@ -512,24 +529,7 @@
                   "period": 0.06,
                   "data_type": "double",
                   "min_value": 0.0,
-                  "max_value": 5.0,
-                  "divisions": 5,
-                  "update_continuously": true
-                }
-              },
-              {
-                "title": "MaxAcceleration",
-                "x": 640.0,
-                "y": 384.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Number Slider",
-                "properties": {
-                  "topic": "/TunableValues/Elevator/MaxAcceleration",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 0.0,
-                  "max_value": 5.0,
+                  "max_value": 1.0,
                   "divisions": 5,
                   "update_continuously": true
                 }
@@ -542,7 +542,7 @@
                 "height": 128.0,
                 "type": "Number Slider",
                 "properties": {
-                  "topic": "/TunableValues/Elevator/ErrorTolerance",
+                  "topic": "/TunableValues/Elevator/PositionTolerance",
                   "period": 0.06,
                   "data_type": "double",
                   "min_value": 0.0,
@@ -734,6 +734,46 @@
           }
         ],
         "containers": []
+      }
+    },
+    {
+      "name": "Tab 6",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Elevator Height",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 512.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/SmartDashboard/Elevator Height",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 3.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "vertical"
+            }
+          },
+          {
+            "title": "Elevator Velocity",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Elevator Velocity",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          }
+        ]
       }
     }
   ]

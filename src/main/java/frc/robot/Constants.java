@@ -270,7 +270,7 @@ public final class Constants {
     public static final double elevatorDistancePerRevolution = Units.inchesToMeters(1.0/1.0);                                            // TODO figure out - SysId
     public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
     public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.3); // max speed going down            // TODO tune
-    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MinSpeed", 0.3); // max speed going up  // TODO tune
+    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.3); // max speed going up  // TODO tune
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants

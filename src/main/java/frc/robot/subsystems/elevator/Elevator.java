@@ -61,6 +61,12 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
     motorController = motor.getClosedLoopController();
 
     zeroEncoders();
+
+    elevatorMinSpeed.onChange(this::configMotors);
+    elevatorMaxSpeed.onChange(this::configMotors);
+    elevatorKp.onChange(this::configMotors);
+    elevatorKd.onChange(this::configMotors);
+    elevatorPositionTolerance.onChange(this::configMotors);
   }
 
   /**
