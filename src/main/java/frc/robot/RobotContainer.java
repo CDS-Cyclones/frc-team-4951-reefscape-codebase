@@ -33,7 +33,6 @@ import frc.robot.commands.intake.IntakeCommand;
 import frc.robot.commands.intake.IntakeCoral;
 import frc.robot.commands.intake.ManualIntakeCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
-import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -161,6 +160,8 @@ public class RobotContainer {
     ));
 
     elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward()), elevator));
+
+    pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward()), pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
@@ -313,11 +314,9 @@ public class RobotContainer {
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
     // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kA.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kB.value)
-      .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kX.value)
-      .whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kA.value).whileTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kB.value).whileTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kX.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
   }
 
   /**

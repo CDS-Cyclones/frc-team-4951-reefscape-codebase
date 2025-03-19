@@ -60,6 +60,10 @@ public final class Constants {
     REPLAY
   }
 
+  public static final class MotorConstants {
+    public static final double neoKv = 473;  // https://docs.revrobotics.com/brushless/neo/v1.1#motor-specifications
+  }
+
   public static final class DriveConstants {
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
@@ -240,21 +244,6 @@ public final class Constants {
     public static final int coralCanrangeCanId = 40;
     public static final int algaCanrangeCanId = 41;
 
-    // Motor configurations
-
-    public static final SparkBaseConfig pivotMotorConfig = new SparkMaxConfig()
-      .smartCurrentLimit(80)
-      .secondaryCurrentLimit(90)
-      .idleMode(SparkBaseConfig.IdleMode.kBrake)
-      .inverted(true);
-    public static final SparkBaseConfig intakeWheelsMotorConfig = new SparkMaxConfig()
-      .smartCurrentLimit(80)
-      .secondaryCurrentLimit(90)
-      .idleMode(SparkBaseConfig.IdleMode.kBrake)
-      .inverted(false);
-
-    public static final double neoKv = 473;  // https://docs.revrobotics.com/brushless/neo/v1.1#motor-specifications
-
     // Elevator constants
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
@@ -262,7 +251,7 @@ public final class Constants {
     public static final double elevatorMaxPosition = 1.0;                                                                                // TODO figure out
     public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.0);                                     // TODO tune
     public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);                                     // TODO tune
-    public static final double elevatorKff =  1 / neoKv;  // not arbFF, inverse of motor specific Kv value
+    public static final double elevatorKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
     public static final double elevatorKs = 0.0;                                                                                         // TODO figure out
     public static final double elevatorKg = 0.0;                                                                                         // TODO figure out - SysId
     public static final double elevatorKv = 0.0;                                                                                         // TODO figure out - SysId
@@ -274,30 +263,37 @@ public final class Constants {
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
-    public static final double pivotMinPosition = 0.0;  // TODO figure out
-    public static final double pivotMaxPosition = 1.0;  // TODO figure out
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.5);  // TODO tune
-    public static final TunableNum pivotMaxAcceleration = new TunableNum("Pivot/MaxAcceleration", 0.5);  // TODO tune
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.5);  // TODO tune
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);  // TODO tune
-    public static final double pivotKs = 0.0;  // TODO figure out
-    public static final double pivotKg = 0.0;  // TODO figure out
-    public static final double pivotKv = 0.0;  // TODO figure out
-    public static final double pivotKa = 0.0;  // TODO figure out
-    public static final TunableNum pivotPIDTolerance = new TunableNum("Pivot/ErrorTolerance", 0.0);  // TODO tune
-    public static final double pivotMinPositionForElevatorMovement = 10000000;  // TODO figure out
+    public static final boolean pivotMotorInverted = true;                                                                              // TODO figure out
+    public static final double pivotMinPosition = -0.2;                                                                                 // TODO figure out
+    public static final double pivotMaxPosition = 1.0;                                                                                  // TODO figure out
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.0);                                          // TODO tune
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);                                          // TODO tune
+    public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
+    public static final double pivotKs = 0.0;                                                                                           // TODO figure out
+    public static final double pivotKg = 0.0;                                                                                           // TODO figure out - SysId
+    public static final double pivotKv = 0.0;                                                                                           // TODO figure out - SysId
+    public static final double pivotKa = 0.0;                                                                                           // TODO figure out - SysId
+    public static final double pivotRadiansPerRevolution = Units.degreesToRadians(90/1.0);                                              // TODO figure out - SysId
+    public static final double pivotAngularVelocityRadiansPerSecond = pivotRadiansPerRevolution / 60.0;                                 // TODO figure out
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.3); // max speed going down                 // TODO tune
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.3); // max speed going up       // TODO tune
+    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.05); 
+    public static final double pivotMinPositionForElevatorMovement = 10000000;                                                          // TODO figure out
 
     // Intake constants
-    public static final double coralCanrangeDistanceThreshold = 0.05; // in m TODO figure this out
-    public static final double algaCanrangeDistanceThreshold = 0.2; // in m TODO figure this out
+    public static final double coralCanrangeDistanceThreshold = 0.05;                                                                   // in m TODO figure this out
+    public static final SparkBaseConfig intakeWheelsMotorConfig = new SparkMaxConfig()
+    .smartCurrentLimit(80)
+    .secondaryCurrentLimit(90)
+    .idleMode(SparkBaseConfig.IdleMode.kBrake)
+    .inverted(false);
 
-    // Elevator simulation constants
+    // Elevator simulation constants (NONE OF THESE ARE TUNED)
     public static final double elevatorGearing = 1.0;
     public static final double elevatorCarriageMass = 1.0;
     public static final double elevatorDrumRadius = 0.0254;
     public static final double elevatorMinHeightMetres = 0.0;
     public static final double elevatorMaxHeightMetres = 2.2;
-
   }
 
   public static final class CandleConstants {

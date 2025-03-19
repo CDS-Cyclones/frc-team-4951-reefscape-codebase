@@ -222,7 +222,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
     .until(() -> 
       Math.abs(getPosition() - position.get().getAsDouble()) < elevatorPositionTolerance.getAsDouble()
     );
-}
+  }
 
   public void logMotors(SysIdRoutineLog log) {
     log.motor("elevator-motor-1").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
