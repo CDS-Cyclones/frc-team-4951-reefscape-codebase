@@ -110,6 +110,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
 
     try {
       SmartDashboard.putString("Mutables/Elevator Position", RobotStateManager.getDesiredElevatorPosition().toString());
+      SmartDashboard.putNumber("Elevator Height", getPosition());
     } catch (Exception e) {}
   }
 

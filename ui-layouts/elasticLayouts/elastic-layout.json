@@ -183,6 +183,24 @@
               "data_type": "double",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "Elevator Height",
+            "x": 1280.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 512.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/SmartDashboard/Elevator Height",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 3.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "vertical"
+            }
           }
         ]
       }
