@@ -36,14 +36,14 @@ import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
 
-  private final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
-  private final SparkMax motorFollower = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
+  protected final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
+  protected final SparkMax motorFollower = new SparkMax(elevatorMotor2Id, MotorType.kBrushless);
 
   private final RelativeEncoder encoder, encoderFollower;
   private final SparkClosedLoopController motorController;
 
-  public static final SparkBaseConfig motorConfig = new SparkMaxConfig();
-  public static final SparkBaseConfig motorConfigFollower = new SparkMaxConfig();
+  private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
+  private static final SparkBaseConfig motorConfigFollower = new SparkMaxConfig();
 
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(elevatorKs, elevatorKg, elevatorKv, elevatorKa);
 
@@ -54,12 +54,13 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
 
   public Elevator() {
     configMotors();
-    zeroEncoders();
 
     encoder = motor.getEncoder();
     encoderFollower = motorFollower.getEncoder();
 
     motorController = motor.getClosedLoopController();
+
+    zeroEncoders();
   }
 
   /**
