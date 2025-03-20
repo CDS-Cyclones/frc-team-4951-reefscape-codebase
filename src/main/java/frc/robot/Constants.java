@@ -265,9 +265,10 @@ public final class Constants {
     // Pivot constants
     public static final boolean pivotMotorInverted = false;
     public static final boolean pivotAbsoluteEncoderInverted = true;
-    public static final double pivotOffsetFromEquilibrium = -0.620; // theta from facing up to max inwards in radians
-    public static final double pivotMinPosition = -1;                                                                                 // TODO figure out
-    public static final double pivotMaxPosition = 5;                                                                                  // TODO figure out
+    public static final double pivotOffsetFromEquilibrium = -0.797; // theta from facing up to max inwards in radians
+    public static final double pivotMinPosition = -0.637;
+    public static final double pivotMaxPosition = 2.770;
+    public static final double pivotMinPositionForElevatorMovement = -0.4;
     public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.0);                                          // TODO tune
     public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);                                          // TODO tune
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
@@ -282,7 +283,6 @@ public final class Constants {
     public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.3); // max speed going down                 // TODO tune
     public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.3); // max speed going up       // TODO tune
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.05); 
-    public static final double pivotMinPositionForElevatorMovement = 10000000;                                                          // TODO figure out
 
     // Intake constants
     public static final double coralCanrangeDistanceThreshold = 0.05;                                                                   // in m TODO figure this out

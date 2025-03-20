@@ -54,9 +54,9 @@ public class Pivot extends SubsystemBase implements PivotIO {
 
     absoluteEncoder = motor.getAbsoluteEncoder();
     relativeEncoder = motor.getEncoder();
-
     motorController = motor.getClosedLoopController();
 
+    // Set point where pivot is not pushed either way by gravity as 0
     relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromEquilibrium);
 
     pivotKp.onChange(this::configMotor);
@@ -88,7 +88,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
     .positionConversionFactor(pivotRelativeEncoderRadiansPerRevolution)
     .velocityConversionFactor(pivotRelativeEncoderAngularVelocityRadiansPerSecond);
     motorConfig.closedLoop
-    .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+    .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
     .pidf(pivotKp.getAsDouble(), 0.0, pivotKd.getAsDouble(), pivotKff)
     .outputRange(pivotMinSpeed.getAsDouble(), pivotMaxSpeed.getAsDouble());
     motorConfig.closedLoop.maxMotion
@@ -102,6 +102,9 @@ public class Pivot extends SubsystemBase implements PivotIO {
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
+    // Set point where pivot is not pushed either way by gravity as 0
+    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromEquilibrium);
+
     updateInputs(pivotInputs);
     Logger.processInputs("Pivot", pivotInputs);
 
@@ -109,6 +112,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
       SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
       SmartDashboard.putNumber("Pivot Position", getPosition());
       SmartDashboard.putNumber("Absolute Pivot Position", absoluteEncoder.getPosition());
+      SmartDashboard.putBoolean("Pivot out of the way", isOutOfElevatorWay());
     } catch (Exception e) {}
   }
 
@@ -147,9 +151,9 @@ public class Pivot extends SubsystemBase implements PivotIO {
   }
 
   /**
-   * Gets the absolute position of the pivot.
+   * Gets the position of the pivot.
    *
-   * @return The absolute position of the pivot.
+   * @return The position of the pivot.
    */
   public double getPosition() {
     return relativeEncoder.getPosition();
@@ -183,8 +187,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return True if no tin the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
-    return true;
-    // return getPosition() >= pivotMinPositionForElevatorMovement;
+    return getPosition() >= pivotMinPositionForElevatorMovement;
   }
 
     /**
@@ -245,8 +248,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
 
   public void logMotors(SysIdRoutineLog log) {
     log.motor("pivot-motor").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
-    log.motor("pivot-motor").angularPosition(Radians.of(relativeEncoder.getPosition()));
-    log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(relativeEncoder.getVelocity()));
+    log.motor("pivot-motor").angularPosition(Radians.of(getPosition()));
+    log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(getVelocity()));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
