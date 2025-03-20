@@ -314,9 +314,10 @@ public class RobotContainer {
       .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
     // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kA.value).whileTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kB.value).whileTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kX.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kA.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kB.value).onTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
   }
 
   /**
