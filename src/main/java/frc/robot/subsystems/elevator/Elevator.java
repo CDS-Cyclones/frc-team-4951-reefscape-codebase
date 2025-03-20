@@ -14,6 +14,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -188,7 +189,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(), ArbFFUnits.kVoltage);
   }
 
   /**
@@ -197,14 +198,34 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @param position The {@link ElevatorPosition} to set the elevator to.
    */
   public void setReference(ElevatorPosition position) {
-    motorController.setReference(position.getAsDouble(), ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
+    setReference(position.getAsDouble());
+  }
+
+  /**
+   * Checks if elevator is at a specific position within a tolerance.
+   *
+   * @param position The position to check if the elevator is at.
+   * @return True if the elevator is at the position, false otherwise.
+   */
+  public boolean isAtPosition(double position) {
+    return Math.abs(getPosition() - position) < elevatorPositionTolerance.getAsDouble();
+  }
+
+  /**
+   * Checks if elevator is at a specific position within a tolerance.
+   * 
+   * @param position The {@link ElevatorPosition} to check if the elevator is at.
+   * @return True if the elevator is at the position, false otherwise.
+   */
+  public boolean isAtPosition(ElevatorPosition position) {
+    return isAtPosition(position.getAsDouble());
   }
 
   /**
    * Moves the elevator to a specific position.
    *
-   * @param position The {@link ElevatorPosition} to move the elevator to.
-   * @param position The {@link ElevatorPosition} to move the elevator to.
+   * @param pivot The {@link Pivot} subsystem to check if the pivot is in the way.
+   * @param position The supplier of the {@link ElevatorPosition} to move the elevator to.
    * @return The command to move the elevator to the position.
    */
   public Command moveToPosition(Pivot pivot, Supplier<ElevatorPosition> position) {
@@ -220,7 +241,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
       return true;
     })
     .until(() -> 
-      Math.abs(getPosition() - position.get().getAsDouble()) < elevatorPositionTolerance.getAsDouble()
+      isAtPosition(position.get())
     );
   }
 

@@ -14,6 +14,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -181,7 +182,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(), ArbFFUnits.kVoltage);
   }
 
   /**
@@ -190,7 +191,27 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @param position The {@link ElevatorPosition} to set the elevator to.
    */
   public void setReference(PivotPosition position) {
-    motorController.setReference(position.getAsDouble(), ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward());
+    setReference(position.getAsDouble());
+  }
+
+  /**
+   * Checks if pivot is at a specific position within a tolerance.
+   *
+   * @param position The position to check if the elevator is at.
+   * @return True if the elevator is at the position, false otherwise.
+   */
+  public boolean isAtPosition(double position) {
+    return Math.abs(getPosition() - position) < elevatorPositionTolerance.getAsDouble();
+  }
+
+  /**
+   * Checks if pivot is at a specific position within a tolerance.
+   * 
+   * @param position The {@link ElevatorPosition} to check if the elevator is at.
+   * @return True if the elevator is at the position, false otherwise.
+   */
+  public boolean isAtPosition(PivotPosition position) {
+    return isAtPosition(position.getAsDouble());
   }
 
   /**
@@ -207,7 +228,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
       setReference(targetPosition);
     }, this)
     .until(() -> 
-      Math.abs(getPosition() - position.get().getAsDouble()) < pivotPositionTolerance.getAsDouble()
+      isAtPosition(position.get())
     );
   }
 
