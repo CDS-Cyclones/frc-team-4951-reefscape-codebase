@@ -52,6 +52,12 @@ public class Pivot extends SubsystemBase implements PivotIO {
     encoder = motor.getAbsoluteEncoder();
 
     motorController = motor.getClosedLoopController();
+
+    pivotKp.onChange(this::configMotor);
+    pivotKd.onChange(this::configMotor);
+    pivotMinSpeed.onChange(this::configMotor);
+    pivotMaxSpeed.onChange(this::configMotor);
+    pivotPositionTolerance.onChange(this::configMotor);
   }
 
   /**
