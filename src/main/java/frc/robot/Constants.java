@@ -130,21 +130,21 @@ public final class Constants {
     public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
     // Turn PID configuration
-    public static final TunableNum turnKp = new TunableNum("Drive/turn/p", 2.0);  // TODO tune
-    public static final TunableNum turnKd = new TunableNum("Drive/turn/d", 0.1);  // TODO tune
+    public static final TunableNum turnKp = new TunableNum("Drive/turn/p", 1.0);  // TODO tune
+    public static final TunableNum turnKd = new TunableNum("Drive/turn/d", 0.05);  // TODO tune
     public static final double turnSimP = 10;
     public static final double turnSimD = 0.2;
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for PID controllers
-    public static final TunableNum anglePIDCKp = new TunableNum("Drive/PIDController/angle/p", 6.0);  // TODO tune
-    public static final TunableNum anglePIDCKd = new TunableNum("Drive/PIDController/angle/d", 0.4);  // TODO tune
+    public static final TunableNum anglePIDCKp = new TunableNum("Drive/PIDController/angle/p", 1.0);  // TODO tune
+    public static final TunableNum anglePIDCKd = new TunableNum("Drive/PIDController/angle/d", 0.02);  // TODO tune
     public static final TunableNum anglePIDCMaxVel = new TunableNum("Drive/PIDController/angle/maxVel", 8);  // TODO tune // Radians per second
     public static final TunableNum anglePIDCMaxAccel = new TunableNum("Drive/PIDController/angle/maxAccel", 20);  // TODO tune // Radians per second squared
     public static final TunableNum anglePIDTolerance = new TunableNum("Drive/PIDController/angle/errorTolerance", 0.05);  // TODO tune
-    public static final TunableNum translationPIDCKp = new TunableNum("Drive/PIDController/translation/p", 4);  // TODO tune
-    public static final TunableNum translationPIDCKd = new TunableNum("Drive/PIDController/translation/d", 0.1);  // TODO tune
+    public static final TunableNum translationPIDCKp = new TunableNum("Drive/PIDController/translation/p", 0.1);  // TODO tune
+    public static final TunableNum translationPIDCKd = new TunableNum("Drive/PIDController/translation/d", 0.0);  // TODO tune
     public static final TunableNum translationPIDCMaxVel = new TunableNum("Drive/PIDController/translation/maxVel", 6);  // TODO tune // Meters per second
     public static final TunableNum translationPIDCMaxAccel = new TunableNum("Drive/PIDController/translation/maxAccel", 15);  // TODO tune // Meters per second squared
     public static final TunableNum translationPIDTolerance = new TunableNum("Drive/PIDController/translation/errorTolerance", 0.05);  // TODO tune
@@ -248,7 +248,7 @@ public final class Constants {
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
     public static final double elevatorMinPosition = 0.0;                                                                                // TODO figure out
-    public static final double elevatorMaxPosition = 1.0;                                                                                // TODO figure out
+    public static final double elevatorMaxPosition = 2;                                                                             // TODO figure out
     public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.0);                                     // TODO tune
     public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);                                     // TODO tune
     public static final double elevatorKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
@@ -263,9 +263,11 @@ public final class Constants {
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
-    public static final boolean pivotMotorInverted = true;                                                                              // TODO figure out
-    public static final double pivotMinPosition = -0.2;                                                                                 // TODO figure out
-    public static final double pivotMaxPosition = 1.0;                                                                                  // TODO figure out
+    public static final boolean pivotMotorInverted = false;
+    public static final boolean pivotAbsoluteEncoderInverted = true;
+    public static final double pivotOffsetFromEquilibrium = -0.620; // theta from facing up to max inwards in radians
+    public static final double pivotMinPosition = -1;                                                                                 // TODO figure out
+    public static final double pivotMaxPosition = 5;                                                                                  // TODO figure out
     public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.0);                                          // TODO tune
     public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);                                          // TODO tune
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
@@ -273,8 +275,10 @@ public final class Constants {
     public static final double pivotKg = 0.0;                                                                                           // TODO figure out - SysId
     public static final double pivotKv = 0.0;                                                                                           // TODO figure out - SysId
     public static final double pivotKa = 0.0;                                                                                           // TODO figure out - SysId
-    public static final double pivotRadiansPerRevolution = Units.degreesToRadians(90/1.0);                                              // TODO figure out - SysId
-    public static final double pivotAngularVelocityRadiansPerSecond = pivotRadiansPerRevolution / 60.0;                                 // TODO figure out
+    public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;                                              // TODO figure out - SysId
+    public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
+    public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
+    public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
     public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.3); // max speed going down                 // TODO tune
     public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.3); // max speed going up       // TODO tune
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.05); 

@@ -33,15 +33,8 @@ public class ManualPivotCommand extends Command {
   @Override
   public void execute() {
     double speed = speedSupplier.getAsDouble();
-    boolean safeToRun = false;
-
-    // If the pivot is fully in or out, prevent it from moving further.
-    if((pivot.getPosition() <= pivotMinPosition && speed < 0.0) || (pivot.getPosition() >= pivotMaxPosition && speed > 0.0))
-      safeToRun = false;
     
-    // Run elevator if it is safe to do so.
-    if(safeToRun)
-      pivot.setSpeed(speed);
+    pivot.setSpeed(speed);
   }
 
   // Called once the command ends or is interrupted.

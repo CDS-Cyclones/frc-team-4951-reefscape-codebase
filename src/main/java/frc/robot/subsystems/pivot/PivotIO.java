@@ -11,6 +11,7 @@ public interface PivotIO {
     public double motorVoltage = 0.0;
     public double motorTemperature = 0.0;
     public double motorAbsolutePosition = 0.0;
+    public double motorRelativePosition = 0.0;
     public double motorVelocity = 0.0;
   }
 

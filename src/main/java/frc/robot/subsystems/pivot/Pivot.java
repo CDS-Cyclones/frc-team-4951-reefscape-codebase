@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -38,7 +39,8 @@ import frc.robot.RobotStateManager;
 public class Pivot extends SubsystemBase implements PivotIO {
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
   private final SparkMax motor = new SparkMax(pivotMotorId, MotorType.kBrushless);
-  private final AbsoluteEncoder encoder;
+  private final AbsoluteEncoder absoluteEncoder;
+  private final RelativeEncoder relativeEncoder;
   private final SparkClosedLoopController motorController;
   private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
   private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKg, pivotKv, pivotKa);
@@ -50,9 +52,12 @@ public class Pivot extends SubsystemBase implements PivotIO {
   public Pivot() {
     configMotor();
 
-    encoder = motor.getAbsoluteEncoder();
+    absoluteEncoder = motor.getAbsoluteEncoder();
+    relativeEncoder = motor.getEncoder();
 
     motorController = motor.getClosedLoopController();
+
+    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromEquilibrium);
 
     pivotKp.onChange(this::configMotor);
     pivotKd.onChange(this::configMotor);
@@ -76,8 +81,12 @@ public class Pivot extends SubsystemBase implements PivotIO {
     .reverseSoftLimitEnabled(true)
     .reverseSoftLimit(pivotMinPosition);
     motorConfig.absoluteEncoder
-    .positionConversionFactor(pivotRadiansPerRevolution)
-    .velocityConversionFactor(pivotAngularVelocityRadiansPerSecond);
+    .positionConversionFactor(pivotAbsoluteEncoderRadiansPerRevolution)
+    .velocityConversionFactor(pivotAbsoluteEncoderAngularVelocityRadiansPerSecond)
+    .inverted(pivotAbsoluteEncoderInverted);
+    motorConfig.encoder
+    .positionConversionFactor(pivotRelativeEncoderRadiansPerRevolution)
+    .velocityConversionFactor(pivotRelativeEncoderAngularVelocityRadiansPerSecond);
     motorConfig.closedLoop
     .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
     .pidf(pivotKp.getAsDouble(), 0.0, pivotKd.getAsDouble(), pivotKff)
@@ -99,6 +108,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
     try {
       SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
       SmartDashboard.putNumber("Pivot Position", getPosition());
+      SmartDashboard.putNumber("Absolute Pivot Position", absoluteEncoder.getPosition());
     } catch (Exception e) {}
   }
 
@@ -142,7 +152,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return The absolute position of the pivot.
    */
   public double getPosition() {
-    return encoder.getPosition();
+    return relativeEncoder.getPosition();
   }
 
   /**
@@ -151,7 +161,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return The velocity of the pivot.
    */
   public double getVelocity() {
-    return encoder.getVelocity();
+    return relativeEncoder.getVelocity();
   }
 
   /**
@@ -173,7 +183,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return True if no tin the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
-    return getPosition() >= pivotMinPositionForElevatorMovement;
+    return true;
+    // return getPosition() >= pivotMinPositionForElevatorMovement;
   }
 
     /**
@@ -234,8 +245,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
 
   public void logMotors(SysIdRoutineLog log) {
     log.motor("pivot-motor").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
-    log.motor("pivot-motor").angularPosition(Radians.of(encoder.getPosition()));
-    log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(encoder.getVelocity()));
+    log.motor("pivot-motor").angularPosition(Radians.of(relativeEncoder.getPosition()));
+    log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(relativeEncoder.getVelocity()));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -253,7 +264,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
     inputs.motorCurrent = motor.getOutputCurrent();
     inputs.motorVoltage = motor.getBusVoltage();
     inputs.motorTemperature = motor.getMotorTemperature();
-    inputs.motorAbsolutePosition = encoder.getPosition();
-    inputs.motorVelocity = encoder.getVelocity();
+    inputs.motorAbsolutePosition = absoluteEncoder.getPosition();
+    inputs.motorRelativePosition = relativeEncoder.getPosition();
+    inputs.motorVelocity = relativeEncoder.getVelocity();
   }
 }
