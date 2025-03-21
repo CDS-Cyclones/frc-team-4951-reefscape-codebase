@@ -248,8 +248,8 @@ public final class Constants {
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
     public static final double elevatorMinPosition = 0.0;                                                                                // TODO figure out
-    public static final double elevatorMaxPosition = 1.6;                                                                             // TODO figure out
-    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.0);                                     // TODO tune
+    public static final double elevatorMaxPosition = 1.55;                                                                             // TODO figure out
+    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 2.85);                                     // TODO tune
     public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);                                     // TODO tune
     public static final double elevatorKff = 1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
     public static final double elevatorKs = 0.58291;                                                                                         // TODO figure out
@@ -258,8 +258,8 @@ public final class Constants {
     public static final double elevatorKa = 0.62268;                                                                                         // TODO figure out - SysId
     public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;                                            // TODO figure out - SysId
     public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
-    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.3); // max speed going down            // TODO tune
-    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.3); // max speed going up  // TODO tune
+    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.26); // max speed going down            // TODO tune
+    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.26); // max speed going up  // TODO tune
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
@@ -317,7 +317,7 @@ public final class Constants {
     public static final TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
     
     /** A tunable elevator position */
-    public static final TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePositionBababui", 0.0);
+    public static final TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
     
     /** A tunable intake speed */
     public static final TunableNum tunableIntakeSpeed = new TunableNum("Intake/TunableSpeed", 0.0);
@@ -353,11 +353,11 @@ public final class Constants {
     @RequiredArgsConstructor
     public static enum PivotPosition {
       INTAKE_READY(2.33),
-      ELEVATOR_CLEAR(2.0),
+      ELEVATOR_CLEAR(1.9),
       L1(0.0),
       L2(0.0),
       L3(0.0),
-      L4(0.0),
+      L4(1.26),
       REEF_ALGA(0.0),
       BARGE(0.0),
       PROCESSOR(0.0),
@@ -387,7 +387,7 @@ public final class Constants {
       L1(0.0),
       L2(0.0),
       L3(0.0),
-      L4(0.0),
+      L4(1.55),
       REEF_ALGA(0.0),
       BARGE(0.0),
       PROCESSOR(0.0),

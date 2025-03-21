@@ -24,7 +24,7 @@ public class PositionManipulator extends SequentialCommandGroup {
       new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
         pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
         Commands.none(),
-        () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+        () -> !pivot.isOutOfElevatorWay()
       ),
       Commands.parallel( // Get elevator and pivot to scoring positions
         elevator.moveToPosition(pivot, elevatorPositionSupplier),
