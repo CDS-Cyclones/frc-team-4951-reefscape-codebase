@@ -179,7 +179,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return The feedforward voltage as a double.
    */
   public double calculateFeedforward(double velocity) {
-    return feedforward.calculate(getPosition(), velocity) * 0.55;
+    return feedforward.calculate(getPosition(), velocity);
   }
 
   /**
@@ -197,7 +197,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(getVelocity()), ArbFFUnits.kVoltage);
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   /**

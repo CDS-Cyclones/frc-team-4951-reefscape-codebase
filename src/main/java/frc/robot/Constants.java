@@ -265,24 +265,24 @@ public final class Constants {
     // Pivot constants
     public static final boolean pivotMotorInverted = true;
     public static final boolean pivotAbsoluteEncoderInverted = false;
-    public static final double pivotOffsetFromHorizontal = -2.826 + Math.PI / 2;
-    public static final double pivotMinPosition = -0.84;
-    public static final double pivotMaxPosition = 2.33;
+    public static final double pivotOffsetFromHorizontal = -2.899 + Math.PI / 2;
+    public static final double pivotMinPosition = -1;
+    public static final double pivotMaxPosition = 2.26;
     public static final double pivotMinPositionForElevatorMovement = 2;
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.52);
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.8);
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 4.02); //0.52);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.04); //0.8);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
-    public static final double pivotKs = 0.42349;
-    public static final double pivotKg = 0.73488;
-    public static final double pivotKv = 0.58259;
-    public static final double pivotKa = 0;
+    public static final double pivotKs = 0.3702;
+    public static final double pivotKg = 0.45;
+    public static final double pivotKv = 0.96353;
+    public static final double pivotKa = 0; //2.5231;//0;
     public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
     public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.16);
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.16);
-    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.05); 
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.02);
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.07);
+    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0); 
 
     // Intake constants
     public static final double coralCanrangeDistanceThreshold = 0.05;                                                                   // in m TODO figure this out
@@ -352,12 +352,12 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public static enum PivotPosition {
-      INTAKE_READY(2.33),
-      ELEVATOR_CLEAR(1.9),
+      INTAKE_READY(2.26),
+      ELEVATOR_CLEAR(1.8),
       L1(0.0),
       L2(0.0),
       L3(0.0),
-      L4(1.26),
+      L4(1.25),
       REEF_ALGA(0.0),
       BARGE(0.0),
       PROCESSOR(0.0),
