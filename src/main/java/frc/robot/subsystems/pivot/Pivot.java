@@ -45,7 +45,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
   private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKg, pivotKv, pivotKa);
   private final SysIdRoutine routine = new SysIdRoutine(
-    new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.1), null),
+    new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.8), null),
     new SysIdRoutine.Mechanism(this::setVoltage, this::logMotors, this)
   );
 
@@ -57,7 +57,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
     motorController = motor.getClosedLoopController();
 
     // Set point where pivot is not pushed either way by gravity as 0
-    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromEquilibrium);
+    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromHorizontal);
 
     pivotKp.onChange(this::configMotor);
     pivotKd.onChange(this::configMotor);
@@ -103,7 +103,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   @Override
   public void periodic() {
     // Set point where pivot is not pushed either way by gravity as 0
-    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromEquilibrium);
+    relativeEncoder.setPosition(absoluteEncoder.getPosition() + pivotOffsetFromHorizontal);
 
     updateInputs(pivotInputs);
     Logger.processInputs("Pivot", pivotInputs);
@@ -113,7 +113,11 @@ public class Pivot extends SubsystemBase implements PivotIO {
       SmartDashboard.putNumber("Pivot Position", getPosition());
       SmartDashboard.putNumber("Absolute Pivot Position", absoluteEncoder.getPosition());
       SmartDashboard.putBoolean("Pivot out of the way", isOutOfElevatorWay());
+      SmartDashboard.putNumber("Pivot Velocity", getVelocity());
+      SmartDashboard.putNumber("PivotFeedforward", (feedforward.calculate(getPosition(), getVelocity())));
     } catch (Exception e) {}
+
+    setReference(1);
   }
 
   /**
@@ -177,8 +181,8 @@ public class Pivot extends SubsystemBase implements PivotIO {
    *
    * @return The feedforward voltage as a double.
    */
-  public double calculateFeedforward() {
-    return feedforward.calculate(getPosition(), getVelocity());
+  public double calculateFeedforward(double velocity) {
+    return feedforward.calculate(getPosition(), velocity) * 0.55;
   }
 
   /**
@@ -196,7 +200,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(), ArbFFUnits.kVoltage);
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(getVelocity()), ArbFFUnits.kVoltage);
   }
 
   /**
@@ -247,7 +251,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   }
 
   public void logMotors(SysIdRoutineLog log) {
-    log.motor("pivot-motor").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("pivot-motor").voltage(Volts.of(motor.getAppliedOutput() * motor.getBusVoltage()));
     log.motor("pivot-motor").angularPosition(Radians.of(getPosition()));
     log.motor("pivot-motor").angularVelocity(RadiansPerSecond.of(getVelocity()));
   }

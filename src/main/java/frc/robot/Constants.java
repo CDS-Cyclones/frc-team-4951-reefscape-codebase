@@ -263,25 +263,25 @@ public final class Constants {
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
-    public static final boolean pivotMotorInverted = false;
-    public static final boolean pivotAbsoluteEncoderInverted = true;
-    public static final double pivotOffsetFromEquilibrium = -0.797; // theta from facing up to max inwards in radians
-    public static final double pivotMinPosition = -0.637;
-    public static final double pivotMaxPosition = 2.770;
-    public static final double pivotMinPositionForElevatorMovement = -0.4;
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.0);                                          // TODO tune
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.0);                                          // TODO tune
+    public static final boolean pivotMotorInverted = true;
+    public static final boolean pivotAbsoluteEncoderInverted = false;
+    public static final double pivotOffsetFromHorizontal = -2.826 + Math.PI / 2;
+    public static final double pivotMinPosition = -20;
+    public static final double pivotMaxPosition = 20;
+    public static final double pivotMinPositionForElevatorMovement = -1.846;
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.52);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.8);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
-    public static final double pivotKs = 0.0;                                                                                           // TODO figure out
-    public static final double pivotKg = 0.0;                                                                                           // TODO figure out - SysId
-    public static final double pivotKv = 0.0;                                                                                           // TODO figure out - SysId
-    public static final double pivotKa = 0.0;                                                                                           // TODO figure out - SysId
-    public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;                                              // TODO figure out - SysId
+    public static final double pivotKs = 0.42349;
+    public static final double pivotKg = 0.73488;
+    public static final double pivotKv = 0.58259;
+    public static final double pivotKa = 0;
+    public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
     public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.3); // max speed going down                 // TODO tune
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.3); // max speed going up       // TODO tune
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.16);
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.16);
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.05); 
 
     // Intake constants
