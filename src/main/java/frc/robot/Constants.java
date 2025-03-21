@@ -248,15 +248,15 @@ public final class Constants {
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
     public static final double elevatorMinPosition = 0.0;                                                                                // TODO figure out
-    public static final double elevatorMaxPosition = 2;                                                                             // TODO figure out
+    public static final double elevatorMaxPosition = 1.6;                                                                             // TODO figure out
     public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 0.0);                                     // TODO tune
     public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);                                     // TODO tune
-    public static final double elevatorKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
-    public static final double elevatorKs = 0.0;                                                                                         // TODO figure out
-    public static final double elevatorKg = 0.0;                                                                                         // TODO figure out - SysId
-    public static final double elevatorKv = 0.0;                                                                                         // TODO figure out - SysId
-    public static final double elevatorKa = 0.0;                                                                                         // TODO figure out - SysId
-    public static final double elevatorDistancePerRevolution = Units.inchesToMeters(1.0/1.0);                                            // TODO figure out - SysId
+    public static final double elevatorKff = 1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
+    public static final double elevatorKs = 0.58291;                                                                                         // TODO figure out
+    public static final double elevatorKg = 0.62411;                                                                                         // TODO figure out - SysId
+    public static final double elevatorKv = 3.2946;                                                                                         // TODO figure out - SysId
+    public static final double elevatorKa = 0.62268;                                                                                         // TODO figure out - SysId
+    public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;                                            // TODO figure out - SysId
     public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
     public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.3); // max speed going down            // TODO tune
     public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.3); // max speed going up  // TODO tune
@@ -266,9 +266,9 @@ public final class Constants {
     public static final boolean pivotMotorInverted = true;
     public static final boolean pivotAbsoluteEncoderInverted = false;
     public static final double pivotOffsetFromHorizontal = -2.826 + Math.PI / 2;
-    public static final double pivotMinPosition = -20;
-    public static final double pivotMaxPosition = 20;
-    public static final double pivotMinPositionForElevatorMovement = -1.846;
+    public static final double pivotMinPosition = -0.84;
+    public static final double pivotMaxPosition = 2.33;
+    public static final double pivotMinPositionForElevatorMovement = 2;
     public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.52);
     public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.8);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
@@ -352,8 +352,8 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public static enum PivotPosition {
-      INTAKE_READY(0.0),
-      ELEVATOR_CLEAR(0.0),
+      INTAKE_READY(2.33),
+      ELEVATOR_CLEAR(2.0),
       L1(0.0),
       L2(0.0),
       L3(0.0),

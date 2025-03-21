@@ -24,7 +24,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,7 +43,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   private static final SparkBaseConfig motorConfigFollower = new SparkMaxConfig();
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(elevatorKs, elevatorKg, elevatorKv, elevatorKa);
   private final SysIdRoutine routine = new SysIdRoutine(
-    new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.1), null),
+    new SysIdRoutine.Config(Volts.of(0.4).per(Second), Volts.of(1.3), null),
     new SysIdRoutine.Mechanism(this::setVoltage, this::logMotors, this)
   );
 
@@ -172,8 +171,8 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    *
    * @return The feedforward voltage as a double.
    */
-  public double calculateFeedforward() {
-    return feedforward.calculate(getVelocity());
+  public double calculateFeedforward(double velocity) {
+    return feedforward.calculate(velocity) *0.5;
   }
 
   /**
@@ -189,7 +188,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @param position The position to set the elevator to.
    */
   public void setReference(double position) {
-    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(), ArbFFUnits.kVoltage);
+    motorController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, calculateFeedforward(getVelocity()), ArbFFUnits.kVoltage);
   }
 
   /**
@@ -246,10 +245,10 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
   }
 
   public void logMotors(SysIdRoutineLog log) {
-    log.motor("elevator-motor-1").voltage(Volts.of(motor.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("elevator-motor-1").voltage(Volts.of(motor.getBusVoltage() * motor.getAppliedOutput()));
     log.motor("elevator-motor-1").linearPosition(Meters.of(encoder.getPosition()));
     log.motor("elevator-motor-1").linearVelocity(MetersPerSecond.of(encoder.getVelocity()));
-    log.motor("elevator-motor-2").voltage(Volts.of(motorFollower.getBusVoltage() * RobotController.getBatteryVoltage()));
+    log.motor("elevator-motor-2").voltage(Volts.of(motorFollower.getBusVoltage() * motorFollower.getAppliedOutput()));
     log.motor("elevator-motor-2").linearPosition(Meters.of(encoderFollower.getPosition()));
     log.motor("elevator-motor-2").linearVelocity(MetersPerSecond.of(encoderFollower.getVelocity()));
     }

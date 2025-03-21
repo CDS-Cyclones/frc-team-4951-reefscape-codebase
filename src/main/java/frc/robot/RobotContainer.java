@@ -159,7 +159,7 @@ public class RobotContainer {
       () -> OI.m_operatorBoard.getRawButton(25)
     ));
 
-    elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward()), elevator));
+    elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
     pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot));
 

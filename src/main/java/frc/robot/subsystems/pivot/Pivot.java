@@ -25,7 +25,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -116,8 +115,6 @@ public class Pivot extends SubsystemBase implements PivotIO {
       SmartDashboard.putNumber("Pivot Velocity", getVelocity());
       SmartDashboard.putNumber("PivotFeedforward", (feedforward.calculate(getPosition(), getVelocity())));
     } catch (Exception e) {}
-
-    setReference(1);
   }
 
   /**
@@ -191,7 +188,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return True if no tin the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
-    return getPosition() >= pivotMinPositionForElevatorMovement;
+    return getPosition() <= pivotMinPositionForElevatorMovement;
   }
 
     /**
