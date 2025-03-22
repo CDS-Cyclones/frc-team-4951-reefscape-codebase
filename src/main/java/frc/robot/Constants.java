@@ -16,8 +16,6 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -85,7 +83,7 @@ public final class Constants {
     public static final Rotation2d backRightZeroRotation = new Rotation2d(Math.PI / 2);
 
     // Device CAN IDs
-    public static final int pigeon2CanId = 9;
+    public static final int pigeon2CanId = 38;
     public static final String pigeon2CanBus = "pigeonbus";
 
     public static final int frontLeftDriveCanId = 21;
@@ -241,26 +239,26 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
-    public static final int coralCanrangeCanId = 40;
-    public static final int algaCanrangeCanId = 41;
+    public static final int coralCanrangeCanId = 39;
+    public static final String coralCanrangeCanBus = "pigeonbus";
 
     // Elevator constants
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
-    public static final double elevatorMinPosition = 0.0;                                                                                // TODO figure out
-    public static final double elevatorMaxPosition = 1.55;                                                                             // TODO figure out
-    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 2.85);                                     // TODO tune
-    public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);                                     // TODO tune
+    public static final double elevatorMinPosition = 0.0;
+    public static final double elevatorMaxPosition = 1.55;
+    public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 2.85);
+    public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);
     public static final double elevatorKff = 1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
-    public static final double elevatorKs = 0.58291;                                                                                         // TODO figure out
-    public static final double elevatorKg = 0.62411;                                                                                         // TODO figure out - SysId
-    public static final double elevatorKv = 3.2946;                                                                                         // TODO figure out - SysId
-    public static final double elevatorKa = 0.62268;                                                                                         // TODO figure out - SysId
-    public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;                                            // TODO figure out - SysId
-    public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
-    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.5); // max speed going down            // TODO tune
-    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.61); // max speed going up  // TODO tune
-    public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
+    public static final double elevatorKs = 0.58291;
+    public static final double elevatorKg = 0.62411;
+    public static final double elevatorKv = 3.2946;
+    public static final double elevatorKa = 0.62268;
+    public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;
+    public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;
+    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.5); // max speed going down
+    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.61); // max speed going up
+    public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);
 
     // Pivot constants
     public static final boolean pivotMotorInverted = true;
@@ -269,37 +267,32 @@ public final class Constants {
     public static final double pivotMinPosition = -1;
     public static final double pivotMaxPosition = 2.28;
     public static final double pivotMinPositionForElevatorMovement = 2;
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.6); //0.52);
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.09); //0.8);
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.6);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.09);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
     public static final double pivotKs = 0.3702;
     public static final double pivotKgWithCoral = 0.45;
     public static final double pivotKgEmpty = 0.32;
-
     public static final double pivotKv = 0.96353;
-    public static final double pivotKa = 0; //2.5231;
-    public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;
+    public static final double pivotKa = 0;
+    public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
-    public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
+    public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.1);
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.12);
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.1);  // max speed going out
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.12);  // max speed going in
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01); 
 
     // Intake constants
-    public static final double coralCanrangeDistanceThreshold = 0.05;                                                                   // in m TODO figure this out
-    public static final SparkBaseConfig intakeWheelsMotorConfig = new SparkMaxConfig()
-    .smartCurrentLimit(80)
-    .secondaryCurrentLimit(90)
-    .idleMode(SparkBaseConfig.IdleMode.kBrake)
-    .inverted(false);
+    public static final boolean intakeMotorInverted = false;
+    public static final double coralCanrangeDistanceThreshold = 0.1;                                                                  // in m TODO figure this out
 
-    // Elevator simulation constants (NONE OF THESE ARE TUNED)
-    public static final double elevatorGearing = 1.0;
-    public static final double elevatorCarriageMass = 1.0;
-    public static final double elevatorDrumRadius = 0.0254;
+    // Elevator simulation constants
+    public static final double elevatorGearing = 1.0;        // NOT TUNED
+    public static final double elevatorCarriageMass = 1.0;   // NOT TUNED
+    public static final double elevatorDrumRadius = 0.0254;  // NOT TUNED
     public static final double elevatorMinHeightMetres = 0.0;
-    public static final double elevatorMaxHeightMetres = 2.2;
+    public static final double elevatorMaxHeightMetres = 1.55;
   }
 
   public static final class CandleConstants {
@@ -360,9 +353,9 @@ public final class Constants {
       L2(1.79),
       L3(1.79),
       L4(1.02),
-      REEF_ALGA(0.0),
-      BARGE(0.0),
-      PROCESSOR(0.0),
+      REEF_ALGA(0.0),  // TODO
+      BARGE(0.0),      // TODO
+      PROCESSOR(0.0),  // TODO
       TUNABLE(Double.NaN);  // Special value for tunable position
 
       private final double position;
@@ -390,9 +383,9 @@ public final class Constants {
       L2(0.22),
       L3(0.72),
       L4(1.55),
-      REEF_ALGA(0.0),
-      BARGE(0.0),
-      PROCESSOR(0.0),
+      REEF_ALGA(0.0),  // TODO
+      BARGE(0.0),      // TODO
+      PROCESSOR(0.0),  // TODO
       TUNABLE(Double.NaN);  // Special value for tunable position
 
       private final double position;

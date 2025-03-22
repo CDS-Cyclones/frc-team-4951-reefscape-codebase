@@ -109,10 +109,6 @@ public class Pivot extends SubsystemBase implements PivotIO {
     try {
       SmartDashboard.putString("Mutables/Pivot Position", RobotStateManager.getDesiredPivotPosition().toString());
       SmartDashboard.putNumber("Pivot Position", getPosition());
-      SmartDashboard.putNumber("Absolute Pivot Position", absoluteEncoder.getPosition());
-      SmartDashboard.putBoolean("Pivot out of the way", isOutOfElevatorWay());
-      SmartDashboard.putNumber("Pivot Velocity", getVelocity());
-      SmartDashboard.putNumber("PivotFeedforward", (feedforward.calculate(getPosition(), getVelocity())));
     } catch (Exception e) {}
   }
 

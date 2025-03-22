@@ -7,7 +7,8 @@ package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
-
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,12 +24,18 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase implements IntakeIO {
   private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
   private final SparkMax intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
-  private final CANrange coralCanrange = new CANrange(coralCanrangeCanId);
+  public static final SparkBaseConfig intakeMotorConfig = new SparkMaxConfig();
+  private final CANrange coralCanrange = new CANrange(coralCanrangeCanId, coralCanrangeCanBus);
 
   @Getter boolean coralDetected = false;
 
   public Intake() {
-    intakeMotor.configure(intakeWheelsMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+    intakeMotorConfig
+    .smartCurrentLimit(80)
+    .secondaryCurrentLimit(90)
+    .idleMode(SparkBaseConfig.IdleMode.kBrake)
+    .inverted(intakeMotorInverted);
+    intakeMotor.configure(intakeMotorConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
   }
 
   // This method will be called once per scheduler run
