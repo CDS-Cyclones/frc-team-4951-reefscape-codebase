@@ -13,7 +13,13 @@
         {
           "type": "named",
           "data": {
-            "name": "score_coral"
+            "name": "score_coral_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_retract"
           }
         }
       ]

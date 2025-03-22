@@ -228,7 +228,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @return The command to move the elevator to the position.
    */
   public Command moveToPosition(Pivot pivot, Supplier<ElevatorPosition> position) {
-    return Commands.run(() -> {
+    return Commands.runOnce(() -> {
       double targetPosition = position.get().getAsDouble();
 
       setReference(targetPosition);
@@ -238,10 +238,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
         return false;
 
       return true;
-    })
-    .until(() -> 
-      isAtPosition(position.get())
-    );
+    });
   }
 
   public void logMotors(SysIdRoutineLog log) {

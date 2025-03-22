@@ -259,7 +259,7 @@ public final class Constants {
     public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;                                            // TODO figure out - SysId
     public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
     public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.26); // max speed going down            // TODO tune
-    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.26); // max speed going up  // TODO tune
+    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.23); // max speed going up  // TODO tune
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
@@ -267,22 +267,22 @@ public final class Constants {
     public static final boolean pivotAbsoluteEncoderInverted = false;
     public static final double pivotOffsetFromHorizontal = -2.899 + Math.PI / 2;
     public static final double pivotMinPosition = -1;
-    public static final double pivotMaxPosition = 2.26;
+    public static final double pivotMaxPosition = 2.28;
     public static final double pivotMinPositionForElevatorMovement = 2;
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 4.02); //0.52);
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.04); //0.8);
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.6); //0.52);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.09); //0.8);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
     public static final double pivotKs = 0.3702;
-    public static final double pivotKg = 0.45;
+    public static final double pivotKg = 0.32;
     public static final double pivotKv = 0.96353;
-    public static final double pivotKa = 0; //2.5231;//0;
+    public static final double pivotKa = 0; //2.5231;
     public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
     public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.02);
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.06);
     public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.07);
-    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0); 
+    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01); 
 
     // Intake constants
     public static final double coralCanrangeDistanceThreshold = 0.05;                                                                   // in m TODO figure this out
@@ -352,7 +352,7 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public static enum PivotPosition {
-      INTAKE_READY(2.26),
+      INTAKE_READY(2.27),
       ELEVATOR_CLEAR(1.8),
       L1(0.0),
       L2(0.0),
@@ -611,7 +611,7 @@ public final class Constants {
       SCORE_L1(0.2, 3.0),  // TODO tune
       SCORE_L2(0.2, 3.0),  // TODO tune
       SCORE_L3(0.2, 3.0),  // TODO tune
-      SCORE_L4(0.2, 3.0),  // TODO tune
+      SCORE_L4(0.4, 0.5),  // TODO tune
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune

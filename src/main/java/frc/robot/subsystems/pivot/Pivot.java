@@ -185,7 +185,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   /**
    * Checks if the pivot will not be in elevator's way
    *
-   * @return True if no tin the way, false otherwise
+   * @return True if not in the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
     return getPosition() <= pivotMinPositionForElevatorMovement;
@@ -237,14 +237,11 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return The command to move the pivot to the position.
    */
   public Command moveToPosition(Supplier<PivotPosition> position) {
-    return Commands.run(() -> {
+    return Commands.runOnce(() -> {
       double targetPosition = position.get().getAsDouble();
 
       setReference(targetPosition);
-    }, this)
-    .until(() -> 
-      isAtPosition(position.get())
-    );
+    }, this);
   }
 
   public void logMotors(SysIdRoutineLog log) {

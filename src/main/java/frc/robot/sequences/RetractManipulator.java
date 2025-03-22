@@ -18,15 +18,20 @@ public class RetractManipulator extends SequentialCommandGroup {
   public RetractManipulator(Elevator elevator, Pivot pivot) {
     addCommands(
       new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
-        pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+        Commands.sequence(
+          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+          Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR))
+        ),
         Commands.none(),
-        () -> pivot.getPosition() < PivotPosition.ELEVATOR_CLEAR.getAsDouble()
+        () -> !pivot.isOutOfElevatorWay()
       ),
       Commands.parallel(
-        Commands.runOnce(() -> elevator.setReference(ElevatorPosition.DOWN)),
+        elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
         pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR)
       ),
-      pivot.moveToPosition(() -> PivotPosition.INTAKE_READY)
+      Commands.waitUntil(() -> elevator.isAtPosition(ElevatorPosition.DOWN) && pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR)),
+      pivot.moveToPosition(() -> PivotPosition.INTAKE_READY),
+      Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.INTAKE_READY))
     );
   }
 }
