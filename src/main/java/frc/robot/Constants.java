@@ -273,7 +273,9 @@ public final class Constants {
     public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.09); //0.8);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
     public static final double pivotKs = 0.3702;
-    public static final double pivotKg = 0.32;
+    public static final double pivotKgWithCoral = 0.45;
+    public static final double pivotKgEmpty = 0.32;
+
     public static final double pivotKv = 0.96353;
     public static final double pivotKa = 0; //2.5231;
     public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90)/0.25;

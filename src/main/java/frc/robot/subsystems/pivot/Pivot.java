@@ -15,7 +15,6 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -42,7 +41,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   private final RelativeEncoder relativeEncoder;
   private final SparkClosedLoopController motorController;
   private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
-  private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKg, pivotKv, pivotKa);
+  private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKgWithCoral, pivotKv, pivotKa);
   private final SysIdRoutine routine = new SysIdRoutine(
     new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.8), null),
     new SysIdRoutine.Mechanism(this::setVoltage, this::logMotors, this)
