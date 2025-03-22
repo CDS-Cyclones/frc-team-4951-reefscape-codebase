@@ -23,18 +23,13 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
-import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-import frc.robot.commands.elevator.ElevatorToPositionCommand;
-import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
 import frc.robot.commands.intake.IntakeCommand;
 import frc.robot.commands.intake.IntakeCoral;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.pivot.HoldPivotPositionCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
-import frc.robot.commands.pivot.PivotToPositionCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -49,6 +44,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.oi.OI;
@@ -73,7 +69,7 @@ public class RobotContainer {
   private final Elevator elevator;
   private final Pivot pivot;
   private final Intake intake;
-  @SuppressWarnings("unused") private final Candle candle;
+  private final Candle candle;
 
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -88,6 +84,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
         vision = new Vision(drive, new VisionIOLimelight(VisionConstants.cameraName, drive::getRotation));
+        elevator = new Elevator();
         break;
 
       case SIM:
@@ -107,17 +104,18 @@ public class RobotContainer {
           driveSimulation::setSimulationWorldPose
         );
         vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, driveSimulation::getSimulatedDriveTrainPose));
+        elevator = new ElevatorSim();
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, (pose) -> {});
         vision = new Vision(drive, new VisionIO() {});
+        elevator = new Elevator();
         break;
     }
 
     // Instantiate other subsystems
-    elevator = new Elevator();
     pivot = new Pivot();
     intake = new Intake();
     candle = new Candle();
@@ -133,7 +131,7 @@ public class RobotContainer {
 
     // Set up default states
     RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
-    RobotStateManager.setReefHeight(ReefHeight.L4);
+    RobotStateManager.setReefHeight(ReefHeight.L2);
     RobotStateManager.setAlignForAlgaePickup(false);
     RobotStateManager.setCoralScoringPose(FieldPose.J);
     RobotStateManager.setIntakeOccupied(false);
@@ -158,11 +156,9 @@ public class RobotContainer {
       () -> OI.m_operatorBoard.getRawButton(25)
     ));
 
-    // Default command for elevator, hold position
-    elevator.setDefaultCommand(new HoldElevatorPositionCommand(elevator));
+    elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
-    // Default command for pivot, hold position
-    pivot.setDefaultCommand(new HoldPivotPositionCommand(pivot));
+    pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot));
 
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
@@ -185,11 +181,8 @@ public class RobotContainer {
             RobotStateManager::getDesiredElevatorPosition,
             RobotStateManager::getDesiredPivotPosition
           ),
-          new ConditionalCommand( // If trigger is held and intake is not occupied, score coral
-            new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true),
-            Commands.none(),
-            () -> (OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED)
-          )
+          Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
+          new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
         )
       )
       .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
@@ -302,46 +295,29 @@ public class RobotContainer {
 
     // Bindings for manual manipulator controller
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.2));
+      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.16));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kA.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> -0.2));
+      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> -0.1));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kB.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> 0.2));
+      .whileTrue(new ManualPivotCommand(pivot, () -> 0.1));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kX.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> -0.2));
+      .whileTrue(new ManualPivotCommand(pivot, () -> -0.1));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kRightBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> 0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(new ManualIntakeCommand(intake, () -> 0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> -0.5 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(new ManualIntakeCommand(intake, () -> -0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
 
     // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kA.value)
-      .whileTrue(new ElevatorToPositionCommand(elevator, pivot, () -> ElevatorPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kB.value)
-      .whileTrue(new PivotToPositionCommand(pivot,() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kX.value)
-      .whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kY.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kB.value).onTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
+    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
   }
 
   /**
    * Setup SysId routines for the robot.
    */
-  private void setupSysIdRoutines() {
-    autoChooser.addOption("Drive Wheel Radius Characterization", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption("Drive Simple FF Characterization", DriveCharacterizationCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Pivot SysId (Quasistatic Forward)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Pivot SysId (Quasistatic Reverse)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Pivot SysId (Dynamic Forward)", pivot.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Pivot SysId (Dynamic Reverse)", pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-  
+  private void setupSysIdRoutines() {  
     try {
       SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
     } catch (Exception e) {}
@@ -394,7 +370,6 @@ public class RobotContainer {
       )
     );
 
-    // pressing right bumer gupos id left bumper lowers id, whenever updated proint to smartdashbord
     new JoystickButton(OI.m_sysIdRoutinesController, Button.kRightBumper.value).whileTrue(
       Commands.runOnce(() -> {
         sysIdRoutineId++;
@@ -448,7 +423,7 @@ public class RobotContainer {
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
     ));
 
-    // // Elevator and pivot positioning
+    // Elevator and pivot positioning
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
       new RetractManipulator(elevator, pivot)
     ));
