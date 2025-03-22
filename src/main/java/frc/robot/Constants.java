@@ -359,7 +359,7 @@ public final class Constants {
       L1(0.0),
       L2(0.0),
       L3(0.0),
-      L4(1.25),
+      L4(1.02),
       REEF_ALGA(0.0),
       BARGE(0.0),
       PROCESSOR(0.0),

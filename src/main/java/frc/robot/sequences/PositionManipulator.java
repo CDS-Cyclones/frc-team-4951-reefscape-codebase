@@ -22,7 +22,6 @@ public class PositionManipulator extends SequentialCommandGroup {
    */
   public PositionManipulator(Elevator elevator, Pivot pivot, Supplier<ElevatorPosition> elevatorPositionSupplier, Supplier<PivotPosition> pivotPositionSupplier) {
     addCommands(
-      Commands.runOnce(()-> SmartDashboard.putBoolean("CommandOver",false)),
       new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before raising
         Commands.sequence(
           pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
@@ -31,12 +30,15 @@ public class PositionManipulator extends SequentialCommandGroup {
         Commands.none(),
         () -> !pivot.isOutOfElevatorWay()
       ),
-      Commands.parallel( // Get elevator and pivot to scoring positions
-        elevator.moveToPosition(pivot, elevatorPositionSupplier),
-        pivot.moveToPosition(pivotPositionSupplier)
-      ),
-      Commands.waitUntil(() -> elevator.isAtPosition(elevatorPositionSupplier.get()) && pivot.isAtPosition(pivotPositionSupplier.get())),
-      Commands.runOnce(()-> SmartDashboard.putBoolean("CommandOver",true))
+      // Commands.parallel( // Get elevator and pivot to scoring positions
+      //   elevator.moveToPosition(pivot, elevatorPositionSupplier),
+      //   pivot.moveToPosition(pivotPositionSupplier)
+      // ),
+      // Commands.waitUntil(() -> elevator.isAtPosition(elevatorPositionSupplier.get()) && pivot.isAtPosition(pivotPositionSupplier.get())),
+      elevator.moveToPosition(pivot, elevatorPositionSupplier),
+      Commands.waitUntil(() -> elevator.isAtPosition(elevatorPositionSupplier.get())),
+      pivot.moveToPosition(pivotPositionSupplier),
+      Commands.waitUntil(() -> pivot.isAtPosition(pivotPositionSupplier.get()))
     );
   }
 }
