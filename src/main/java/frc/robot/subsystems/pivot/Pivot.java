@@ -41,7 +41,7 @@ public class Pivot extends SubsystemBase implements PivotIO {
   private final RelativeEncoder relativeEncoder;
   private final SparkClosedLoopController motorController;
   private static final SparkBaseConfig motorConfig = new SparkMaxConfig();
-  private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKgWithCoral, pivotKv, pivotKa);
+  private final ArmFeedforward feedforward = new ArmFeedforward(pivotKs, pivotKg, pivotKv, pivotKa);
   private final SysIdRoutine routine = new SysIdRoutine(
     new SysIdRoutine.Config(Volts.of(0.2).per(Second), Volts.of(0.8), null),
     new SysIdRoutine.Mechanism(this::setVoltage, this::logMotors, this)

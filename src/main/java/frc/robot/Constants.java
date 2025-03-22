@@ -267,20 +267,19 @@ public final class Constants {
     public static final double pivotMinPosition = -1;
     public static final double pivotMaxPosition = 2.28;
     public static final double pivotMinPositionForElevatorMovement = 2;
-    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.6);
-    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.09);
+    public static final TunableNum pivotKp = new TunableNum("Pivot/P", 0.36);
+    public static final TunableNum pivotKd = new TunableNum("Pivot/D", 0.07);
     public static final double pivotKff =  1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
-    public static final double pivotKs = 0.3702;
-    public static final double pivotKgWithCoral = 0.45;
-    public static final double pivotKgEmpty = 0.32;
-    public static final double pivotKv = 0.96353;
+    public static final double pivotKs = 0.29184;
+    public static final double pivotKg = 0.37151;
+    public static final double pivotKv = 1.6051;
     public static final double pivotKa = 0;
     public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
     public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.1);  // max speed going out
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.12);  // max speed going in
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.17);  // max speed going out
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.18);  // max speed going in
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01); 
 
     // Intake constants
