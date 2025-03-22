@@ -258,8 +258,8 @@ public final class Constants {
     public static final double elevatorKa = 0.62268;                                                                                         // TODO figure out - SysId
     public static final double elevatorDistancePerRevolution = Units.inchesToMeters(63)/52.25;                                            // TODO figure out - SysId
     public static final double elevatorVelocityMetersPerSecond = elevatorDistancePerRevolution / 60.0;                                   // TODO figure out
-    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.26); // max speed going down            // TODO tune
-    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.23); // max speed going up  // TODO tune
+    public static final TunableNum elevatorMinSpeed = new TunableNum("Elevator/MinSpeed", -0.5); // max speed going down            // TODO tune
+    public static final TunableNum elevatorMaxSpeed = new TunableNum("Elevator/MaxSpeed", 0.61); // max speed going up  // TODO tune
     public static final TunableNum elevatorPositionTolerance = new TunableNum("Elevator/PositionTolerance", 0.05);     // TODO tune
 
     // Pivot constants
@@ -282,8 +282,8 @@ public final class Constants {
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
     public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90)/8.0; 
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
-    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.06);
-    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.07);
+    public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.1);
+    public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.12);
     public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01); 
 
     // Intake constants
@@ -357,8 +357,8 @@ public final class Constants {
       INTAKE_READY(2.27),
       ELEVATOR_CLEAR(1.8),
       L1(0.0),
-      L2(0.0),
-      L3(0.0),
+      L2(1.79),
+      L3(1.79),
       L4(1.02),
       REEF_ALGA(0.0),
       BARGE(0.0),
@@ -387,8 +387,8 @@ public final class Constants {
     public static enum ElevatorPosition {
       DOWN(0.0),
       L1(0.0),
-      L2(0.0),
-      L3(0.0),
+      L2(0.22),
+      L3(0.72),
       L4(1.55),
       REEF_ALGA(0.0),
       BARGE(0.0),
@@ -611,9 +611,9 @@ public final class Constants {
       NONE(0.0, 0.0),
       OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
       SCORE_L1(0.2, 3.0),  // TODO tune
-      SCORE_L2(0.2, 3.0),  // TODO tune
-      SCORE_L3(0.2, 3.0),  // TODO tune
-      SCORE_L4(0.4, 0.5),  // TODO tune
+      SCORE_L2(0.5, 0.5),
+      SCORE_L3(0.5, 0.5),
+      SCORE_L4(0.4, 0.5),
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune

@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "manipulator_position_l4"
+            "name": "manipulator_position_l2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score_coral_l4"
+            "name": "score_coral_l2"
           }
         },
         {

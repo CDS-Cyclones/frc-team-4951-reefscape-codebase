@@ -23,11 +23,8 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
-import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-// import frc.robot.commands.elevator.ElevatorToPositionCommand;
-// import frc.robot.commands.elevator.HoldElevatorPositionCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
 import frc.robot.commands.intake.IntakeCommand;
 import frc.robot.commands.intake.IntakeCoral;
@@ -134,7 +131,7 @@ public class RobotContainer {
 
     // Set up default states
     RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
-    RobotStateManager.setReefHeight(ReefHeight.L4);
+    RobotStateManager.setReefHeight(ReefHeight.L2);
     RobotStateManager.setAlignForAlgaePickup(false);
     RobotStateManager.setCoralScoringPose(FieldPose.J);
     RobotStateManager.setIntakeOccupied(false);
@@ -184,11 +181,8 @@ public class RobotContainer {
             RobotStateManager::getDesiredElevatorPosition,
             RobotStateManager::getDesiredPivotPosition
           ),
-          new ConditionalCommand( // If trigger is held and intake is not occupied, score coral
-            new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true),
-            Commands.none(),
-            () -> (OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED)
-          )
+          Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
+          new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
         )
       )
       .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
@@ -323,22 +317,7 @@ public class RobotContainer {
   /**
    * Setup SysId routines for the robot.
    */
-  private void setupSysIdRoutines() {
-    autoChooser.addOption("Drive Wheel Radius Characterization", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption("Drive Simple FF Characterization", DriveCharacterizationCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Pivot SysId (Quasistatic Forward)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Pivot SysId (Quasistatic Reverse)", pivot.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("Pivot SysId (Dynamic Forward)", pivot.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption("Pivot SysId (Dynamic Reverse)", pivot.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-  
+  private void setupSysIdRoutines() {  
     try {
       SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
     } catch (Exception e) {}
@@ -391,7 +370,6 @@ public class RobotContainer {
       )
     );
 
-    // pressing right bumer gupos id left bumper lowers id, whenever updated proint to smartdashbord
     new JoystickButton(OI.m_sysIdRoutinesController, Button.kRightBumper.value).whileTrue(
       Commands.runOnce(() -> {
         sysIdRoutineId++;
@@ -445,7 +423,7 @@ public class RobotContainer {
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
     ));
 
-    // // Elevator and pivot positioning
+    // Elevator and pivot positioning
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
       new RetractManipulator(elevator, pivot)
     ));

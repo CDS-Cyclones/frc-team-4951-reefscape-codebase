@@ -7,7 +7,6 @@ package frc.robot.commands.pivot;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.pivot.Pivot;
-import static frc.robot.Constants.ManipulatorConstants.*;
 
 import java.util.function.DoubleSupplier;
 
