@@ -77,7 +77,7 @@ public final class Constants {
         };
 
     // Zeroed rotation values for each module, see setup instructions
-    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-Math.PI / 2.0);
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(Math.PI);
     public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.0);
     public static final Rotation2d backLeftZeroRotation = new Rotation2d(Math.PI);
     public static final Rotation2d backRightZeroRotation = new Rotation2d(Math.PI / 2);
@@ -109,8 +109,8 @@ public final class Constants {
     // Drive PID configuration
     public static final TunableNum driveKp = new TunableNum("Drive/drive/p", 0.0);  // TODO tune
     public static final TunableNum driveKd = new TunableNum("Drive/drive/d", 0.0);  // TODO tune
-    public static final double driveKs = 0.0;  // TODO Run Drive Wheel Radius Characterization
-    public static final double driveKv = 0.0;  // TODO Run Drive Wheel Radius Characterization
+    public static final double driveKs = 0.2;  // TODO Run Sysid
+    public static final double driveKv = 2.0;  // TODO Run Drive Wheel Radius Characterization
     public static final double driveSimP = 0.0;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.04038;
@@ -239,8 +239,10 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
-    public static final int coralCanrangeCanId = 39;
-    public static final String coralCanrangeCanBus = "pigeonbus";
+    public static final int coralStartCanrangeCanId = 41;
+    public static final int coralCompleteCanrangeCanId = 42;
+    public static final String coralStartCanrangeCanBus = "pigeonbus";
+    public static final String coralCompleteCanrangeCanBus = "pigeonbus";
 
     // Elevator constants
     public static final boolean elevatorMotorInverted = false;
@@ -302,10 +304,11 @@ public final class Constants {
 
   public static final class RobotStateConstants {
     // Constants for field poses
-    private static final double inFrontOfTag = 0.05;
+    private static final double inFrontOfTag = 0.2;
+    private static final double rightOfTag = Units.inchesToMeters(8.5);
+    private static final double leftOfTag = -rightOfTag;
+
     private static final double inFrontOfTagSim = 0.4;
-    private static final double leftOfTag = -0.2;
-    private static final double rightOfTag = 0.2;
 
     /** A tunable pivot position */
     public static final TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
@@ -609,7 +612,7 @@ public final class Constants {
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune
-      INTAKE_CORAL(0.2, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
+      INTAKE_CORAL(0.56, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
       TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
   
       private final double speed;

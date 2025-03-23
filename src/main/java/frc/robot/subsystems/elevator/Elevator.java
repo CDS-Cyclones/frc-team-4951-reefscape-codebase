@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -34,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotStateManager;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
+
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
   protected final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);
