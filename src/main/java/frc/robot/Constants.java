@@ -63,7 +63,7 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
-    public static final double maxSpeedMetersPerSec = 4.8;
+    public static final double maxSpeedMetersPerSec = 3;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(27.0);  // TODO measure
     public static final double wheelBase = Units.inchesToMeters(32.5);  // TODO measure
@@ -97,8 +97,8 @@ public final class Constants {
     public static final int backRightTurnCanId = 26;
 
     // Drive motor configuration
-    public static final int driveMotorCurrentLimit = 80;
-    public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);  // TODO Run Drive Wheel Radius Characterization
+    public static final int driveMotorCurrentLimit = 40;
+    public static final double wheelRadiusMeters = 0.040704575067725526;
     public static final double driveMotorReduction = (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
 
@@ -107,10 +107,10 @@ public final class Constants {
     public static final double driveEncoderVelocityFactor = (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
 
     // Drive PID configuration
-    public static final TunableNum driveKp = new TunableNum("Drive/drive/p", 0.0);  // TODO tune
-    public static final TunableNum driveKd = new TunableNum("Drive/drive/d", 0.0);  // TODO tune
-    public static final double driveKs = 0.2;  // TODO Run Sysid
-    public static final double driveKv = 2.0;  // TODO Run Drive Wheel Radius Characterization
+    public static final TunableNum driveKp = new TunableNum("Drive/drive/p", 0.0);
+    public static final TunableNum driveKd = new TunableNum("Drive/drive/d", 0.0);
+    public static final double driveKs = 0.18406757595208734;
+    public static final double driveKv = 0.09511381538864068;
     public static final double driveSimP = 0.0;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.04038;
@@ -138,9 +138,9 @@ public final class Constants {
     // Configuration for PID controllers
     public static final TunableNum anglePIDCKp = new TunableNum("Drive/PIDController/angle/p", 1.0);  // TODO tune
     public static final TunableNum anglePIDCKd = new TunableNum("Drive/PIDController/angle/d", 0.02);  // TODO tune
-    public static final TunableNum anglePIDCMaxVel = new TunableNum("Drive/PIDController/angle/maxVel", 8);  // TODO tune // Radians per second
-    public static final TunableNum anglePIDCMaxAccel = new TunableNum("Drive/PIDController/angle/maxAccel", 20);  // TODO tune // Radians per second squared
-    public static final TunableNum anglePIDTolerance = new TunableNum("Drive/PIDController/angle/errorTolerance", 0.05);  // TODO tune
+    public static final TunableNum anglePIDCMaxVel = new TunableNum("Drive/PIDController/angle/maxVel", 5);  // TODO tune // Radians per second
+    public static final TunableNum anglePIDCMaxAccel = new TunableNum("Drive/PIDController/angle/maxAccel", 8);  // TODO tune // Radians per second squared
+    public static final TunableNum anglePIDTolerance = new TunableNum("Drive/PIDController/angle/errorTolerance", 0.2);  // TODO tune
     public static final TunableNum translationPIDCKp = new TunableNum("Drive/PIDController/translation/p", 0.1);  // TODO tune
     public static final TunableNum translationPIDCKd = new TunableNum("Drive/PIDController/translation/d", 0.0);  // TODO tune
     public static final TunableNum translationPIDCMaxVel = new TunableNum("Drive/PIDController/translation/maxVel", 6);  // TODO tune // Meters per second
@@ -152,7 +152,7 @@ public final class Constants {
 
     // PathPlanner configuration
     public static final double robotMassKg = 52;  // TODO measure
-    public static final double robotMOI = 6.883;  // TODO calculate w/ formula after running SysId
+    public static final double robotMOI = 5.07274523;
     public static final double wheelCOF = 1.2;
     public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
     public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
@@ -304,8 +304,8 @@ public final class Constants {
 
   public static final class RobotStateConstants {
     // Constants for field poses
-    private static final double inFrontOfTag = 0.2;
-    private static final double rightOfTag = Units.inchesToMeters(8.5);
+    private static final double inFrontOfTag = Units.inchesToMeters(22);
+    private static final double rightOfTag = Units.inchesToMeters(7.73);
     private static final double leftOfTag = -rightOfTag;
 
     private static final double inFrontOfTagSim = 0.4;
@@ -355,7 +355,8 @@ public final class Constants {
       L2(1.79),
       L3(1.79),
       L4(1.02),
-      REEF_ALGA(0.0),  // TODO
+      REEF_ALGA_L2(0.07),
+      REEF_ALGA_L3(0.07),
       BARGE(0.0),      // TODO
       PROCESSOR(0.0),  // TODO
       TUNABLE(Double.NaN);  // Special value for tunable position
@@ -385,7 +386,8 @@ public final class Constants {
       L2(0.22),
       L3(0.72),
       L4(1.55),
-      REEF_ALGA(0.0),  // TODO
+      REEF_ALGA_L2(0.26),
+      REEF_ALGA_L3(0.75),
       BARGE(0.0),      // TODO
       PROCESSOR(0.0),  // TODO
       TUNABLE(Double.NaN);  // Special value for tunable position

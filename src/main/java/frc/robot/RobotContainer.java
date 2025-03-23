@@ -23,6 +23,7 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
 import frc.robot.commands.drive.AutoDriveToPoseCommand;
+import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
@@ -318,6 +319,10 @@ public class RobotContainer {
    * Setup SysId routines for the robot.
    */
   private void setupSysIdRoutines() {  
+    autoChooser.addOption("dfecdftfduhb", DriveCharacterizationCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption("wheeeeeels", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
+
+
     try {
       SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
     } catch (Exception e) {}
