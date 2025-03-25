@@ -148,10 +148,10 @@ public final class Constants {
     public static final TunableNum translationPIDTolerance = new TunableNum("Drive/PIDController/translation/errorTolerance", 0.05);  // TODO tune
 
     // Drive command configuration
-    public static final double fineTuneSpeedMultiplier = 0.35;
+    public static final double fineTuneSpeedMultiplier = 0.4;
 
     // PathPlanner configuration
-    public static final double robotMassKg = 52;  // TODO measure
+    public static final double robotMassKg = 52;
     public static final double robotMOI = 5.07274523;
     public static final double wheelCOF = 1.2;
     public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
@@ -170,7 +170,7 @@ public final class Constants {
         ),
         moduleTranslations
       );
-    
+
     public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
       .withCustomModuleTranslations(moduleTranslations)
       .withRobotMass(Kilograms.of(robotMassKg))
@@ -202,7 +202,7 @@ public final class Constants {
       new Translation3d(-.3, 0, 0), // X is forward in m, z is up in m
       new Rotation3d(0, 0, 0)  // facing forward
     );
-    
+
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3;
     public static double maxZError = 0.75;
@@ -278,11 +278,11 @@ public final class Constants {
     public static final double pivotKa = 0;
     public static final double pivotAbsoluteEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 0.25;
     public static final double pivotAbsoluteEncoderAngularVelocityRadiansPerSecond = pivotAbsoluteEncoderRadiansPerRevolution / 60.0;
-    public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 8.0; 
+    public static final double pivotRelativeEncoderRadiansPerRevolution = Units.degreesToRadians(90) / 8.0;
     public static final double pivotRelativeEncoderAngularVelocityRadiansPerSecond = pivotRelativeEncoderRadiansPerRevolution / 60.0;
     public static final TunableNum pivotMinSpeed = new TunableNum("Pivot/MinSpeed", -0.17);  // max speed going out
     public static final TunableNum pivotMaxSpeed = new TunableNum("Pivot/MaxSpeed", 0.18);  // max speed going in
-    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01); 
+    public static final TunableNum pivotPositionTolerance = new TunableNum("Pivot/PositionTolerance", 0.01);
 
     // Intake constants
     public static final boolean intakeMotorInverted = false;
@@ -312,17 +312,17 @@ public final class Constants {
 
     /** A tunable pivot position */
     public static final TunableNum tunablePivotPosition = new TunableNum("Pivot/TuneablePosition", 0.0);
-    
+
     /** A tunable elevator position */
     public static final TunableNum tunableElevatorPosition = new TunableNum("Elevator/TuneablePosition", 0.0);
-    
+
     /** A tunable intake speed */
     public static final TunableNum tunableIntakeSpeed = new TunableNum("Intake/TunableSpeed", 0.0);
-    
+
     /** A tunable intake time */
     public static final TunableNum tunableIntakeTime = new TunableNum("Intake/TunableTime", 0.0);
 
-    /** 
+    /**
      * An enum to represent all desired robot actions.
      */
     public static enum RobotAction {
@@ -375,7 +375,7 @@ public final class Constants {
         return name() + " (" + getAsDouble() + ")";
       }
     }
-  
+
     /**
      * An enum to represent all desired elevator positions.
      */
@@ -553,7 +553,7 @@ public final class Constants {
         return newPose;
       }
 
-    
+
       /**
        * Return the desired rotation of the robot.
        * @return {@link Rotation2d} of the robot.
@@ -565,7 +565,7 @@ public final class Constants {
       /**
        * Return whether the desired pose is orientation only meaning the robot should only
        * rotate to the desired angle and not move.
-       * 
+       *
        * @return True if the desired pose is orientation only.
        */
       public boolean isOrientationOnly() {
@@ -576,8 +576,8 @@ public final class Constants {
       public String toString() {
         return name();
       }
-    } 
-  
+    }
+
 
     /**
      * An enum to represent the states of the CANdle.
@@ -589,17 +589,17 @@ public final class Constants {
       AT_POSE(128, 255, 0),  // green
       WAITIING_FOR_CORAL(255, 248, 43),  // yellow
       CORAL_DETECTED(0, 157, 255);  // blue
-   
+
       @Getter private final int red;
       @Getter private final int green;
       @Getter private final int blue;
-  
+
       @Override
       public String toString() {
         return "RGB: (" + red + ", " + green + ", " + blue + ")";
       }
     }
-  
+
     /**
      * An enum to represent all desired intake actions.
      */
@@ -616,13 +616,13 @@ public final class Constants {
       INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune
       INTAKE_CORAL(0.56, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
       TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
-  
+
       private final double speed;
       private final Double time;
-  
+
       /**
        * Returns the speed at which this action should run.
-       * 
+       *
        * @return The speed at which this action should run.
        */
       public double getSpeed() {
@@ -631,10 +631,10 @@ public final class Constants {
         }
         return speed;
       }
-  
+
       /**
        * Returns the time for which this action should run.
-       * 
+       *
        * @return The time for which this action should run.
        */
       public Double getTime() {
@@ -643,7 +643,7 @@ public final class Constants {
         }
         return time;
       }
-  
+
       @Override
       public String toString() {
         return name() + " (" + getSpeed() + ", " + getTime() + ")";
