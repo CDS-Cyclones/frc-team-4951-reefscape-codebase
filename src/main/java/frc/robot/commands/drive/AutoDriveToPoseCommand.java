@@ -48,7 +48,7 @@ public class AutoDriveToPoseCommand extends Command {
       throw new IllegalArgumentException("Desired field pose must have a translation component for AutoDriveToPoseCommand");
 
     angleController = new ProfiledPIDController(
-      4,
+      8,
       0.0,
       0.4,
       new TrapezoidProfile.Constraints(
@@ -99,6 +99,7 @@ public class AutoDriveToPoseCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    drive.stopWithX();
   }
 
   // Returns true when the command shyould end.

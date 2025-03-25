@@ -61,9 +61,9 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void initialize() {
     angleController = new ProfiledPIDController(
-      4,
+      2.5,
       0.0,
-      0.4,
+      0.0,
       new TrapezoidProfile.Constraints(
         5,
         2
@@ -72,14 +72,14 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
-      3,
+      1.5,
       0.0,
-      0.2
+      0.0
     );
     translationYController = new PIDController(
-      2,
+      1.5,
       0.0,
-      0.12
+      0.0
     );
 
     angleController.reset(drive.getRotation().getRadians());
@@ -91,8 +91,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
     hasDetectedDesiredTag = false;
 
-    translationXController.setTolerance(0.12);
-    translationYController.setTolerance(0.12);
+    translationXController.setTolerance(0.1);
+    translationYController.setTolerance(0.1);
     angleController.setTolerance(0.1);
   }
 

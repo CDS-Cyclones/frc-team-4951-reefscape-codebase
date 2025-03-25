@@ -97,7 +97,7 @@ public final class Constants {
     public static final int backRightTurnCanId = 26;
 
     // Drive motor configuration
-    public static final int driveMotorCurrentLimit = 40;
+    public static final int driveMotorCurrentLimit = 80;
     public static final double wheelRadiusMeters = 0.040704575067725526;
     public static final double driveMotorReduction = (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
     public static final DCMotor driveGearbox = DCMotor.getNEO(1);
@@ -128,8 +128,8 @@ public final class Constants {
     public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
     // Turn PID configuration
-    public static final TunableNum turnKp = new TunableNum("Drive/turn/p", 1.0);  // TODO tune
-    public static final TunableNum turnKd = new TunableNum("Drive/turn/d", 0.05);  // TODO tune
+    public static final TunableNum turnKp = new TunableNum("Drive/turn/p", 1.0);
+    public static final TunableNum turnKd = new TunableNum("Drive/turn/d", 0.05);
     public static final double turnSimP = 10;
     public static final double turnSimD = 0.2;
     public static final double turnPIDMinInput = 0; // Radians
@@ -154,15 +154,15 @@ public final class Constants {
     public static final double robotMassKg = 52;  // TODO measure
     public static final double robotMOI = 5.07274523;
     public static final double wheelCOF = 1.2;
-    public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
-    public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);  // TODO tune
+    public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
+    public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);
     public static final RobotConfig ppConfig =
       new RobotConfig(
         robotMassKg,
         robotMOI,
         new ModuleConfig(
           wheelRadiusMeters,
-          maxSpeedMetersPerSec,
+          maxSpeedMetersPerSec   ,
           wheelCOF,
           driveGearbox.withReduction(driveMotorReduction),
           driveMotorCurrentLimit,
@@ -286,7 +286,7 @@ public final class Constants {
 
     // Intake constants
     public static final boolean intakeMotorInverted = false;
-    public static final double coralCanrangeDistanceThreshold = 0.1;                                                                  // in m TODO figure this out
+    public static final double coralCanrangeDistanceThreshold = 0.1;
 
     // Elevator simulation constants
     public static final double elevatorGearing = 1.0;        // NOT TUNED
@@ -305,7 +305,7 @@ public final class Constants {
   public static final class RobotStateConstants {
     // Constants for field poses
     private static final double inFrontOfTag = Units.inchesToMeters(22);
-    private static final double rightOfTag = Units.inchesToMeters(7.73);
+    private static final double rightOfTag = Units.inchesToMeters(6.2);
     private static final double leftOfTag = -rightOfTag;
 
     private static final double inFrontOfTagSim = 0.4;
@@ -350,11 +350,11 @@ public final class Constants {
     @RequiredArgsConstructor
     public static enum PivotPosition {
       INTAKE_READY(2.27),
-      ELEVATOR_CLEAR(1.8),
+      ELEVATOR_CLEAR(1.7),
       L1(0.0),
       L2(1.79),
       L3(1.79),
-      L4(1.02),
+      L4(1.65),
       REEF_ALGA_L2(0.07),
       REEF_ALGA_L3(0.07),
       BARGE(0.0),      // TODO
@@ -608,9 +608,9 @@ public final class Constants {
       NONE(0.0, 0.0),
       OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
       SCORE_L1(0.2, 3.0),  // TODO tune
-      SCORE_L2(0.5, 0.5),
-      SCORE_L3(0.5, 0.5),
-      SCORE_L4(0.4, 0.5),
+      SCORE_L2(1.0, 0.8),
+      SCORE_L3(1.0, 0.8),
+      SCORE_L4(1.0, 0.8),
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune
