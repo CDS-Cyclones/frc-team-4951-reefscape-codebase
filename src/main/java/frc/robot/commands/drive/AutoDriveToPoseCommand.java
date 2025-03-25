@@ -48,9 +48,9 @@ public class AutoDriveToPoseCommand extends Command {
       throw new IllegalArgumentException("Desired field pose must have a translation component for AutoDriveToPoseCommand");
 
     angleController = new ProfiledPIDController(
-      anglePIDCKp.getAsDouble(),
+      8,
       0.0,
-      anglePIDCKd.getAsDouble(),
+      0.4,
       new TrapezoidProfile.Constraints(
         anglePIDCMaxVel.getAsDouble(),
         anglePIDCMaxAccel.getAsDouble()
@@ -59,14 +59,14 @@ public class AutoDriveToPoseCommand extends Command {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
-      translationPIDCKp.getAsDouble(),
+      3,
       0.0,
-      translationPIDCKd.getAsDouble()
+      0.2
     );
     translationYController = new PIDController(
-      translationPIDCKp.getAsDouble(),
+      2,
       0.0,
-      translationPIDCKd.getAsDouble()
+      0.12
     );
   
     angleController.reset(drive.getRotation().getRadians());
@@ -99,6 +99,7 @@ public class AutoDriveToPoseCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    drive.stopWithX();
   }
 
   // Returns true when the command shyould end.

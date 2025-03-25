@@ -61,25 +61,25 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void initialize() {
     angleController = new ProfiledPIDController(
-      anglePIDCKp.getAsDouble(),
+      2.5,
       0.0,
-      anglePIDCKd.getAsDouble(),
+      0.0,
       new TrapezoidProfile.Constraints(
-        anglePIDCMaxVel.getAsDouble(),
-        anglePIDCMaxAccel.getAsDouble()
+        5,
+        2
       )
     );
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
-      translationPIDCKp.getAsDouble(),
+      1.5,
       0.0,
-      translationPIDCKd.getAsDouble()
+      0.0
     );
     translationYController = new PIDController(
-      translationPIDCKp.getAsDouble(),
+      1.5,
       0.0,
-      translationPIDCKd.getAsDouble()
+      0.0
     );
 
     angleController.reset(drive.getRotation().getRadians());
@@ -90,6 +90,10 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
 
     hasDetectedDesiredTag = false;
+
+    translationXController.setTolerance(0.1);
+    translationYController.setTolerance(0.1);
+    angleController.setTolerance(0.1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

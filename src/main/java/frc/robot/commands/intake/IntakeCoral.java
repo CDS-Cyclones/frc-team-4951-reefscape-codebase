@@ -39,6 +39,11 @@ public class IntakeCoral extends Command {
   public void execute() {
     // Set the speed of the intake
     intake.setSpeed(IntakeAction.INTAKE_CORAL.getSpeed());
+
+    // Check if the intake has detected a coral
+    if (intake.isCoralDetected()) {
+      candle.setState(CandleState.OFF);
+    }
   }
 
   // Called once the command ends or is interrupted.
@@ -52,6 +57,6 @@ public class IntakeCoral extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false; // intake.isCoralDetected();
+    return intake.isCoralCompletelyIn();
   }
 }

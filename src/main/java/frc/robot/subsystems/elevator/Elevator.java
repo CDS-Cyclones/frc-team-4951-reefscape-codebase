@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotStateManager;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
+
 public class Elevator extends SubsystemBase implements ElevatorIO {
   private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
   protected final SparkMax motor = new SparkMax(elevatorMotor1Id, MotorType.kBrushless);

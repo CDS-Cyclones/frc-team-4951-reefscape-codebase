@@ -15,7 +15,7 @@ public class RobotStateManager {
   @Setter private static RobotAction robotAction;
   @Setter private static ReefHeight reefHeight;
   @Setter private static boolean alignForAlgaePickup;
-  @Setter private static FieldPose coralScoringPose;
+  @Getter @Setter private static FieldPose coralScoringPose;
   @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
 
   public static RobotState getRobotState() {
@@ -100,10 +100,36 @@ public class RobotStateManager {
 
         case REEF_ACTION: {
           if(alignForAlgaePickup) {
-            elevatorPosition = ElevatorPosition.REEF_ALGA;
-            pivotPosition = PivotPosition.REEF_ALGA;
-            fieldPose = getCorrespondingPose(coralScoringPose);
-            intakeAction = IntakeAction.INTAKE_REEF_ALGA;
+            switch(coralScoringPose) {
+              case A:
+              case B:
+              case E:
+              case F:
+              case I:
+              case J:
+                elevatorPosition = ElevatorPosition.REEF_ALGA_L2;
+                pivotPosition = PivotPosition.REEF_ALGA_L2;
+                fieldPose = getCorrespondingPose(coralScoringPose);
+                intakeAction = IntakeAction.INTAKE_REEF_ALGA;
+                break;
+              case C:
+              case D:
+              case G:
+              case H:
+              case K:
+              case L:
+                elevatorPosition = ElevatorPosition.REEF_ALGA_L3;
+                pivotPosition = PivotPosition.REEF_ALGA_L3;
+                fieldPose = getCorrespondingPose(coralScoringPose);
+                intakeAction = IntakeAction.INTAKE_REEF_ALGA;
+                break;
+              default:
+                elevatorPosition = ElevatorPosition.DOWN;
+                pivotPosition = PivotPosition.INTAKE_READY;
+                fieldPose = FieldPose.A;
+                intakeAction = IntakeAction.NONE;
+                break;
+            }
           } else {
             fieldPose = coralScoringPose;
 

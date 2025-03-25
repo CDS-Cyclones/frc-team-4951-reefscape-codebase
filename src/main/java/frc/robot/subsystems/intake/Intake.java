@@ -25,9 +25,11 @@ public class Intake extends SubsystemBase implements IntakeIO {
   private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
   private final SparkMax intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
   public static final SparkBaseConfig intakeMotorConfig = new SparkMaxConfig();
-  private final CANrange coralCanrange = new CANrange(coralCanrangeCanId, coralCanrangeCanBus);
+  private final CANrange coralStartCanrange = new CANrange(coralStartCanrangeCanId, coralStartCanrangeCanBus);
+  private final CANrange coralCompleteCanrange = new CANrange(coralCompleteCanrangeCanId, coralCompleteCanrangeCanBus);
 
   @Getter boolean coralDetected = false;
+  @Getter boolean coralCompletelyIn = false;
 
   public Intake() {
     intakeMotorConfig
@@ -47,8 +49,10 @@ public class Intake extends SubsystemBase implements IntakeIO {
     Logger.processInputs("Intake", intakeInputs);
 
     try {
-      String intakeStateString = "coral present: " + (coralDetected ? "yes" : "no");
-      SmartDashboard.putString("Mutables/Intake State", intakeStateString);
+      // modidfy the string to say if its in or fully in
+      // pirnt values from canranges DISTANCES IN METERS
+      SmartDashboard.putNumber("Start Canrange Distance (m)", coralStartCanrange.getDistance().getValue().in(Meters));
+      SmartDashboard.putNumber("Complete Canrange Distance (m)", coralCompleteCanrange.getDistance().getValue().in(Meters));
       SmartDashboard.putString("Mutables/Intake Action", RobotStateManager.getDesiredIntakeAction().toString());
     } catch(Exception e) {}
   }
@@ -64,16 +68,20 @@ public class Intake extends SubsystemBase implements IntakeIO {
 
   /**
    *  Checks if Canrange detects a coral.
-   *  If sensor is not connected, returns false.
    * 
    * @return True if a coral is detected.
    */
   private boolean detectCoral() {
-    if (!coralCanrange.isConnected()) {
-      return false;
-    }
+    return coralStartCanrange.getDistance().getValue().in(Meters) < coralCanrangeDistanceThreshold;
+  }
 
-    return coralCanrange.getDistance().getValue().in(Meters) < coralCanrangeDistanceThreshold;
+  /**
+   * Checks if coral is fully in the intake.
+   * 
+   * @return True if coral is fully in the intake.
+   */
+  public boolean detectCoralCompletelyIn() {
+    return coralCompleteCanrange.getDistance().getValue().in(Meters) < coralCanrangeDistanceThreshold;
   }
 
   /**
@@ -81,6 +89,7 @@ public class Intake extends SubsystemBase implements IntakeIO {
    */
   private void updateSensorStatus() {
     coralDetected = detectCoral();
+    coralCompletelyIn = detectCoralCompletelyIn();
   }
 
   /**
@@ -98,8 +107,11 @@ public class Intake extends SubsystemBase implements IntakeIO {
     inputs.intakeVoltage = intakeMotor.getBusVoltage();
     inputs.intakeTemperature = intakeMotor.getMotorTemperature();
     inputs.intakeAction = RobotStateManager.getDesiredIntakeAction();
-    inputs.coralCanrangeConnected = coralCanrange.isConnected();
-    inputs.coralCanrangeDistance = coralCanrange.getDistance().getValue().in(Meters);
+    inputs.coralStartCanrangeConnected = coralStartCanrange.isConnected();
+    inputs.coralCompleteCanrangeConnected = coralCompleteCanrange.isConnected();
+    inputs.coralStartCanrangeDistance = coralStartCanrange.getDistance().getValue().in(Meters);
+    inputs.coralCompleteCanrangeDistance = coralCompleteCanrange.getDistance().getValue().in(Meters);
     inputs.coralDetected = coralDetected;
+    inputs.coralDetectedCompletelyIn = coralCompletelyIn;
   }
 }
