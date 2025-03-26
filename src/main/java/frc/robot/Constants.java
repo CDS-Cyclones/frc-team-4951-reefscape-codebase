@@ -191,7 +191,8 @@ public final class Constants {
     // AprilTag layout
     public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
-    public static String cameraName = "limelight";
+    public static String limelightFrontName = "limelight-front";
+    public static String limelightBackName = "limelight-back";
     public static String cameraNameSim = "simCam";
 
     // Robot to camera transforms

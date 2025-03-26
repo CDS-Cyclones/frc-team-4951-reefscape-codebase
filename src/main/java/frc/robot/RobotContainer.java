@@ -85,7 +85,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
-        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.cameraName, drive::getRotation));
+        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation), new VisionIOLimelight(VisionConstants.limelightBackName, drive::getRotation));
         elevator = new Elevator();
         break;
 

@@ -108,7 +108,12 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     if(angleController.atSetpoint()) {
       if(!hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
         // Check if vision system detects desired tag
-        int[] detectedTagIds = vision.getTagIds(0);
+        int[] detectedTagIdsCam0 = vision.getTagIds(0);
+        int[] detectedTagIdsCam1 = vision.getTagIds(1);
+        int[] detectedTagIds = new int[detectedTagIdsCam0.length + detectedTagIdsCam1.length];
+        System.arraycopy(detectedTagIdsCam0, 0, detectedTagIds, 0, detectedTagIdsCam0.length);
+        System.arraycopy(detectedTagIdsCam1, 0, detectedTagIds, detectedTagIdsCam0.length, detectedTagIdsCam1.length);
+
         for (int tagId : detectedTagIds) {
           if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
             hasDetectedDesiredTag = true;
