@@ -381,32 +381,34 @@ public class RobotContainer {
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    // Drive commands
+    // Register alignment commands for reef coral scoring poses
     for (FieldPose pose : FieldPose.values()) {
       if (pose.ordinal() >= 12) break; // make sure only reef coral scoring poses are registered
 
-      String commandName = "align_to_tag_" + pose.name();
+      String commandName = "align_" + pose.name();
       NamedCommands.registerCommand(commandName, Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
         new AutoDriveToPoseCommand(drive, vision, pose)
       ));
     }
 
-    // Intake and scoring commands
+    // Register named commands for intake coral
     NamedCommands.registerCommand("intake_coral", new IntakeCoral(intake, candle));
-    NamedCommands.registerCommand("score_coral_l4", Commands.sequence(
+
+    // Register named commands for reef height scoring poses
+    NamedCommands.registerCommand("score_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
     ));
-    NamedCommands.registerCommand("score_coral_l3", Commands.sequence(
+    NamedCommands.registerCommand("score_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
     ));
-    NamedCommands.registerCommand("score_coral_l2", Commands.sequence(
+    NamedCommands.registerCommand("score_l2", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
     ));
-    NamedCommands.registerCommand("score_coral_l1", Commands.sequence(
+    NamedCommands.registerCommand("score_l1", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
     ));
@@ -415,37 +417,20 @@ public class RobotContainer {
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
       new RetractManipulator(elevator, pivot)
     ));
-    NamedCommands.registerCommand("manipulator_position_barge_left", Commands.sequence(
-      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT)),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
-    ));
-    NamedCommands.registerCommand("manipulator_position_barge_right", Commands.sequence(
-      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT)),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
-    ));
-    NamedCommands.registerCommand("manipulator_position_processor", Commands.sequence(
-      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR)),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR)
-    ));
-    NamedCommands.registerCommand("manipulator_position_l4", Commands.sequence(
+    NamedCommands.registerCommand("manipulator_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
     ));
-    NamedCommands .registerCommand("manipulator_position_l3", Commands.sequence(
+    NamedCommands .registerCommand("manipulator_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
     ));
-    NamedCommands.registerCommand("manipulator_position_l2", Commands.sequence(
+    NamedCommands.registerCommand("manipulator_l2", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
-    ));
-    NamedCommands.registerCommand("manipulator_position_l1", Commands.sequence(
-      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
-      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L1)),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1)
     ));
   }
 
