@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.leds.Candle;
+import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.CandleState;
@@ -61,39 +62,39 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void initialize() {
     angleController = new ProfiledPIDController(
-      2.5,
+      anglePIDCKp.getAsDouble(),
       0.0,
-      0.0,
+      anglePIDCKd.getAsDouble(),
       new TrapezoidProfile.Constraints(
-        5,
-        2
+        anglePIDCMaxVel.getAsDouble(),
+        anglePIDCMaxAccel.getAsDouble()
       )
     );
     angleController.enableContinuousInput(-Math.PI, Math.PI);
+    angleController.setTolerance(anglePIDCTolerance.getAsDouble());
 
     translationXController = new PIDController(
-      1.5,
+      translationPIDCKp.getAsDouble(),
       0.0,
-      0.0
+      translationPIDCKd.getAsDouble()
     );
     translationYController = new PIDController(
-      1.5,
+      translationPIDCKp.getAsDouble(),
       0.0,
-      0.0
+      translationPIDCKd.getAsDouble()
     );
+
+    translationXController.setTolerance(translationPIDCTolerance.getAsDouble());
+    translationYController.setTolerance(translationPIDCTolerance.getAsDouble());
 
     angleController.reset(drive.getRotation().getRadians());
     translationXController.reset();
     translationYController.reset();
 
     // Check if red alliance
-    isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+    isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
 
     hasDetectedDesiredTag = false;
-
-    translationXController.setTolerance(0.1);
-    translationYController.setTolerance(0.1);
-    angleController.setTolerance(0.1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -102,51 +103,54 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     // Calculate angular speed
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
 
-    if(!hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
-      // Check if vision system detects desired tag
-      int[] detectedTagIds = vision.getTagIds(0);
-      for (int tagId : detectedTagIds) {
-        if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
-          hasDetectedDesiredTag = true;
-          candle.setState(CandleState.TARGET_FOUND);
-          
-          break;
+    // Before beginning autonomous navigation,
+    // make sure the robot is facing the correct direction
+    if(angleController.atSetpoint()) {
+      if(!hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
+        // Check if vision system detects desired tag
+        int[] detectedTagIds = vision.getTagIds(0);
+        for (int tagId : detectedTagIds) {
+          if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
+            hasDetectedDesiredTag = true;
+            candle.setState(CandleState.TARGET_FOUND);
+            OI.rumbleController(OI.m_driverController, 0.2); 
+            break;
         }
+      }
+
+      // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
+      if(hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
+        if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
+          candle.setState(CandleState.AT_POSE);
+        }
+
+        Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
+        
+        // Calculate translation speed
+        double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
+        double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
+    
+        speeds =  new ChassisSpeeds(
+          isFlipped ? -velocityX : velocityX,
+          isFlipped ? -velocityY : velocityY,
+          0
+        );
+
+        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+      
+        return;
       }
     }
 
-    // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
-    if(hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
-      if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
-        candle.setState(CandleState.AT_POSE);
-      }
+    Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-      Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
-      
-      // Calculate translation speed
-      double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
-      double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
-  
-      speeds =  new ChassisSpeeds(
-        isFlipped ? -velocityX : velocityX,
-        isFlipped ? -velocityY : velocityY,
-        omega
-      );
+    speeds = new ChassisSpeeds(
+      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+      omega
+    );
 
-      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
-    
-      return;
-    } else {
-      // Get linear velocity
-      Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-      speeds = new ChassisSpeeds(
-        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-        omega
-      );
-
-      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
     }
   }
 
@@ -155,6 +159,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     candle.setState(CandleState.OFF);
+    OI.rumbleController(OI.m_driverController, 0.0);
+    drive.stopWithX();
   }
 
   // Returns true when the command should end.

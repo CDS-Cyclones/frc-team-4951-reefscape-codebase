@@ -48,34 +48,34 @@ public class AutoDriveToPoseCommand extends Command {
       throw new IllegalArgumentException("Desired field pose must have a translation component for AutoDriveToPoseCommand");
 
     angleController = new ProfiledPIDController(
-      8,
+      anglePIDCKp.getAsDouble(),
       0.0,
-      0.4,
+      anglePIDCKd.getAsDouble(),
       new TrapezoidProfile.Constraints(
         anglePIDCMaxVel.getAsDouble(),
         anglePIDCMaxAccel.getAsDouble()
       )
     );
+    angleController.setTolerance(anglePIDCTolerance.getAsDouble());
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
-      3,
+      translationPIDCKp.getAsDouble(),
       0.0,
-      0.2
+      translationPIDCKd.getAsDouble()
     );
     translationYController = new PIDController(
-      2,
+      translationPIDCKp.getAsDouble(),
       0.0,
-      0.12
+      translationPIDCKd.getAsDouble()
     );
+
+    translationXController.setTolerance(translationPIDCTolerance.getAsDouble());
+    translationYController.setTolerance(translationPIDCTolerance.getAsDouble());
   
     angleController.reset(drive.getRotation().getRadians());
     translationXController.reset();
     translationYController.reset();
-
-    angleController.setTolerance(anglePIDTolerance.getAsDouble());
-    translationXController.setTolerance(translationPIDTolerance.getAsDouble());
-    translationYController.setTolerance(translationPIDTolerance.getAsDouble());
 
     // Check if red alliance
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
@@ -85,12 +85,15 @@ public class AutoDriveToPoseCommand extends Command {
   @Override
   public void execute() {
     Pose3d pose = desiredFieldPose.getDesiredPose();
-      
-    double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
-    double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
-    double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPose.getDesiredRotation2d().getRadians());
   
-    speeds = new ChassisSpeeds(isFlipped ? -velocityX : velocityX, isFlipped ? -velocityY : velocityY, omega);
+    if(angleController.atSetpoint()) {
+      double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
+      double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
+      speeds = new ChassisSpeeds(isFlipped ? -velocityX : velocityX, isFlipped ? -velocityY : velocityY, 0);
+    } else {
+      double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPose.getDesiredRotation2d().getRadians());
+      speeds = new ChassisSpeeds(0, 0, omega);
+    }
 
     drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
   }
