@@ -160,7 +160,13 @@ public class RobotContainer {
 
     elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
-    pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot));
+    pivot.setDefaultCommand(
+      new ConditionalCommand(
+        Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot),
+        Commands.none(),
+        () -> intake.isIntakeContainsCoral()
+      )
+    );
 
     // By default, the intake will guard the coral from falling out
     // if the intake contains coral else it will do nothing
@@ -184,17 +190,23 @@ public class RobotContainer {
       ));
 
     // Scoring sequence
+    final Command scoringSequence = Commands.sequence(
+      new PositionManipulator(
+        elevator,
+        pivot,
+        RobotStateManager::getDesiredElevatorPosition,
+        RobotStateManager::getDesiredPivotPosition
+      ),
+      Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
+      new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+    );
+
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
-        Commands.sequence(
-          new PositionManipulator(
-            elevator,
-            pivot,
-            RobotStateManager::getDesiredElevatorPosition,
-            RobotStateManager::getDesiredPivotPosition
-          ),
-          Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
-          new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+        new ConditionalCommand(
+          scoringSequence,
+          Commands.none(),
+          () -> !(RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_LEFT || RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_RIGHT)
         )
       )
       .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
