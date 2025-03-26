@@ -239,10 +239,10 @@ public final class Constants {
     public static final int elevatorMotor2Id = 32;
     public static final int pivotMotorId = 56;
     public static final int intakeMotorId = 57;
-    public static final int coralStartCanrangeCanId = 41;
-    public static final int coralCompleteCanrangeCanId = 42;
-    public static final String coralStartCanrangeCanBus = "pigeonbus";
-    public static final String coralCompleteCanrangeCanBus = "pigeonbus";
+    public static final int coralInflowCanrangeCanId = 41;
+    public static final int coralOutflowCanrangeCanId = 42;
+    public static final String coralInflowCanrangeCanBus = "pigeonbus";
+    public static final String coralOutflowCanrangeCanBus = "pigeonbus";
 
     // Elevator constants
     public static final boolean elevatorMotorInverted = false;

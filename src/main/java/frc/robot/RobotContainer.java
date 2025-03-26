@@ -27,8 +27,9 @@ import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.elevator.ManualElevatorCommand;
-import frc.robot.commands.intake.IntakeCommand;
-import frc.robot.commands.intake.IntakeCoral;
+import frc.robot.commands.intake.CoralGuardianCommand;
+import frc.robot.commands.intake.IntakeActionCommand;
+import frc.robot.commands.intake.IntakeCoralCommand;
 import frc.robot.commands.intake.ManualIntakeCommand;
 import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
@@ -161,6 +162,16 @@ public class RobotContainer {
 
     pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot));
 
+    // By default, the intake will guard the coral from falling out
+    // if the intake contains coral else it will do nothing
+    intake.setDefaultCommand(
+      new ConditionalCommand(
+        new CoralGuardianCommand(intake),
+        Commands.none(),
+        () -> intake.isIntakeContainsCoral()
+      )
+    );
+
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(new VisionAssistedDriveToPoseCommand(
@@ -183,7 +194,7 @@ public class RobotContainer {
             RobotStateManager::getDesiredPivotPosition
           ),
           Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
-          new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+          new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
         )
       )
       .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
@@ -251,13 +262,13 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 13).onTrue(
       Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_LEFT)),
-        new IntakeCoral(intake, candle)
+        new IntakeCoralCommand(intake, candle)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 14).onTrue(
       Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_RIGHT)),
-        new IntakeCoral(intake, candle)
+        new IntakeCoralCommand(intake, candle)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 15).onTrue( // Stop intake
@@ -295,8 +306,8 @@ public class RobotContainer {
     // Testing mode bindings for tunable positions
     new JoystickButton(OI.m_manipulatorController, Button.kY.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
     new JoystickButton(OI.m_manipulatorController, Button.kB.value).onTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
-    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
+    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeActionCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
+    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeActionCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
   }
 
   /**
@@ -393,24 +404,24 @@ public class RobotContainer {
     }
 
     // Register named commands for intake coral
-    NamedCommands.registerCommand("intake_coral", new IntakeCoral(intake, candle));
+    NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake, candle));
 
     // Register named commands for reef height scoring poses
     NamedCommands.registerCommand("score_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
     ));
     NamedCommands.registerCommand("score_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
     ));
     NamedCommands.registerCommand("score_l2", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
     ));
     NamedCommands.registerCommand("score_l1", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
     ));
 
     // Elevator and pivot positioning
