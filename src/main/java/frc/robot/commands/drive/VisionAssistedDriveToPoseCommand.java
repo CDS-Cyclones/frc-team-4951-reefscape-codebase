@@ -109,14 +109,14 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (reachedPose)
-      return;
+    // if (reachedPose)
+    //   return;
 
-    if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
-      reachedPose = true;
-      drive.stopWithX();
-      candle.setState(CandleState.AT_POSE);
-    }
+    // if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
+    //   reachedPose = true;
+    //   drive.stopWithX();
+    //   candle.setState(CandleState.AT_POSE);
+    // }
 
     // Calculate angular speed
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());

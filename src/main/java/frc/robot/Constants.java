@@ -137,12 +137,12 @@ public final class Constants {
 
     // Configuration for PID controllers
     public static final double anglePIDCKp = 2.5;  // TODO tune
-    public static final double anglePIDCKd = 0.2;  // TODO tune
+    public static final double anglePIDCKd = 0.4;  // TODO tune
     public static final double anglePIDCMaxVel = 8;  // TODO tune // Radians per second
     public static final double anglePIDCMaxAccel = 5;  // TODO tune // Radians per second squared
     public static final double anglePIDCTolerance = 0.05;  // TODO tune
     public static final double translationPIDCKp = 2;  // TODO tune
-    public static final double translationPIDCKd = 0.2;  // TODO tune
+    public static final double translationPIDCKd = 0.4;  // TODO tune
     public static final double translationPIDCTolerance = 0.1;  // TODO tune
 
     // Drive command configuration
@@ -191,7 +191,7 @@ public final class Constants {
     // AprilTag layout
     public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
-    public static String limelightFrontName = "limelight-front";
+    public static String limelightFrontName = "limelight";
     public static String limelightBackName = "limelight-back";
     public static String cameraNameSim = "simCam";
 
@@ -303,8 +303,8 @@ public final class Constants {
 
   public static final class RobotStateConstants {
     // Constants for field poses
-    private static final double inFrontOfTag = Units.inchesToMeters(22);
-    private static final double rightOfTag = Units.inchesToMeters(6.2);
+    private static final double inFrontOfTag = Units.inchesToMeters(19);
+    private static final double rightOfTag = Units.inchesToMeters(6);
     private static final double leftOfTag = -rightOfTag;
 
     private static final double inFrontOfTagSim = 0.4;
@@ -349,7 +349,8 @@ public final class Constants {
     @RequiredArgsConstructor
     public static enum PivotPosition {
       INTAKE_READY(2.27),
-      ELEVATOR_CLEAR(1.7),
+      ELEVATOR_CLEAR(1.7), // when empty
+      ELEVATOR_CLEAR_WITH_ALGA(0.7),
       L1(0.0),
       L2(1.79),
       L3(1.79),
@@ -357,7 +358,7 @@ public final class Constants {
       REEF_ALGA_L2(0.07),
       REEF_ALGA_L3(0.07),
       BARGE(0.0),      // TODO
-      PROCESSOR(0.0),  // TODO
+      PROCESSOR(-0.87),
       TUNABLE(Double.NaN);  // Special value for tunable position
 
       private final double position;
@@ -388,7 +389,7 @@ public final class Constants {
       REEF_ALGA_L2(0.26),
       REEF_ALGA_L3(0.75),
       BARGE(0.0),      // TODO
-      PROCESSOR(0.0),  // TODO
+      PROCESSOR(0.0),
       TUNABLE(Double.NaN);  // Special value for tunable position
 
       private final double position;
@@ -612,7 +613,7 @@ public final class Constants {
       SCORE_L4(1.0, 0.8),
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
-      INTAKE_REEF_ALGA(-0.3, 1.5),  // TODO tune
+      INTAKE_REEF_ALGA(-0.9, 1.5),  // TODO tune
       INTAKE_CORAL(0.56, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
       TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
 

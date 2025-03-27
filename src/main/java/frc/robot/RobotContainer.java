@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -172,7 +173,11 @@ public class RobotContainer {
     intake.setDefaultCommand(
       new ConditionalCommand(
         new CoralGuardianCommand(intake),
-        Commands.none(),
+        new ConditionalCommand(
+          Commands.run(() -> intake.setSpeed(-0.1), intake),
+          Commands.none(),
+          RobotStateManager::isAlignForAlgaePickup
+        ),
         () -> intake.isIntakeContainsCoral()
       )
     );
@@ -212,7 +217,29 @@ public class RobotContainer {
           () -> !(RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_LEFT || RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_RIGHT)
         )
       )
-      .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
+      .onFalse(new ConditionalCommand(
+        Commands.sequence(
+          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR_WITH_ALGA),
+          elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN)
+        ),
+        Commands.sequence(
+          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
+          Commands.sequence(
+            pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+            Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR))
+          ),
+          Commands.none(),
+          () -> !pivot.isOutOfElevatorWay()
+        ),
+        pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR)),
+        elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
+        Commands.waitUntil(() -> elevator.isAtPosition(ElevatorPosition.DOWN)),
+        pivot.moveToPosition(() -> PivotPosition.INTAKE_READY),
+        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.INTAKE_READY))
+        ),
+        RobotStateManager::isAlignForAlgaePickup
+      )); // Retract manipulator when button is released
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -447,7 +474,7 @@ public class RobotContainer {
 
     // Elevator and pivot positioning
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
-      new RetractManipulator(elevator, pivot)
+      new RetractManipulator(elevator, pivot, () -> false)
     ));
     NamedCommands.registerCommand("manipulator_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
