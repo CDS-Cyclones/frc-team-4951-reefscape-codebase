@@ -136,14 +136,14 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for PID controllers
-    public static final TunableNum anglePIDCKp = new TunableNum("Drive/PIDController/angle/p", 2.5);  // TODO tune
-    public static final TunableNum anglePIDCKd = new TunableNum("Drive/PIDController/angle/d", 0);  // TODO tune
-    public static final TunableNum anglePIDCMaxVel = new TunableNum("Drive/PIDController/angle/maxVel", 5);  // TODO tune // Radians per second
-    public static final TunableNum anglePIDCMaxAccel = new TunableNum("Drive/PIDController/angle/maxAccel", 8);  // TODO tune // Radians per second squared
-    public static final TunableNum anglePIDCTolerance = new TunableNum("Drive/PIDController/angle/errorTolerance", 0.1);  // TODO tune
-    public static final TunableNum translationPIDCKp = new TunableNum("Drive/PIDController/translation/p", 1.5);  // TODO tune
-    public static final TunableNum translationPIDCKd = new TunableNum("Drive/PIDController/translation/d", 0.0);  // TODO tune
-    public static final TunableNum translationPIDCTolerance = new TunableNum("Drive/PIDController/translation/errorTolerance", 0.1);  // TODO tune
+    public static final double anglePIDCKp = 2.5;  // TODO tune
+    public static final double anglePIDCKd = 0.2;  // TODO tune
+    public static final double anglePIDCMaxVel = 8;  // TODO tune // Radians per second
+    public static final double anglePIDCMaxAccel = 5;  // TODO tune // Radians per second squared
+    public static final double anglePIDCTolerance = 0.05;  // TODO tune
+    public static final double translationPIDCKp = 2;  // TODO tune
+    public static final double translationPIDCKd = 0.2;  // TODO tune
+    public static final double translationPIDCTolerance = 0.1;  // TODO tune
 
     // Drive command configuration
     public static final double fineTuneSpeedMultiplier = 0.4;

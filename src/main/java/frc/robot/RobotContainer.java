@@ -26,12 +26,10 @@ import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-import frc.robot.commands.elevator.ManualElevatorCommand;
 import frc.robot.commands.intake.CoralGuardianCommand;
 import frc.robot.commands.intake.IntakeActionCommand;
 import frc.robot.commands.intake.IntakeCoralCommand;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -85,7 +83,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
-        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation), new VisionIOLimelight(VisionConstants.limelightBackName, drive::getRotation));
+        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation));
         elevator = new Elevator();
         break;
 
@@ -129,7 +127,7 @@ public class RobotContainer {
     setupSysIdRoutines();
     configureBindings();
 
-    TunableValues.setTuningMode(true);  // TODO turn off for competition
+    TunableValues.setTuningMode(false);
 
     // Set up default states
     RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
@@ -149,15 +147,16 @@ public class RobotContainer {
    * Configure button bindings.
    */
   private void configureBindings() {
-    // Default command, normal field-relative drive
+    ////////////////////////////////// DEFAULT COMMANDS //////////////////////////////////
+    // Default command for drive, normal field-relative driving
     drive.setDefaultCommand(new JoystickDriveCommand(
       drive,
       () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
       () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
       () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-      () -> OI.m_operatorBoard.getRawButton(25)
+      () -> !OI.m_operatorBoard.getRawButton(25)
     ));
-
+    
     elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
     pivot.setDefaultCommand(
@@ -177,7 +176,10 @@ public class RobotContainer {
         () -> intake.isIntakeContainsCoral()
       )
     );
+    ////////////////////////////////////////////////////////////////////////////////////////
 
+
+    ////////////////////////////////// DRIVER CONTROLLER //////////////////////////////////
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(new VisionAssistedDriveToPoseCommand(
@@ -201,6 +203,7 @@ public class RobotContainer {
       new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
     );
 
+    // Score coral when right bumper is pressed
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
         new ConditionalCommand(
@@ -213,7 +216,10 @@ public class RobotContainer {
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 
+    ////////////////////////////////// OPERATOR BOARD CONTROLLER //////////////////////////////////
     // OPBoard - Reef poses
     new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.A);
@@ -300,26 +306,29 @@ public class RobotContainer {
     ).onFalse(
       Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(false))
     );
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Bindings for manual manipulator controller
+
+    ////////////////////////////////// MANUAL MANIPULATOR CONTROLLER //////////////////////////////////
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.16));
+      .whileTrue(Commands.run(() -> elevator.setSpeed(0.22), elevator).onlyIf(pivot::isOutOfElevatorWay))
+      .onFalse(Commands.runOnce(elevator::stop, elevator));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kA.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> -0.1));
+      .whileTrue(Commands.run(() -> elevator.setSpeed(-0.18), elevator).onlyIf(pivot::isOutOfElevatorWay))
+      .onFalse(Commands.runOnce(elevator::stop, elevator));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kB.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> 0.1));
+      .whileTrue(Commands.run(() -> pivot.setSpeed(0.1), pivot))
+      .onFalse(Commands.runOnce(pivot::stop, pivot));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kX.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> -0.1));
+      .whileTrue(Commands.run(() -> pivot.setSpeed(-0.1), pivot))
+      .onFalse(Commands.runOnce(pivot::stop, pivot));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kRightBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> 0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(Commands.run(() -> intake.setSpeed(OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 1 : 0.5), intake))
+      .onFalse(Commands.runOnce(intake::stop, intake));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> -0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
-
-    // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kY.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kB.value).onTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeActionCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
-    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeActionCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
+      .whileTrue(Commands.run(() -> intake.setSpeed(OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? -1 : -0.5), intake))
+      .onFalse(Commands.runOnce(intake::stop, intake));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
   }
 
   /**
