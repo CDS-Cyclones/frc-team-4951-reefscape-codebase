@@ -140,7 +140,7 @@ public final class Constants {
     public static final double anglePIDCKd = 0.4;  // TODO tune
     public static final double anglePIDCMaxVel = 8;  // TODO tune // Radians per second
     public static final double anglePIDCMaxAccel = 5;  // TODO tune // Radians per second squared
-    public static final double anglePIDCTolerance = 0.05;  // TODO tune
+    public static final double anglePIDCTolerance = 0.08;  // TODO tune
     public static final double translationPIDCKp = 2;  // TODO tune
     public static final double translationPIDCKd = 0.4;  // TODO tune
     public static final double translationPIDCTolerance = 0.1;  // TODO tune
@@ -149,8 +149,8 @@ public final class Constants {
     public static final double fineTuneSpeedMultiplier = 0.4;
 
     // PathPlanner configuration
-    public static final double robotMassKg = 52;
-    public static final double robotMOI = 5.07274523;
+    public static final double robotMassKg = 54.385725;
+    public static final double robotMOI = 7.31266;
     public static final double wheelCOF = 1.2;
     public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
     public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);
@@ -350,13 +350,13 @@ public final class Constants {
     public static enum PivotPosition {
       INTAKE_READY(2.27),
       ELEVATOR_CLEAR(1.7), // when empty
-      ELEVATOR_CLEAR_WITH_ALGA(0.7),
+      ELEVATOR_CLEAR_WITH_ALGA(0.6),
       L1(0.0),
       L2(1.79),
       L3(1.79),
       L4(1.65),
-      REEF_ALGA_L2(0.07),
-      REEF_ALGA_L3(0.07),
+      REEF_ALGA_L2(-.91),
+      REEF_ALGA_L3(-.91),
       BARGE(0.0),      // TODO
       PROCESSOR(-0.87),
       TUNABLE(Double.NaN);  // Special value for tunable position
@@ -386,8 +386,8 @@ public final class Constants {
       L2(0.22),
       L3(0.72),
       L4(1.55),
-      REEF_ALGA_L2(0.26),
-      REEF_ALGA_L3(0.75),
+      REEF_ALGA_L2(0.6),
+      REEF_ALGA_L3(1.05),
       BARGE(0.0),      // TODO
       PROCESSOR(0.0),
       TUNABLE(Double.NaN);  // Special value for tunable position

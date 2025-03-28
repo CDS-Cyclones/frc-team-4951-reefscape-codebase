@@ -233,7 +233,7 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
       double targetPosition = position.get().getAsDouble();
 
       setReference(targetPosition);
-    }, this)
+    }, this).until(() -> isAtPosition(position.get()))
     .onlyIf(() -> {
       if (!pivot.isOutOfElevatorWay())
         return false;

@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "barge_to_K"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "align_K"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_retract"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "K_to_leftStation"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "leftStation_to_J"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "align_J"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_retract"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
