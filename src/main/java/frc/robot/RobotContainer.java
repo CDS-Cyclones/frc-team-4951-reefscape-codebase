@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -132,9 +131,9 @@ public class RobotContainer {
 
     // Set up default states
     RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
-    RobotStateManager.setReefHeight(ReefHeight.L2);
+    RobotStateManager.setReefHeight(ReefHeight.L4);
     RobotStateManager.setAlignForAlgaePickup(false);
-    RobotStateManager.setCoralScoringPose(FieldPose.J);
+    RobotStateManager.setCoralScoringPose(FieldPose.E);
     RobotStateManager.setIntakeOccupied(false);
 
     // Call these to make sure the tunable values are loaded
@@ -329,9 +328,16 @@ public class RobotContainer {
 
     // Switch whether score coral or intake alga
     new JoystickButton(OI.m_operatorBoard, 29).onTrue(
-      Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(true))
+      Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(true)),
+        new RetractManipulator(elevator, pivot, () -> true)
+      )
+
     ).onFalse(
-      Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(false))
+      Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(false)),
+        new RetractManipulator(elevator, pivot, () -> false)
+      )
     );
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
