@@ -189,6 +189,7 @@ public class RobotContainer {
       .whileTrue(new VisionAssistedDriveToPoseCommand(
         drive,
         vision,
+        elevator,
         candle,
         () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
         () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),

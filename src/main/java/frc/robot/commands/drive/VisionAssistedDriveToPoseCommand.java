@@ -9,6 +9,7 @@ import static frc.robot.Constants.DriveConstants.anglePIDCKp;
 import static frc.robot.Constants.DriveConstants.anglePIDCMaxAccel;
 import static frc.robot.Constants.DriveConstants.anglePIDCMaxVel;
 import static frc.robot.Constants.DriveConstants.anglePIDCTolerance;
+import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
 import static frc.robot.Constants.DriveConstants.translationPIDCKd;
 import static frc.robot.Constants.DriveConstants.translationPIDCKp;
 import static frc.robot.Constants.DriveConstants.translationPIDCTolerance;
@@ -27,10 +28,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.CandleState;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 
 /*
@@ -40,6 +43,7 @@ import frc.robot.Constants.RobotStateConstants.FieldPose;
 public class VisionAssistedDriveToPoseCommand extends Command {
   private final Drive drive;
   private final Vision vision;
+  private final Elevator elevator;
   private final Candle candle;
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
@@ -55,9 +59,10 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private boolean reachedPose;
 
   /** Creates a new JoystickDriveAtAngleCommand. */
-  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, Candle candle, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
+  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, Elevator elevator, Candle candle, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
     this.drive = drive;
     this.vision = vision;
+    this.elevator = elevator;
     this.candle = candle;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
@@ -109,6 +114,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    boolean elevatorUp = elevator.getPosition() > ElevatorPosition.DOWN.getAsDouble();
     // if (reachedPose)
     //   return;
 
@@ -157,8 +163,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
       Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
       speeds = new ChassisSpeeds(
-        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec() * (elevatorUp ? fineTuneSpeedMultiplier : 1.0),
+        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec() * (elevatorUp ? fineTuneSpeedMultiplier : 1.0),
         omega
       );
 
