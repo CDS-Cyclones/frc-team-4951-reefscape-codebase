@@ -68,7 +68,7 @@ public class Candle extends SubsystemBase implements CandleIO {
     g = Math.max(0, Math.min(255, g));
     b = Math.max(0, Math.min(255, b));
 
-    candle.setLEDs(r, g, b);
+    candle.setLEDs(r, g, b, 0, 0, 100);
   }
 
   public void setLEDs(CandleState state) {

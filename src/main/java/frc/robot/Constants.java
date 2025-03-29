@@ -63,7 +63,8 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
-    public static final double maxSpeedMetersPerSec = 3;
+    public static final double maxSpeedMetersPerSecAuton = 3;
+    public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(27.0);  // TODO measure
     public static final double wheelBase = Units.inchesToMeters(32.5);  // TODO measure
@@ -160,7 +161,7 @@ public final class Constants {
         robotMOI,
         new ModuleConfig(
           wheelRadiusMeters,
-          maxSpeedMetersPerSec,
+          maxSpeedMetersPerSecAuton,
           wheelCOF,
           driveGearbox.withReduction(driveMotorReduction),
           driveMotorCurrentLimit,
@@ -584,7 +585,7 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public enum CandleState {
-      OFF(0, 0, 0),
+      OFF(120, 120, 0),
       TARGET_FOUND(255, 188, 0), // orange
       AT_POSE(128, 255, 0),  // green
       WAITIING_FOR_CORAL(255, 248, 43),  // yellow
