@@ -21,7 +21,13 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "align_to_tag_K"
+                        "name": "align_K"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": null
                       }
                     }
                   ]
@@ -166,6 +172,12 @@
           "type": "named",
           "data": {
             "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": null
           }
         },
         {

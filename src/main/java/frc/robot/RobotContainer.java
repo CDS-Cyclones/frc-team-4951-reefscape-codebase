@@ -26,11 +26,10 @@ import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
-import frc.robot.commands.elevator.ManualElevatorCommand;
-import frc.robot.commands.intake.IntakeCommand;
-import frc.robot.commands.intake.IntakeCoral;
+import frc.robot.commands.intake.CoralGuardianCommand;
+import frc.robot.commands.intake.IntakeActionCommand;
+import frc.robot.commands.intake.IntakeCoralCommand;
 import frc.robot.commands.intake.ManualIntakeCommand;
-import frc.robot.commands.pivot.ManualPivotCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -84,17 +83,17 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
-        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.cameraName, drive::getRotation));
+        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation));
         elevator = new Elevator();
         break;
 
       case SIM:
         // create a maple-sim swerve drive simulation instance
         driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
-        
+
         // add the simulated drivetrain to the simulation field
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-        
+
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(
           new GyroIOSim(driveSimulation.getGyroSimulation()),
@@ -128,13 +127,13 @@ public class RobotContainer {
     setupSysIdRoutines();
     configureBindings();
 
-    TunableValues.setTuningMode(true);  // TODO turn off for competition
+    TunableValues.setTuningMode(false);
 
     // Set up default states
     RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
-    RobotStateManager.setReefHeight(ReefHeight.L2);
+    RobotStateManager.setReefHeight(ReefHeight.L4);
     RobotStateManager.setAlignForAlgaePickup(false);
-    RobotStateManager.setCoralScoringPose(FieldPose.J);
+    RobotStateManager.setCoralScoringPose(FieldPose.E);
     RobotStateManager.setIntakeOccupied(false);
 
     // Call these to make sure the tunable values are loaded
@@ -148,184 +147,234 @@ public class RobotContainer {
    * Configure button bindings.
    */
   private void configureBindings() {
-    // Default command, normal field-relative drive
+    ////////////////////////////////// DEFAULT COMMANDS //////////////////////////////////
+    // Default command for drive, normal field-relative driving
     drive.setDefaultCommand(new JoystickDriveCommand(
       drive,
-      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
-      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
-      () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
-      () -> OI.m_operatorBoard.getRawButton(25)
+      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      () -> !OI.m_operatorBoard.getRawButton(25)
     ));
-
+    
     elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
-    pivot.setDefaultCommand(Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot));
+    pivot.setDefaultCommand(
+      new ConditionalCommand(
+        Commands.run(() -> pivot.setVoltage(pivot.calculateFeedforward(0)), pivot),
+        Commands.none(),
+        () -> intake.isIntakeContainsCoral()
+      )
+    );
 
+    // By default, the intake will guard the coral from falling out
+    // if the intake contains coral else it will do nothing
+    intake.setDefaultCommand(
+      new ConditionalCommand(
+        new CoralGuardianCommand(intake),
+        new ConditionalCommand(
+          Commands.run(() -> intake.setSpeed(-0.1), intake),
+          Commands.none(),
+          RobotStateManager::isAlignForAlgaePickup
+        ),
+        () -> intake.isIntakeContainsCoral()
+      )
+    );
+    ////////////////////////////////////////////////////////////////////////////////////////
+
+
+    ////////////////////////////////// DRIVER CONTROLLER //////////////////////////////////
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(new VisionAssistedDriveToPoseCommand(
         drive,
         vision,
+        elevator,
         candle,
-        () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
-        () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kLeftStick.value) ? fineTuneSpeedMultiplier : 1),
+        () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+        () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
         RobotStateManager::getDesiredFieldPose
       ));
 
     // Scoring sequence
+    final Command scoringSequence = Commands.sequence(
+      new PositionManipulator(
+        elevator,
+        pivot,
+        RobotStateManager::getDesiredElevatorPosition,
+        RobotStateManager::getDesiredPivotPosition
+      ),
+      Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
+      new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+    );
+
+    // Score coral when right bumper is pressed
     new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
-        Commands.sequence(
-          new PositionManipulator(
-            elevator,
-            pivot,
-            RobotStateManager::getDesiredElevatorPosition,
-            RobotStateManager::getDesiredPivotPosition
-          ),
-          Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
-          new IntakeCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+        new ConditionalCommand(
+          scoringSequence,
+          Commands.none(),
+          () -> !(RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_LEFT || RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_RIGHT)
         )
       )
-      .onFalse(new RetractManipulator(elevator, pivot)); // Retract manipulator when button is released
+      .onFalse(new ConditionalCommand(
+        Commands.sequence(
+          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR_WITH_ALGA),
+          elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN)
+        ),
+        Commands.sequence(
+          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
+          Commands.sequence(
+            pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+            Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR))
+          ),
+          Commands.none(),
+          () -> !pivot.isOutOfElevatorWay()
+        ),
+        pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR)),
+        elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
+        Commands.waitUntil(() -> elevator.isAtPosition(ElevatorPosition.DOWN)),
+        pivot.moveToPosition(() -> PivotPosition.INTAKE_READY),
+        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.INTAKE_READY))
+        ),
+        RobotStateManager::isAlignForAlgaePickup
+      )); // Retract manipulator when button is released
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 
-    // Reset gyro to 0° when B button is pressed
-    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-      ? () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
-      : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
-    new JoystickButton(OI.m_driverController, Button.kB.value).onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
-
+    ////////////////////////////////// OPERATOR BOARD CONTROLLER //////////////////////////////////
     // OPBoard - Reef poses
-    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 1).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.A);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 2).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.B);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 3).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.C);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 4).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.D);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 5).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.E);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 6).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.F);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 7).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.G);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 8).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.H);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 9).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.I);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 10).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.J);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 11).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.K);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
-    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> { 
+    new JoystickButton(OI.m_operatorBoard, 12).onTrue(Commands.runOnce(() -> {
       RobotStateManager.setCoralScoringPose(FieldPose.L);
       RobotStateManager.setRobotAction(RobotAction.REEF_ACTION);
     }));
 
     // OPBoard - Selecting desired reef height
-    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L4);}));
-    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L3);}));
-    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L2);}));
-    new JoystickButton(OI.m_operatorBoard, 22).onTrue(Commands.runOnce(() -> {RobotStateManager.setReefHeight(ReefHeight.L1);}));
-  
-    // OPBoard - Coral stations (rotation + intake)
+    new JoystickButton(OI.m_operatorBoard, 19).onTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)));
+    new JoystickButton(OI.m_operatorBoard, 20).onTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)));
+    new JoystickButton(OI.m_operatorBoard, 21).onTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)));
+    new JoystickButton(OI.m_operatorBoard, 22).onTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L1)));
+
+    // OPBoard - Yellow buttons
     new JoystickButton(OI.m_operatorBoard, 13).onTrue(
       Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_LEFT)),
-        new IntakeCoral(intake, candle)
+        new IntakeCoralCommand(intake, candle)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 14).onTrue(
       Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.INTAKE_STATION_RIGHT)),
-        new IntakeCoral(intake, candle)
+        new IntakeCoralCommand(intake, candle)
       )
     );
     new JoystickButton(OI.m_operatorBoard, 15).onTrue( // Stop intake
       Commands.runOnce(() -> new ManualIntakeCommand(intake, () -> 0).withTimeout(0.05).schedule())
     );
-
-    // OPBoard - Barge
-    new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> {
-      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT);
-    }));
-    new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> {
-      RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT);
-    }));
-
-    // OPBoard - Processor
-    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(() -> {
-      RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR);
-    }));
+    new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT)));
+    new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR)));
+    new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(
+        Constants.currentMode == Constants.Mode.SIM
+        ? () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
+        : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    drive).ignoringDisable(true));
 
     // Switch whether score coral or intake alga
     new JoystickButton(OI.m_operatorBoard, 29).onTrue(
-      Commands.runOnce(() -> {
-        RobotStateManager.setAlignForAlgaePickup(true);
-      })
+      Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(true)),
+        new RetractManipulator(elevator, pivot, () -> true)
+      )
+
     ).onFalse(
-      Commands.runOnce(() -> {
-        RobotStateManager.setAlignForAlgaePickup(false);
-      })
+      Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setAlignForAlgaePickup(false)),
+        new RetractManipulator(elevator, pivot, () -> false)
+      )
     );
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Bindings for manual manipulator controller
+
+    ////////////////////////////////// MANUAL MANIPULATOR CONTROLLER //////////////////////////////////
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> 0.16));
+      .whileTrue(Commands.run(() -> elevator.setSpeed(0.22), elevator).onlyIf(pivot::isOutOfElevatorWay))
+      .onFalse(Commands.runOnce(elevator::stop, elevator));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kA.value)
-      .whileTrue(new ManualElevatorCommand(elevator, pivot, () -> -0.1));
+      .whileTrue(Commands.run(() -> elevator.setSpeed(-0.18), elevator).onlyIf(pivot::isOutOfElevatorWay))
+      .onFalse(Commands.runOnce(elevator::stop, elevator));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kB.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> 0.1));
+      .whileTrue(Commands.run(() -> pivot.setSpeed(0.1), pivot))
+      .onFalse(Commands.runOnce(pivot::stop, pivot));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kX.value)
-      .whileTrue(new ManualPivotCommand(pivot, () -> -0.1));
+      .whileTrue(Commands.run(() -> pivot.setSpeed(-0.1), pivot))
+      .onFalse(Commands.runOnce(pivot::stop, pivot));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kRightBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> 0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
+      .whileTrue(Commands.run(() -> intake.setSpeed(OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 1 : 0.5), intake))
+      .onFalse(Commands.runOnce(intake::stop, intake));
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kLeftBumper.value)
-      .whileTrue(new ManualIntakeCommand(intake, () -> -0.11 * (OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? 2 : 1)));
-
-    // Testing mode bindings for tunable positions
-    new JoystickButton(OI.m_manipulatorController, Button.kY.value).onTrue(elevator.moveToPosition(pivot, () -> ElevatorPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kB.value).onTrue(pivot.moveToPosition(() -> PivotPosition.TUNABLE));
-    new JoystickButton(OI.m_manipulatorController, Button.kRightBumper.value).whileTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, true));
-    new JoystickButton(OI.m_manipulatorController, Button.kLeftBumper.value).onTrue(new IntakeCommand(intake, candle, () -> IntakeAction.TUNABLE, false));
+      .whileTrue(Commands.run(() -> intake.setSpeed(OI.m_mainpulatorControllerManual.getRawButton(Button.kStart.value) ? -1 : -0.5), intake))
+      .onFalse(Commands.runOnce(intake::stop, intake));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
   }
 
   /**
    * Setup SysId routines for the robot.
    */
-  private void setupSysIdRoutines() {  
-    autoChooser.addOption("dfecdftfduhb", DriveCharacterizationCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption("wheeeeeels", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
-
+  private void setupSysIdRoutines() {
+    autoChooser.addOption("Feedforward Characterization Routine", DriveCharacterizationCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption("Effective Wheel Radius Routine", DriveCharacterizationCommands.wheelRadiusCharacterization(drive));
 
     try {
       SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
-    } catch (Exception e) {}
+    } catch (Exception ignored) {}
 
     new JoystickButton(OI.m_sysIdRoutinesController, Button.kA.value).whileTrue(
       new ConditionalCommand(
@@ -380,7 +429,7 @@ public class RobotContainer {
         sysIdRoutineId++;
         try {
           SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
       })
     );
 
@@ -389,7 +438,7 @@ public class RobotContainer {
         sysIdRoutineId--;
         try {
           SmartDashboard.putNumber("Current Sys Id Routine", sysIdRoutineId);
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
       })
     );
   }
@@ -398,77 +447,56 @@ public class RobotContainer {
    * Register named commands for PathPlanner autos.
    */
   private void registerNamedCommands() {
-    // Drive commands
+    // Register alignment commands for reef coral scoring poses
     for (FieldPose pose : FieldPose.values()) {
       if (pose.ordinal() >= 12) break; // make sure only reef coral scoring poses are registered
 
-      String commandName = "align_to_tag_" + pose.name();
+      String commandName = "align_" + pose.name();
       NamedCommands.registerCommand(commandName, Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
         new AutoDriveToPoseCommand(drive, vision, pose)
       ));
     }
-    
-    // Intake and scoring commands
-    NamedCommands.registerCommand("intake_coral", new IntakeCoral(intake, candle));
-    NamedCommands.registerCommand("score_coral_l4", Commands.sequence(
+
+    // Register named commands for intake coral
+    NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake, candle));
+
+    // Register named commands for reef height scoring poses
+    NamedCommands.registerCommand("score_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
     ));
-    NamedCommands.registerCommand("score_coral_l3", Commands.sequence(
+    NamedCommands.registerCommand("score_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
     ));
-    NamedCommands.registerCommand("score_coral_l2", Commands.sequence(
+    NamedCommands.registerCommand("score_l2", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
     ));
-    NamedCommands.registerCommand("score_coral_l1", Commands.sequence(
+    NamedCommands.registerCommand("score_l1", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
-      new IntakeCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
     ));
 
     // Elevator and pivot positioning
     NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
-      new RetractManipulator(elevator, pivot)
+      new RetractManipulator(elevator, pivot, () -> false)
     ));
-    NamedCommands.registerCommand("manipulator_position_barge_left", Commands.sequence(
-      Commands.runOnce(() -> {
-        RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT);
-      }),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
-    ));
-    NamedCommands.registerCommand("manipulator_position_barge_right", Commands.sequence(
-      Commands.runOnce(() -> {
-        RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_RIGHT);
-      }),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.BARGE, () -> PivotPosition.BARGE)
-    ));
-    NamedCommands.registerCommand("manipulator_position_processor", Commands.sequence(
-      Commands.runOnce(() -> {
-        RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR);
-      }),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.PROCESSOR, () -> PivotPosition.PROCESSOR)
-    ));
-    NamedCommands.registerCommand("manipulator_position_l4", Commands.sequence(
+    NamedCommands.registerCommand("manipulator_l4", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
     ));
-    NamedCommands .registerCommand("manipulator_position_l3", Commands.sequence(
+    NamedCommands .registerCommand("manipulator_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
     ));
-    NamedCommands.registerCommand("manipulator_position_l2", Commands.sequence(
+    NamedCommands.registerCommand("manipulator_l2", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
-    ));
-    NamedCommands.registerCommand("manipulator_position_l1", Commands.sequence(
-      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
-      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L1)),
-      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L1, () -> PivotPosition.L1)
     ));
   }
 
@@ -489,13 +517,13 @@ public class RobotContainer {
 
     drive.resetOdometry(new Pose2d(3, 3, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
-    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2))); 
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2)));
   }
 
   /**
    * Updates the MapleSim simulation.
    */
-  public void updateSimulation() {  
+  public void updateSimulation() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
     SimulatedArena.getInstance().simulationPeriodic();

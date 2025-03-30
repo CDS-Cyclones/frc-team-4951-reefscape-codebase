@@ -14,7 +14,7 @@ import lombok.Setter;
 public class RobotStateManager {
   @Setter private static RobotAction robotAction;
   @Setter private static ReefHeight reefHeight;
-  @Setter private static boolean alignForAlgaePickup;
+  @Getter @Setter private static boolean alignForAlgaePickup;
   @Getter @Setter private static FieldPose coralScoringPose;
   @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
 

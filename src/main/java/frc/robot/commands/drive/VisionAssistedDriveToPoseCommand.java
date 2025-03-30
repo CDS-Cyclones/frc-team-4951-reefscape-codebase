@@ -4,6 +4,16 @@
 
 package frc.robot.commands.drive;
 
+import static frc.robot.Constants.DriveConstants.anglePIDCKd;
+import static frc.robot.Constants.DriveConstants.anglePIDCKp;
+import static frc.robot.Constants.DriveConstants.anglePIDCMaxAccel;
+import static frc.robot.Constants.DriveConstants.anglePIDCMaxVel;
+import static frc.robot.Constants.DriveConstants.anglePIDCTolerance;
+import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
+import static frc.robot.Constants.DriveConstants.translationPIDCKd;
+import static frc.robot.Constants.DriveConstants.translationPIDCKp;
+import static frc.robot.Constants.DriveConstants.translationPIDCTolerance;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -18,12 +28,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.CandleState;
+import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
-import static frc.robot.Constants.DriveConstants.*;
 
 /*
  * This command allows manual control of the robot's x and y directions while using a {@link ProfiledPIDController} to adjust its orientation (omega) to a desired field pose.
@@ -32,6 +43,7 @@ import static frc.robot.Constants.DriveConstants.*;
 public class VisionAssistedDriveToPoseCommand extends Command {
   private final Drive drive;
   private final Vision vision;
+  private final Elevator elevator;
   private final Candle candle;
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
@@ -44,11 +56,13 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   private ChassisSpeeds speeds;
   private boolean isFlipped;
   private boolean hasDetectedDesiredTag;
+  private boolean reachedPose;
 
   /** Creates a new JoystickDriveAtAngleCommand. */
-  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, Candle candle, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
+  public VisionAssistedDriveToPoseCommand(Drive drive, Vision vision, Elevator elevator, Candle candle, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<FieldPose> desiredFieldPoseSupplier) {
     this.drive = drive;
     this.vision = vision;
+    this.elevator = elevator;
     this.candle = candle;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
@@ -61,25 +75,25 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void initialize() {
     angleController = new ProfiledPIDController(
-      2.5,
+      anglePIDCKp,
       0.0,
-      0.0,
+      anglePIDCKd,
       new TrapezoidProfile.Constraints(
-        5,
-        2
+        anglePIDCMaxVel,
+        anglePIDCMaxAccel
       )
     );
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
-      1.5,
+      translationPIDCKp,
       0.0,
-      0.0
+      translationPIDCKd
     );
     translationYController = new PIDController(
-      1.5,
+      translationPIDCKp,
       0.0,
-      0.0
+      translationPIDCKd
     );
 
     angleController.reset(drive.getRotation().getRadians());
@@ -90,15 +104,26 @@ public class VisionAssistedDriveToPoseCommand extends Command {
     isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
 
     hasDetectedDesiredTag = false;
+    reachedPose = false;
 
-    translationXController.setTolerance(0.1);
-    translationYController.setTolerance(0.1);
-    angleController.setTolerance(0.1);
+    translationXController.setTolerance(translationPIDCTolerance);
+    translationYController.setTolerance(translationPIDCTolerance);
+    angleController.setTolerance(anglePIDCTolerance);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    boolean elevatorUp = elevator.getPosition() > ElevatorPosition.DOWN.getAsDouble();
+    // if (reachedPose)
+    //   return;
+
+    // if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
+    //   reachedPose = true;
+    //   drive.stopWithX();
+    //   candle.setState(CandleState.AT_POSE);
+    // }
+
     // Calculate angular speed
     double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
 
@@ -109,7 +134,6 @@ public class VisionAssistedDriveToPoseCommand extends Command {
         if (tagId == desiredFieldPoseSupplier.get().getTagId()) {
           hasDetectedDesiredTag = true;
           candle.setState(CandleState.TARGET_FOUND);
-          
           break;
         }
       }
@@ -117,9 +141,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
     // If vision system detects desired tag, poseestimation is accurate enough to autonomous navigate to target
     if(hasDetectedDesiredTag && !desiredFieldPoseSupplier.get().isOrientationOnly()) {
-      if(angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint()) {
-        candle.setState(CandleState.AT_POSE);
-      }
+
 
       Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
       
@@ -141,8 +163,8 @@ public class VisionAssistedDriveToPoseCommand extends Command {
       Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
       speeds = new ChassisSpeeds(
-        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec() * (elevatorUp ? fineTuneSpeedMultiplier : 1.0),
+        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec() * (elevatorUp ? fineTuneSpeedMultiplier : 1.0),
         omega
       );
 

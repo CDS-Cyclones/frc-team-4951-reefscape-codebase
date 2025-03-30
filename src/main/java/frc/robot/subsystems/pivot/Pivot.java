@@ -178,13 +178,24 @@ public class Pivot extends SubsystemBase implements PivotIO {
   }
 
   /**
-   * Checks if the pivot will not be in elevator's way
+   * Checks if the pivot will not be in elevator's way when empty
    *
    * @return True if not in the way, false otherwise
    */
   public boolean isOutOfElevatorWay() {
     return getPosition() <= pivotMinPositionForElevatorMovement;
   }
+
+  /**
+   * Checks if the pivot will not be in elevator's way when empty
+   *
+   * @return True if not in the way, false otherwise
+   */
+  public boolean isOutOfElevatorWay(boolean hasAlga) {
+    return getPosition() <= (hasAlga ? PivotPosition.ELEVATOR_CLEAR_WITH_ALGA.getAsDouble() : PivotPosition.ELEVATOR_CLEAR.getAsDouble());
+  }
+
+
 
     /**
    * Sets the position of the pivot.

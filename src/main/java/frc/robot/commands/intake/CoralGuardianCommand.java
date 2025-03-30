@@ -2,26 +2,23 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.pivot;
+package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.intake.Intake;
 
-import frc.robot.subsystems.pivot.Pivot;
-
-import java.util.function.DoubleSupplier;
-
-public class ManualPivotCommand extends Command {
-  private final Pivot pivot;
-  private final DoubleSupplier speedSupplier;
-
-  /**
-   * A command that allows to manually control the pivot.
+public class CoralGuardianCommand extends Command {
+  private final Intake intake;
+  
+  /** 
+   * Repositions coral within intake in case of unintentional movement.
+   * 
+   * @param intake The intake subsystem
    */
-  public ManualPivotCommand(Pivot pivot, DoubleSupplier speedSupplier) {
-    this.pivot = pivot;
-    this.speedSupplier = speedSupplier;
+  public CoralGuardianCommand(Intake intake) {
+    this.intake = intake;
     
-    addRequirements(this.pivot);
+    addRequirements(this.intake);
   }
 
   // Called when the command is initially scheduled.
@@ -31,15 +28,19 @@ public class ManualPivotCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double speed = speedSupplier.getAsDouble();
-    
-    pivot.setSpeed(speed);
+    if(!intake.isCoralDetectedAtOutflow()) {
+      intake.setSpeed(0.15);
+    } else if (!intake.isCoralDetectedAtInflow()) {
+      intake.setSpeed(-0.15);
+    } else {
+      intake.stop();
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    pivot.stop();
+    intake.stop();
   }
 
   // Returns true when the command should end.

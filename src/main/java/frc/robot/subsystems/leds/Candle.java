@@ -9,7 +9,13 @@ import com.ctre.phoenix.led.*;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.RobotStateConstants.CandleState;
 import lombok.Getter;
@@ -24,13 +30,18 @@ public class Candle extends SubsystemBase implements CandleIO {
   private final CANdle candle = new CANdle(candleId, candleBus);
   private final CandleIOInputsAutoLogged candleInputs = new CandleIOInputsAutoLogged();
 
+  // private final AddressableLED ledStrip = new AddressableLED(ledPWMPort);
+  // private final AddressableLEDBuffer ledBuffer = new AddressableLEDBuffer(ledCount);
+
+  private final Spark blinking = new Spark(ledPWMPort);
+
   @Setter @Getter private CandleState state = CandleState.OFF;
 
   public Candle() {
     CANdleConfiguration configAll = new CANdleConfiguration();
     configAll.statusLedOffWhenActive = true;
     configAll.disableWhenLOS = false;
-    configAll.stripType = LEDStripType.GRB;
+    configAll.stripType = LEDStripType.RGB;
     configAll.brightnessScalar = candleBrightness;
     configAll.vBatOutputMode = VBatOutputMode.Off;
     candle.configAllSettings(configAll, 100);
@@ -62,13 +73,14 @@ public class Candle extends SubsystemBase implements CandleIO {
     candle.configStatusLedState(offWhenActive, 0);
   }
 
-  public void setLEDs(int r, int g, int b) {
+  public void setLEDs(int r, int g, int b, double blinkingPwmValue) {
     // Clamp the values to 0-255
     r = Math.max(0, Math.min(255, r));
     g = Math.max(0, Math.min(255, g));
     b = Math.max(0, Math.min(255, b));
 
     candle.setLEDs(r, g, b);
+    blinking.set(blinkingPwmValue);
   }
 
   public void setLEDs(CandleState state) {
@@ -76,14 +88,13 @@ public class Candle extends SubsystemBase implements CandleIO {
     int r = Math.max(0, Math.min(255, state.getRed()));
     int g = Math.max(0, Math.min(255, state.getGreen()));
     int b = Math.max(0, Math.min(255, state.getBlue()));
+    double blinkingPwmValue = state.getBlinkingPwmValue();
 
-    candle.setLEDs(r, g, b);
+    setLEDs(r, g, b, blinkingPwmValue);
   }
 
   @Override
   public void periodic() {
-    setLEDs(state);
-
     updateInputs(candleInputs);
     Logger.processInputs("Candle", candleInputs);
 

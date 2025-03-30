@@ -13,13 +13,13 @@ public interface IntakeIO {
     public double intakeVoltage = 0.0;
     public double intakeTemperature = 0.0;
     public IntakeAction intakeAction = IntakeAction.NONE;
-    public boolean coralStartCanrangeConnected = false;
-    public boolean coralCompleteCanrangeConnected = false;
-    public double coralStartCanrangeDistance = 0.0;
-    public double coralCompleteCanrangeDistance = 0.0;
-    public boolean coralDetected = false;
-    public boolean coralDetectedCompletelyIn = false;
-
+    public boolean coralInflowCanrangeConnected = false;
+    public boolean coralOutflowCanrangeConnected = false;
+    public double coralInflowCanrangeDistance = 0.0;
+    public double coralOutflowCanrangeDistance = 0.0;
+    public boolean coralDetectedOnInflow = false;
+    public boolean coralDetectedOnOutflow = false;
+    public boolean intakeContainsCoral = false;
   }
 
   public default void updateInputs(IntakeIOInputs inputs) {}
