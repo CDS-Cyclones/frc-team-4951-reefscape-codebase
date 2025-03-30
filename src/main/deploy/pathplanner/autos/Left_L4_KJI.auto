@@ -19,13 +19,13 @@
         {
           "type": "named",
           "data": {
-            "name": "manipulator_l4"
+            "name": "manipulator_l3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score_l4"
+            "name": "score_l3"
           }
         },
         {
@@ -61,13 +61,13 @@
         {
           "type": "named",
           "data": {
-            "name": "manipulator_l4"
+            "name": "manipulator_l3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score_l4"
+            "name": "score_l3"
           }
         },
         {

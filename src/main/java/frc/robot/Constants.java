@@ -299,7 +299,10 @@ public final class Constants {
   public static final class CandleConstants {
     public static final int candleId = 40;
     public static final String candleBus = "pigeonbus";
-    public static double candleBrightness = 0.5;
+    public static double candleBrightness = 1;
+
+    public static int ledPWMPort = 0;
+    public static int ledCount = 60;
   }
 
   public static final class RobotStateConstants {
@@ -585,15 +588,16 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public enum CandleState {
-      OFF(120, 120, 0),
-      TARGET_FOUND(255, 188, 0), // orange
-      AT_POSE(128, 255, 0),  // green
-      WAITIING_FOR_CORAL(255, 248, 43),  // yellow
-      CORAL_DETECTED(0, 157, 255);  // blue
+      OFF(255, 215, 0, 0.69),  // gold
+      TARGET_FOUND(255, 188, 0, 0.65), // orange
+      AT_POSE(128, 255, 0, -0.47),  // green
+      WAITIING_FOR_CORAL(207, 16, 32, -0.39),  // lava
+      CORAL_DETECTED(143, 0, 255, 0.91);  // violet
 
       @Getter private final int red;
       @Getter private final int green;
       @Getter private final int blue;
+      @Getter private final double blinkingPwmValue;
 
       @Override
       public String toString() {
@@ -609,9 +613,9 @@ public final class Constants {
       NONE(0.0, 0.0),
       OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
       SCORE_L1(0.2, 3.0),  // TODO tune
-      SCORE_L2(1.0, 0.8),
-      SCORE_L3(1.0, 0.8),
-      SCORE_L4(1.0, 0.8),
+      SCORE_L2(1.0, 1.1),
+      SCORE_L3(1.0, 1.1),
+      SCORE_L4(1.0, 1.2),
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.9, 1.5),  // TODO tune
