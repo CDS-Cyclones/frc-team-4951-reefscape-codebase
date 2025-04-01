@@ -19,6 +19,7 @@ import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -136,15 +137,40 @@ public final class Constants {
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
-    // Configuration for PID controllers
-    public static final double anglePIDCKp = 3;  // TODO tune
-    public static final double anglePIDCKd = 0; // 0.4;  // TODO tune
-    public static final double anglePIDCMaxVel = 12;  // TODO tune // Radians per second
-    public static final double anglePIDCMaxAccel = 16;  // TODO tune // Radians per second squared
-    public static final double anglePIDCTolerance = 0.08; // 0.08;  // TODO tune
-    public static final double translationPIDCKp = 3;  // TODO tune
-    public static final double translationPIDCKd = 0; // 0.4;  // TODO tune
-    public static final double translationPIDCTolerance = 0.1; // 0.1;  // TODO tune
+    // PID controllers
+    public static final TunableNum anglePIDCKp = new TunableNum("Drive/controllers/angle/P", 3);
+    public static final TunableNum anglePIDCKi = new TunableNum("Drive/controllers/angle/I", 0);
+    public static final TunableNum anglePIDCKd = new TunableNum("Drive/controllers/angle/D", 0);
+    public static final TunableNum anglePIDCTolerance = new TunableNum("Drive/controllers/angle/tolerance", 0.05);
+    public static final TunableNum anglePIDCMaxSpeed = new TunableNum("Drive/controllers/angle/maxSpeed", 6);  // in radians per second
+
+    public static final TunableNum translationXPIDCKp = new TunableNum("Drive/controllers/translation/x/P", 0.5);
+    public static final TunableNum translationXPIDCKi = new TunableNum("Drive/controllers/translation/x/I", 0);
+    public static final TunableNum translationXPIDCKd = new TunableNum("Drive/controllers/translation/x/D", 0);
+    public static final TunableNum translationXPIDCTolerance = new TunableNum("Drive/controllers/translation/x/tolerance", 0.05);
+    public static final TunableNum translationXPIDCMaxSpeed = new TunableNum("Drive/controllers/translation/x/maxSpeed", 3);  // in meters per second
+
+    public static final TunableNum translationYPIDCKp = new TunableNum("Drive/controllers/translation/y/P", 0.5);
+    public static final TunableNum translationYPIDCKi = new TunableNum("Drive/controllers/translation/y/I", 0);
+    public static final TunableNum translationYPIDCKd = new TunableNum("Drive/controllers/translation/y/D", 0);
+    public static final TunableNum translationYPIDCTolerance = new TunableNum("Drive/controllers/translation/y/tolerance", 0.05);
+    public static final TunableNum translationYPIDCMaxSpeed = new TunableNum("Drive/controllers/translation/y/maxSpeed", 3);  // in meters per second
+
+    public static final PIDController angleController = new PIDController(
+      anglePIDCKp.getAsDouble(),
+      anglePIDCKi.getAsDouble(),
+      anglePIDCKd.getAsDouble()
+    );
+    public static final PIDController translationXController = new PIDController(
+      translationXPIDCKp.getAsDouble(),
+      translationXPIDCKi.getAsDouble(),
+      translationXPIDCKd.getAsDouble()
+    );
+    public static final PIDController translationYController = new PIDController(
+      translationYPIDCKp.getAsDouble(),
+      translationYPIDCKi.getAsDouble(),
+      translationYPIDCKd.getAsDouble()
+    );
 
     // Drive command configuration
     public static final double fineTuneSpeedMultiplier = 0.4;
@@ -590,7 +616,8 @@ public final class Constants {
     public enum CandleState {
       OFF(255, 215, 0, 0.69),  // gold
       TARGET_FOUND(255, 188, 0, 0.65), // orange
-      AT_POSE(128, 255, 0, -0.47),  // green
+      SCORING(127, 0, 255, 0.91), // violet
+      SCORED(128, 255, 0, -0.47),  // green
       WAITIING_FOR_CORAL(207, 16, 32, -0.39),  // lava
       CORAL_DETECTED(143, 0, 255, 0.91);  // violet
 

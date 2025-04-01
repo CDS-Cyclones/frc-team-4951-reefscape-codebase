@@ -229,17 +229,15 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    * @return The command to move the elevator to the position.
    */
   public Command moveToPosition(Pivot pivot, Supplier<ElevatorPosition> position) {
-    return Commands.runOnce(() -> {
-      double targetPosition = position.get().getAsDouble();
-
-      setReference(targetPosition);
-    }, this)
-    .onlyIf(() -> {
-      if (!pivot.isOutOfElevatorWay())
-        return false;
-
-      return true;
-    });
+    return Commands.sequence(
+      Commands.runOnce(() -> {
+        double targetPosition = position.get().getAsDouble();
+  
+        setReference(targetPosition);
+      }, this)
+      .onlyIf(pivot::isOutOfElevatorWay),
+      Commands.waitUntil(() -> isAtPosition(position.get()))
+    );
   }
 
   public void logMotors(SysIdRoutineLog log) {

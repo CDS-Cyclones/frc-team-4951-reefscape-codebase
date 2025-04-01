@@ -243,11 +243,14 @@ public class Pivot extends SubsystemBase implements PivotIO {
    * @return The command to move the pivot to the position.
    */
   public Command moveToPosition(Supplier<PivotPosition> position) {
-    return Commands.runOnce(() -> {
-      double targetPosition = position.get().getAsDouble();
-
-      setReference(targetPosition);
-    }, this);
+    return Commands.sequence(
+      Commands.runOnce(() -> {
+        double targetPosition = position.get().getAsDouble();
+  
+        setReference(targetPosition);
+      }, this),
+      Commands.waitUntil(() -> isAtPosition(position.get()))
+    );
   }
 
   public void logMotors(SysIdRoutineLog log) {

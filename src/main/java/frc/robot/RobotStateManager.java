@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.util.function.Supplier;
+
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -12,11 +14,11 @@ import lombok.Setter;
 
 @AllArgsConstructor
 public class RobotStateManager {
-  @Setter private static RobotAction robotAction;
-  @Setter private static ReefHeight reefHeight;
+  @Getter @Setter private static RobotAction robotAction;
+  @Getter @Setter private static ReefHeight reefHeight;
   @Getter @Setter private static boolean alignForAlgaePickup;
   @Getter @Setter private static FieldPose coralScoringPose;
-  @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
+  @Getter @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
 
   public static RobotState getRobotState() {
     return new RobotState(robotAction, reefHeight, alignForAlgaePickup, coralScoringPose);
@@ -40,6 +42,51 @@ public class RobotStateManager {
     }
     
     return getRobotState().getIntakeAction();
+  }
+
+  public static ElevatorPosition getElevatorPositionForSpecificReefHeight(Supplier<ReefHeight> reefHeight) {
+    switch(reefHeight.get()) {
+      case L1:
+        return ElevatorPosition.L1;
+      case L2:
+        return ElevatorPosition.L2;
+      case L3:
+        return ElevatorPosition.L3;
+      case L4:
+        return ElevatorPosition.L4;
+      default:
+        return ElevatorPosition.DOWN;
+    }
+  }
+
+  public static PivotPosition getPivotPositionForSpecificReefHeight(Supplier<ReefHeight> reefHeight) {
+    switch(reefHeight.get()) {
+      case L1:
+        return PivotPosition.L1;
+      case L2:
+        return PivotPosition.L2;
+      case L3:
+        return PivotPosition.L3;
+      case L4:
+        return PivotPosition.L4;
+      default:
+        return PivotPosition.INTAKE_READY;
+    }
+  }
+
+  public static IntakeAction getIntakeActionForSpecificReefHeight(Supplier<ReefHeight> reefHeight) {
+    switch(reefHeight.get()) {
+      case L1:
+        return IntakeAction.SCORE_L1;
+      case L2:
+        return IntakeAction.SCORE_L2;
+      case L3:
+        return IntakeAction.SCORE_L3;
+      case L4:
+        return IntakeAction.SCORE_L4;
+      default:
+        return IntakeAction.NONE;
+    }
   }
 
   public static class RobotState {

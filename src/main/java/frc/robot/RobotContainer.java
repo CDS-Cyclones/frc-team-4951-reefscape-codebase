@@ -22,10 +22,8 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
-import frc.robot.commands.drive.AutoDriveToPoseCommand;
 import frc.robot.commands.drive.DriveCharacterizationCommands;
 import frc.robot.commands.drive.JoystickDriveCommand;
-import frc.robot.commands.drive.VisionAssistedDriveToPoseCommand;
 import frc.robot.commands.intake.CoralGuardianCommand;
 import frc.robot.commands.intake.IntakeActionCommand;
 import frc.robot.commands.intake.IntakeCoralCommand;
@@ -185,61 +183,62 @@ public class RobotContainer {
 
     ////////////////////////////////// DRIVER CONTROLLER //////////////////////////////////
     // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
+    // new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
+    //   .whileTrue(new VisionAssistedDriveToPoseCommand(
+    //     drive,
+    //     vision,
+    //     elevator,
+    //     candle,
+    //     () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+    //     () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+    //     RobotStateManager::getDesiredFieldPose
+    //   ));
+
+    // // Scoring sequence
+    // final Command scoringSequence = Commands.sequence(
+    //   new PositionManipulator(
+    //     elevator,
+    //     pivot,
+    //     RobotStateManager::getDesiredElevatorPosition,
+    //     RobotStateManager::getDesiredPivotPosition
+    //   ),
+    //   Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
+    //   new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
+    // );
+
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
-      .whileTrue(new VisionAssistedDriveToPoseCommand(
-        drive,
-        vision,
-        elevator,
-        candle,
-        () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-        () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-        RobotStateManager::getDesiredFieldPose
-      ));
-
-    // Scoring sequence
-    final Command scoringSequence = Commands.sequence(
-      new PositionManipulator(
-        elevator,
-        pivot,
-        RobotStateManager::getDesiredElevatorPosition,
-        RobotStateManager::getDesiredPivotPosition
-      ),
-      Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
-      new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
-    );
-
-    // Score coral when right bumper is pressed
-    new JoystickButton(OI.m_driverController, Button.kRightBumper.value)
       .whileTrue(
-        new ConditionalCommand(
-          scoringSequence,
-          Commands.none(),
-          () -> !(RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_LEFT || RobotStateManager.getRobotState().getFieldPose() == FieldPose.STATION_RIGHT)
+        RobotCommands.lockedHeadingDriving(
+          drive,
+          () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+          () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+          RobotStateManager::getDesiredFieldPose
         )
-      )
-      .onFalse(new ConditionalCommand(
-        Commands.sequence(
-          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR_WITH_ALGA),
-          elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN)
-        ),
-        Commands.sequence(
-          new ConditionalCommand( // If pivot is in elevator's way, move it out of the way before lowering
-          Commands.sequence(
-            pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
-            Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR))
-          ),
-          Commands.none(),
-          () -> !pivot.isOutOfElevatorWay()
-        ),
-        pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
-        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.ELEVATOR_CLEAR)),
-        elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
-        Commands.waitUntil(() -> elevator.isAtPosition(ElevatorPosition.DOWN)),
-        pivot.moveToPosition(() -> PivotPosition.INTAKE_READY),
-        Commands.waitUntil(() -> pivot.isAtPosition(PivotPosition.INTAKE_READY))
-        ),
-        RobotStateManager::isAlignForAlgaePickup
-      )); // Retract manipulator when button is released
+        .until(() -> { // proceed to scoring when desired tag is detected
+          if(!RobotStateManager.getDesiredFieldPose().isOrientationOnly()) {
+            for (int tagId : vision.getTagIds(0)) {
+              if (tagId == RobotStateManager.getDesiredFieldPose().getTagId()) {
+                return true;
+              }
+            }
+          }
+          return false;
+        })
+        .andThen(
+          RobotCommands.scoreCoral(
+            drive,
+            vision,
+            candle,
+            elevator,
+            pivot,
+            intake,
+            () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+            () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+            RobotStateManager::getReefHeight,
+            RobotStateManager::getDesiredFieldPose
+          )
+        )
+      );
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -454,7 +453,7 @@ public class RobotContainer {
       String commandName = "align_" + pose.name();
       NamedCommands.registerCommand(commandName, Commands.sequence(
         Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
-        new AutoDriveToPoseCommand(drive, vision, pose)
+        RobotCommands.driveToPose(drive, vision, () -> pose)
       ));
     }
 
