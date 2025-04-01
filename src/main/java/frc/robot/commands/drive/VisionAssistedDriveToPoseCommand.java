@@ -26,10 +26,12 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.leds.Candle;
+import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.CandleState;
@@ -76,23 +78,20 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   public void initialize() {
     angleController = new ProfiledPIDController(
       anglePIDCKp,
-      0.0,
+      0.05,
       anglePIDCKd,
-      new TrapezoidProfile.Constraints(
-        anglePIDCMaxVel,
-        anglePIDCMaxAccel
-      )
+      new TrapezoidProfile.Constraints(16, 16)
     );
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     translationXController = new PIDController(
       translationPIDCKp,
-      0.0,
+      0.05,
       translationPIDCKd
     );
     translationYController = new PIDController(
       translationPIDCKp,
-      0.0,
+      0.05,
       translationPIDCKd
     );
 
@@ -108,7 +107,7 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
     translationXController.setTolerance(translationPIDCTolerance);
     translationYController.setTolerance(translationPIDCTolerance);
-    angleController.setTolerance(anglePIDCTolerance);
+    angleController.setTolerance(0.5);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -156,8 +155,6 @@ public class VisionAssistedDriveToPoseCommand extends Command {
       );
 
       drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
-    
-      return;
     } else {
       // Get linear velocity
       Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -170,6 +167,10 @@ public class VisionAssistedDriveToPoseCommand extends Command {
 
       drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
     }
+
+    SmartDashboard.putBoolean("OMEGA ", angleController.atSetpoint());
+    SmartDashboard.putBoolean("TR X", translationXController.atSetpoint());
+    SmartDashboard.putBoolean("TR Y", translationYController.atSetpoint());
   }
 
 
@@ -177,11 +178,12 @@ public class VisionAssistedDriveToPoseCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     candle.setState(CandleState.OFF);
+    OI.rumbleController(OI.m_driverController, 0.1);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint();
   }
 }

@@ -66,8 +66,8 @@ public final class Constants {
     public static final double maxSpeedMetersPerSecAuton = 3;
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
-    public static final double trackWidth = Units.inchesToMeters(27.0);  // TODO measure
-    public static final double wheelBase = Units.inchesToMeters(32.5);  // TODO measure
+    public static final double trackWidth = Units.inchesToMeters(27.0);
+    public static final double wheelBase = Units.inchesToMeters(32.5);
     public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
     public static final Translation2d[] moduleTranslations =
         new Translation2d[] {
@@ -137,22 +137,22 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // Configuration for PID controllers
-    public static final double anglePIDCKp = 2.5;  // TODO tune
-    public static final double anglePIDCKd = 0.4;  // TODO tune
-    public static final double anglePIDCMaxVel = 8;  // TODO tune // Radians per second
-    public static final double anglePIDCMaxAccel = 5;  // TODO tune // Radians per second squared
-    public static final double anglePIDCTolerance = 0.08;  // TODO tune
-    public static final double translationPIDCKp = 2;  // TODO tune
-    public static final double translationPIDCKd = 0.4;  // TODO tune
-    public static final double translationPIDCTolerance = 0.1;  // TODO tune
+    public static final double anglePIDCKp = 3;  // TODO tune
+    public static final double anglePIDCKd = 0; // 0.4;  // TODO tune
+    public static final double anglePIDCMaxVel = 12;  // TODO tune // Radians per second
+    public static final double anglePIDCMaxAccel = 16;  // TODO tune // Radians per second squared
+    public static final double anglePIDCTolerance = 0.08; // 0.08;  // TODO tune
+    public static final double translationPIDCKp = 3;  // TODO tune
+    public static final double translationPIDCKd = 0; // 0.4;  // TODO tune
+    public static final double translationPIDCTolerance = 0.1; // 0.1;  // TODO tune
 
     // Drive command configuration
     public static final double fineTuneSpeedMultiplier = 0.4;
 
     // PathPlanner configuration
-    public static final double robotMassKg = 54.385725;
+    public static final double robotMassKg = 59.0531907;
     public static final double robotMOI = 7.31266;
-    public static final double wheelCOF = 1.2;
+    public static final double wheelCOF = 1.6;  // https://www.chiefdelphi.com/t/wildstang-robotics-program-team-111-and-112-build-blog-2025/477716/36
     public static final PIDConstants ppDrivePID = new PIDConstants(5.0, 0.0, 0.0);
     public static final PIDConstants ppTurnPID = new PIDConstants(5.0, 0.0, 0.0);
     public static final RobotConfig ppConfig =

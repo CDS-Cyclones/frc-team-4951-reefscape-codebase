@@ -1,0 +1,32 @@
+{
+ "name":"New Path",
+ "version":1,
+ "snapshot":{
+  "waypoints":[],
+  "constraints":[],
+  "targetDt":0.05
+ },
+ "params":{
+  "waypoints":[
+    {"x":{"exp":"7.270796298980713 m", "val":7.270796298980713}, "y":{"exp":"5.907734394073486 m", "val":5.907734394073486}, "heading":{"exp":"-90 deg", "val":-1.5707963267948966}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"5.882243633270264 m", "val":5.882243633270264}, "y":{"exp":"5.525564193725586 m", "val":5.525564193725586}, "heading":{"exp":"-2.8430942075982664 rad", "val":-2.8430942075982664}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"5.015991687774658 m", "val":5.015991687774658}, "y":{"exp":"5.2707839012146 m", "val":5.2707839012146}, "heading":{"exp":"-120 deg", "val":-2.0943951023931953}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"4.875861644744873 m", "val":4.875861644744873}, "y":{"exp":"5.372696399688721 m", "val":5.372696399688721}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":40, "split":false, "fixTranslation":false, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"1.3216784000396729 m", "val":1.3216784000396729}, "y":{"exp":"7.168896198272705 m", "val":7.168896198272705}, "heading":{"exp":"-54 deg", "val":-0.942477796076938}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[],
+  "targetDt":{
+   "exp":"0.05 s",
+   "val":0.05
+  }
+ },
+ "trajectory":{
+  "sampleType":null,
+  "waypoints":[],
+  "samples":[],
+  "splits":[]
+ },
+ "events":[
+   {"name":"manipulator_l4_k", "from":{"target":1, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"manipulator_l4"}}},
+   {"name":"score_l4_k", "from":{"target":2, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"score_l4"}}},
+   {"name":"retract_manipulator_after_k", "from":{"target":3, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"retract_manipulator"}}}]
+}
