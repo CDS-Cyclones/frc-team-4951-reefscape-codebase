@@ -35,12 +35,12 @@ public class RobotStateManager {
   public static PivotPosition getDesiredPivotPosition() {
     return getRobotState().getPivotPosition();
   }
-  
+
   public static IntakeAction getDesiredIntakeAction() {
     if(intakeOccupied) {
       return IntakeAction.OCCUPIED;
     }
-    
+
     return getRobotState().getIntakeAction();
   }
 
@@ -97,7 +97,7 @@ public class RobotStateManager {
 
     /**
      * Constructor for the RobotState class.
-     * 
+     *
      * @param robotAction The current robot action.
      * @param reefHeight The reef height to score at.
      * @param alignForAlgaePickup Whether to align for algae pickup.
@@ -226,14 +226,14 @@ public class RobotStateManager {
         }
       }
     }
-  
+
     /**
      * Return the corresponding alga pose for the given reef spike pose.
-     * 
+     *
      * @param currentPose The current reef spike pose.
      * @return Corresponding alga pose.
      */
-    private static FieldPose getCorrespondingPose(FieldPose currentPose) {
+    public static FieldPose getCorrespondingPose(FieldPose currentPose) {
       switch (currentPose) {
         case A:
           return FieldPose.Z1;

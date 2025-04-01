@@ -381,6 +381,7 @@ public final class Constants {
       INTAKE_READY(2.27),
       ELEVATOR_CLEAR(1.7), // when empty
       ELEVATOR_CLEAR_WITH_ALGA(0.6),
+      DEALGAEFY(1.5),
       L1(0.0),
       L2(1.79),
       L3(1.79),
@@ -496,46 +497,14 @@ public final class Constants {
        * @return {@link Pose3d} of the robot.
        */
       public Pose3d getDesiredPose() {
-        Pose3d tagPose = getTagPose();
-        double tagAngle = tagPose.getRotation().toRotation2d().getRadians();
-        double tagX = tagPose.getTranslation().getX();
-        double tagY = tagPose.getTranslation().getY();
-
-        // Ensure the angle is between 0 and 2pi
-        if (tagAngle < 0) {
-          tagAngle = 2 * Math.PI + tagAngle;
-        }
-
-        double cos = Math.cos(tagAngle);
-        double sin = Math.sin(tagAngle);
-
-        double newX = tagX;
-        double newY = tagY;
-        Pose3d newPose;
-
-        switch (Constants.currentMode) {
-          case SIM:
-            newX += inFrontOfTagSim * cos;
-            newY += inFrontOfTagSim * sin;
-          default:
-            newX += away * cos;
-            newY += away * sin;
-        }
-
-        // now do transformation to the left or right of the tag
-        newX += side * -sin;
-        newY += side * cos;
-
-        newPose = new Pose3d(new Translation3d(newX, newY, 0), new Rotation3d(0, 0, tagAngle + rotation));
-
-        return newPose;
+        return getDesiredPose(false, false, false);
       }
 
       /**
        * Return the desired pose of the robot.
        * If orientationOnly is true, this will return null.
-       * @param ignoreForwards Whether to ignore the forwards distance.
-       * @param ignoreSideways Whether to ignore the sideways distance.
+       * @param ignoreForwards Whether to ignore the forwards offset.
+       * @param ignoreSideways Whether to ignore the sideways offset.
        * @param ignoreRotation Whether to ignore the rotation.
        * @return {@link Pose3d} of the robot.
        */

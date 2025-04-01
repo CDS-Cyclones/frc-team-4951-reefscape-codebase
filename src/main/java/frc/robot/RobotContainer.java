@@ -154,7 +154,7 @@ public class RobotContainer {
       () -> -OI.m_driverController.getRightX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
       () -> !OI.m_operatorBoard.getRawButton(25)
     ));
-    
+
     elevator.setDefaultCommand(Commands.run(() -> elevator.setVoltage(elevator.calculateFeedforward(0)), elevator));
 
     pivot.setDefaultCommand(
@@ -232,8 +232,6 @@ public class RobotContainer {
             elevator,
             pivot,
             intake,
-            () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-            () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
             RobotStateManager::getReefHeight,
             RobotStateManager::getDesiredFieldPose
           )
@@ -243,7 +241,7 @@ public class RobotContainer {
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
 
     ////////////////////////////////// OPERATOR BOARD CONTROLLER //////////////////////////////////
     // OPBoard - Reef poses

@@ -40,7 +40,7 @@ import frc.robot.utils.OIUtil;
 public class RobotCommands {
   /**
    * Command to rumble a controller for a certain duration.
-   * 
+   *
    * @param controller
    * @param rumbleIntensity
    * @param rumbleDuration
@@ -59,7 +59,7 @@ public class RobotCommands {
 
   /**
    * Command that turns leds on for a certain duration.
-   * 
+   *
    * @param candle
    * @param state
    * @param duration
@@ -78,7 +78,7 @@ public class RobotCommands {
 
   /**
    * Field-oriented driving with locked heading.
-   * 
+   *
    * @param drive
    * @param xSupplier
    * @param ySupplier
@@ -119,7 +119,7 @@ public class RobotCommands {
 
   /**
    * Drive to a desired field pose.
-   * 
+   *
    * @param drive
    * @param vision
    * @param desiredFieldPoseSupplier
@@ -162,7 +162,7 @@ public class RobotCommands {
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
       },
       interrupted -> {},
-      () -> angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint(), 
+      () -> angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint(),
       drive, vision
     );
   }
@@ -170,7 +170,7 @@ public class RobotCommands {
   /**
    * Conditional commands that assures the pivot is out of the way of the elevator's way.
    * Should nearly always be used before raising the elevator.
-   * 
+   *
    * @param elevator
    * @param pivot
    * @return Command
@@ -191,7 +191,7 @@ public class RobotCommands {
 
   /**
    * Command to retract the manipulators.
-   * 
+   *
    * @param elevator
    * @param pivot
    * @return Command
@@ -200,7 +200,7 @@ public class RobotCommands {
     Elevator elevator,
     Pivot pivot
   ) {
-    return 
+    return
     Commands.sequence(
       assureElevatorIsPivotClear(elevator, pivot),
       Commands.parallel(
@@ -212,16 +212,15 @@ public class RobotCommands {
 
   /**
    * Drive up and score the coral to the desired reef height.
-   * Does not retract manipulator.
-   * 
+   * Works for L4, L3, and L2.
+   * Retracts and stops on interrupt.
+   *
    * @param drive
    * @param vision
    * @param candle
    * @param elevator
    * @param pivot
    * @param intake
-   * @param xSupplier
-   * @param ySupplier
    * @param reefHeightSupplier
    * @param reefPoseSupplier
    * @return Command
@@ -233,8 +232,6 @@ public class RobotCommands {
     Elevator elevator,
     Pivot pivot,
     Intake intake,
-    DoubleSupplier xSupplier,
-    DoubleSupplier ySupplier,
     Supplier<ReefHeight> reefHeightSupplier,
     Supplier<FieldPose> reefPoseSupplier
   ) {
@@ -262,7 +259,63 @@ public class RobotCommands {
         retractManipulators(elevator, pivot),
         Commands.runOnce(intake::stop),
         Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
-      ).schedule();
+      );
     });
   }
+
+    /**
+     * Drive up to reef, knock down the algae on the way up and then score L4.
+     * Works for L4 only.
+     * Does retract manipulator.
+     *
+     * @param drive
+     * @param vision
+     * @param candle
+     * @param elevator
+     * @param pivot
+     * @param intake
+     * @param xSupplier
+     * @param ySupplier
+     * @param reefPoseSupplier pose for scoring the coral
+     * @return Command
+     */
+    public static Command dealgaefyThenScoreL4(
+      Drive drive,
+      Vision vision,
+      Candle candle,
+      Elevator elevator,
+      Pivot pivot,
+      Intake intake,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<FieldPose> reefPoseSupplier
+    ) {
+      return Commands.sequence(
+        Commands.runOnce(() -> candle.setLEDs(CandleState.SCORING), candle),
+          Commands.parallel(
+            rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
+            driveToPose(drive, vision, () -> RobotStateManager.RobotState.getCorrespondingPose(reefPoseSupplier.get())),
+            Commands.sequence(
+              assureElevatorIsPivotClear(elevator, pivot),
+              pivot.moveToPosition(() -> PivotPosition.DEALGAEFY),
+              elevator.moveToPosition(pivot, () -> ElevatorPosition.L4)
+            )
+          ),
+          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
+          driveToPose(drive, vision, reefPoseSupplier),
+          pivot.moveToPosition(() -> PivotPosition.L4),
+          new IntakeActionCommand(intake, candle, () -> RobotStateManager.getIntakeActionForSpecificReefHeight(() -> ReefHeight.L4), true),
+          Commands.parallel(
+            runLedsForDuration(candle, CandleState.SCORED, 1),
+            rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
+          )
+        ).handleInterrupt(() -> {
+          Commands.parallel(
+            Commands.runOnce(drive::stopWithX, drive),
+            retractManipulators(elevator, pivot),
+            Commands.runOnce(intake::stop),
+            Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
+          );
+        });
+    }
 }
