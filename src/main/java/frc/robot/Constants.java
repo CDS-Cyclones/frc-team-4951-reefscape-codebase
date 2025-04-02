@@ -64,7 +64,7 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
-    public static final double maxSpeedMetersPerSecAuton = 3;
+    public static final double maxSpeedMetersPerSecAuton = 2;
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(27.0);
@@ -274,7 +274,7 @@ public final class Constants {
     public static final boolean elevatorMotorInverted = false;
     public static final boolean elevatorMotorFollowerInverted = false;
     public static final double elevatorMinPosition = 0.0;
-    public static final double elevatorMaxPosition = 1.55;
+    public static final double elevatorMaxPosition = 1.8;
     public static final TunableNum elevatorKp = new TunableNum("Elevator/P", 2.85);
     public static final TunableNum elevatorKd = new TunableNum("Elevator/D", 0.0);
     public static final double elevatorKff = 1 / MotorConstants.neoKv;  // not arbFF, inverse of motor specific Kv value
@@ -319,7 +319,7 @@ public final class Constants {
     public static final double elevatorCarriageMass = 1.0;   // NOT TUNED
     public static final double elevatorDrumRadius = 0.0254;  // NOT TUNED
     public static final double elevatorMinHeightMetres = 0.0;
-    public static final double elevatorMaxHeightMetres = 1.55;
+    public static final double elevatorMaxHeightMetres = 3;
   }
 
   public static final class CandleConstants {
@@ -385,7 +385,7 @@ public final class Constants {
       L1(0.0),
       L2(1.79),
       L3(1.79),
-      L4(1.65),
+      L4(1.55),
       REEF_ALGA_L2(-.91),
       REEF_ALGA_L3(-.91),
       BARGE(0.0),      // TODO
@@ -583,7 +583,7 @@ public final class Constants {
      */
     @RequiredArgsConstructor
     public enum CandleState {
-      OFF(255, 215, 0, 0.69),  // gold
+      OFF(255, 215, 0, 0.57),  // gold
       TARGET_FOUND(255, 188, 0, 0.65), // orange
       SCORING(127, 0, 255, 0.91), // violet
       SCORED(128, 255, 0, -0.47),  // green
@@ -615,7 +615,7 @@ public final class Constants {
       SCORE_BARGE(1.0, 2.0),  // TODO tune
       SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
       INTAKE_REEF_ALGA(-0.9, 1.5),  // TODO tune
-      INTAKE_CORAL(0.56, 5.0),  // Time is redundant; uses Canrange sensor  // TODO tune
+      INTAKE_CORAL(0.56, 1.2),  // Time is redundant; uses Canrange sensor  // TODO tune
       TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
 
       private final double speed;

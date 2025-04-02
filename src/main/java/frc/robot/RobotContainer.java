@@ -6,10 +6,14 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.util.concurrent.Event;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -76,7 +80,15 @@ public class RobotContainer {
   // Autonomous command chooser
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  private final PathPlannerPath rightAuton;
+
   public RobotContainer() {
+    try {
+      rightAuton = PathPlannerPath.fromChoreoTrajectory("Test1");
+    } catch(Exception e) {
+      throw new RuntimeException("Failed to load RightAuton path", e);
+    }
+
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -121,9 +133,10 @@ public class RobotContainer {
     registerNamedCommands();
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
+    autoChooser.addOption("Test", AutoBuilder.followPath(rightAuton));
     setupSysIdRoutines();
     configureBindings();
+    configureAutonEvents();
 
     TunableValues.setTuningMode(false);
 
@@ -497,6 +510,20 @@ public class RobotContainer {
     ));
   }
 
+
+  private void configureAutonEvents() {
+    new EventTrigger("extend_manipulator_l4")
+      .onTrue(
+        RobotCommands.extendManipulators(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
+      );
+
+    new EventTrigger("score_l4")
+      .onTrue(
+        new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
+      ).onFalse(
+        RobotCommands.retractManipulator(elevator, pivot)
+      );
+  }
   /**
    * Returns the selected autonomous command.
    *

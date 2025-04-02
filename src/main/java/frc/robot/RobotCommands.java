@@ -144,9 +144,9 @@ public class RobotCommands {
         double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
         double velocityY = translationYController.calculate(drive.getPose().getTranslation().getY(), pose.getTranslation().getY());
 
-        velocityX = MathUtil.applyDeadband(velocityX, 0.05);
-        velocityY = MathUtil.applyDeadband(velocityY, 0.05);
-        omega = MathUtil.applyDeadband(omega, 0.05);
+        velocityX = MathUtil.applyDeadband(velocityX, 0.00);
+        velocityY = MathUtil.applyDeadband(velocityY, 0.00);
+        omega = MathUtil.applyDeadband(omega, 0.00);
 
         // clamp
         velocityX = MathUtil.clamp(velocityX, -translationXPIDCMaxSpeed.getAsDouble(), translationXPIDCMaxSpeed.getAsDouble());
@@ -190,13 +190,36 @@ public class RobotCommands {
   }
 
   /**
+   * Command to extend the manipulators
+   *
+   * @param elevator
+   * @param pivot
+   * @return Command
+   */
+  public static Command extendManipulators(
+    Elevator elevator,
+    Pivot pivot,
+    Supplier<ElevatorPosition> elevatorPositionSupplier,
+    Supplier<PivotPosition> pivotPositionSupplier
+  ) {
+    return
+    Commands.sequence(
+      assureElevatorIsPivotClear(elevator, pivot),
+      Commands.parallel(
+        elevator.moveToPosition(pivot, elevatorPositionSupplier),
+        pivot.moveToPosition(pivotPositionSupplier)
+      )
+    );
+  }
+
+  /**
    * Command to retract the manipulators.
    *
    * @param elevator
    * @param pivot
    * @return Command
    */
-  public static Command retractManipulators(
+  public static Command retractManipulator(
     Elevator elevator,
     Pivot pivot
   ) {
@@ -253,10 +276,10 @@ public class RobotCommands {
         runLedsForDuration(candle, CandleState.SCORED, 1),
         rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
       )
-    ).handleInterrupt(() -> {
+    ).finallyDo(() -> {
       Commands.parallel(
         Commands.runOnce(drive::stopWithX, drive),
-        retractManipulators(elevator, pivot),
+        retractManipulator(elevator, pivot),
         Commands.runOnce(intake::stop),
         Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
       );
@@ -286,21 +309,17 @@ public class RobotCommands {
       Elevator elevator,
       Pivot pivot,
       Intake intake,
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
       Supplier<FieldPose> reefPoseSupplier
     ) {
       return Commands.sequence(
         Commands.runOnce(() -> candle.setLEDs(CandleState.SCORING), candle),
           Commands.parallel(
             rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
-            driveToPose(drive, vision, () -> RobotStateManager.RobotState.getCorrespondingPose(reefPoseSupplier.get())),
-            Commands.sequence(
-              assureElevatorIsPivotClear(elevator, pivot),
-              pivot.moveToPosition(() -> PivotPosition.DEALGAEFY),
-              elevator.moveToPosition(pivot, () -> ElevatorPosition.L4)
-            )
+            driveToPose(drive, vision, () -> RobotStateManager.RobotState.getCorrespondingPose(reefPoseSupplier.get()))
           ),
+          assureElevatorIsPivotClear(elevator, pivot),
+          pivot.moveToPosition(() -> PivotPosition.DEALGAEFY),
+          elevator.moveToPosition(pivot, () -> ElevatorPosition.L4),
           pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
           driveToPose(drive, vision, reefPoseSupplier),
           pivot.moveToPosition(() -> PivotPosition.L4),
@@ -312,7 +331,7 @@ public class RobotCommands {
         ).handleInterrupt(() -> {
           Commands.parallel(
             Commands.runOnce(drive::stopWithX, drive),
-            retractManipulators(elevator, pivot),
+            retractManipulator(elevator, pivot),
             Commands.runOnce(intake::stop),
             Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
           );
