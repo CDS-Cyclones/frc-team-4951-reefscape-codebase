@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "barge to c"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "l4_sequence"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "c to rightStation"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "rightStation to e"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "l4_sequence"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "e to rightStation"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "rightStation to f"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "l4_sequence"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "f to rightStation"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake_coral"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "New Folder",
+  "choreoAuto": false
+}

@@ -36,28 +36,12 @@
         "y": 2.949276859504132
       },
       "prevControl": {
-        "x": 5.596177685950413,
-        "y": 2.278460743801653
-      },
-      "nextControl": {
-        "x": 5.100619834710744,
-        "y": 3.620092975206611
-      },
-      "isLocked": false,
-      "linkedName": "c"
-    },
-    {
-      "anchor": {
-        "x": 6.134039256198347,
-        "y": 1.4626033057851224
-      },
-      "prevControl": {
-        "x": 5.711002066115702,
-        "y": 2.6108471074380173
+        "x": 5.862086776859505,
+        "y": 2.072985537190082
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "c"
     }
   ],
   "rotationTargets": [],
@@ -72,7 +56,7 @@
     },
     {
       "name": "score_l4",
-      "waypointRelativePos": 2.0,
+      "waypointRelativePos": 1.5,
       "endWaypointRelativePos": null,
       "command": {
         "type": "sequential",

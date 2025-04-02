@@ -36,6 +36,7 @@ import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
+import frc.robot.Constants.RobotStateConstants.IntakeAction;
 
 public class RobotCommands {
   /**
@@ -230,6 +231,22 @@ public class RobotCommands {
         elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
         pivot.moveToPosition(() -> PivotPosition.INTAKE_READY)
       )
+    );
+  }
+
+  public static Command scoreL4InPlace(
+    Drive drive,
+    Candle candle,
+    Elevator elevator,
+    Pivot pivot,
+    Intake intake
+  ) {
+    return Commands.sequence(
+      assureElevatorIsPivotClear(elevator, pivot),
+      elevator.moveToPosition(pivot, () -> ElevatorPosition.L4),
+      pivot.moveToPosition(() -> PivotPosition.L4),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L4, false),
+      retractManipulator(elevator, pivot)
     );
   }
 
