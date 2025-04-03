@@ -144,13 +144,13 @@ public final class Constants {
     public static final TunableNum anglePIDCTolerance = new TunableNum("Drive/controllers/angle/tolerance", 0.05);
     public static final TunableNum anglePIDCMaxSpeed = new TunableNum("Drive/controllers/angle/maxSpeed", 6);  // in radians per second
 
-    public static final TunableNum translationXPIDCKp = new TunableNum("Drive/controllers/translation/x/P", 0.5);
+    public static final TunableNum translationXPIDCKp = new TunableNum("Drive/controllers/translation/x/P", 3);
     public static final TunableNum translationXPIDCKi = new TunableNum("Drive/controllers/translation/x/I", 0);
     public static final TunableNum translationXPIDCKd = new TunableNum("Drive/controllers/translation/x/D", 0);
     public static final TunableNum translationXPIDCTolerance = new TunableNum("Drive/controllers/translation/x/tolerance", 0.05);
     public static final TunableNum translationXPIDCMaxSpeed = new TunableNum("Drive/controllers/translation/x/maxSpeed", 3);  // in meters per second
 
-    public static final TunableNum translationYPIDCKp = new TunableNum("Drive/controllers/translation/y/P", 0.5);
+    public static final TunableNum translationYPIDCKp = new TunableNum("Drive/controllers/translation/y/P", 3);
     public static final TunableNum translationYPIDCKi = new TunableNum("Drive/controllers/translation/y/I", 0);
     public static final TunableNum translationYPIDCKd = new TunableNum("Drive/controllers/translation/y/D", 0);
     public static final TunableNum translationYPIDCTolerance = new TunableNum("Drive/controllers/translation/y/tolerance", 0.05);
@@ -333,8 +333,8 @@ public final class Constants {
 
   public static final class RobotStateConstants {
     // Constants for field poses
-    private static final double inFrontOfTag = Units.inchesToMeters(19);
-    private static final double rightOfTag = Units.inchesToMeters(6);
+    private static final double inFrontOfTag = Units.inchesToMeters(23);
+    private static final double rightOfTag = Units.inchesToMeters(7);
     private static final double leftOfTag = -rightOfTag;
 
     private static final double inFrontOfTagSim = 0.4;
@@ -385,7 +385,7 @@ public final class Constants {
       L1(0.0),
       L2(1.79),
       L3(1.79),
-      L4(1.55),
+      L4(1.8),
       REEF_ALGA_L2(-.91),
       REEF_ALGA_L3(-.91),
       BARGE(0.0),      // TODO
@@ -414,9 +414,9 @@ public final class Constants {
     public static enum ElevatorPosition {
       DOWN(0.0),
       L1(0.0),
-      L2(0.22),
-      L3(0.72),
-      L4(1.55),
+      L2(0.34),
+      L3(0.82),
+      L4(1.58),
       REEF_ALGA_L2(0.6),
       REEF_ALGA_L3(1.05),
       BARGE(0.0),      // TODO

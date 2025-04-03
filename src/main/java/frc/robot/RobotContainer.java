@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -249,6 +250,8 @@ public class RobotContainer {
             RobotStateManager::getDesiredFieldPose
           )
         )
+      ).onFalse(
+        new RetractManipulator(elevator, pivot, () -> false)
       );
 
     // Switch to X pattern when X button is pressed
@@ -459,6 +462,54 @@ public class RobotContainer {
   private void registerNamedCommands() {
     NamedCommands.registerCommand("intake_coral", new IntakeCoralCommand(intake, candle));
     NamedCommands.registerCommand("l4_sequence", RobotCommands.scoreL4InPlace(drive, candle, elevator, pivot, intake));
+
+    // Register named commands for reef height scoring poses
+    NamedCommands.registerCommand("score_l4", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L4, false)
+    ));
+    NamedCommands.registerCommand("score_l3", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L3, false)
+    ));
+    NamedCommands.registerCommand("score_l2", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L2, false)
+    ));
+    NamedCommands.registerCommand("score_l1", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_L1, false)
+    ));
+
+    // Elevator and pivot positioning
+    NamedCommands.registerCommand("manipulator_retract", Commands.sequence(
+      new RetractManipulator(elevator, pivot, () -> false)
+    ));
+    NamedCommands.registerCommand("manipulator_l4", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
+    ));
+    NamedCommands .registerCommand("manipulator_l3", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
+    ));
+    NamedCommands.registerCommand("manipulator_l2", Commands.sequence(
+      Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
+      Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)),
+      new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
+    ));
+
+    for (FieldPose pose : FieldPose.values()) {
+      if (pose.ordinal() >= 12) break; // make sure only reef coral scoring poses are registered
+
+      String commandName = "align_" + pose.name();
+      NamedCommands.registerCommand(commandName, Commands.sequence(
+        Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
+        RobotCommands.driveToPose(drive, vision, () -> pose)
+      ));
+    }
   }
 
 

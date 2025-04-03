@@ -162,7 +162,9 @@ public class RobotCommands {
 
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
       },
-      interrupted -> {},
+      interrupted -> {
+        drive.stopWithX();
+      },
       () -> angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint(),
       drive, vision
     );
@@ -295,7 +297,6 @@ public class RobotCommands {
       )
     ).finallyDo(() -> {
       Commands.parallel(
-        Commands.runOnce(drive::stopWithX, drive),
         retractManipulator(elevator, pivot),
         Commands.runOnce(intake::stop),
         Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
