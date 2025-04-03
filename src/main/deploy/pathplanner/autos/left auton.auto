@@ -7,37 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "small barge to k"
+            "pathName": "barge to l"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "align_K"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "manipulator_l4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "score_l4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "manipulator_retract"
+            "name": "l4_sequence"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "K_to_leftStation"
+            "pathName": "l to leftStation"
           }
         },
         {
@@ -47,33 +29,45 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "align_J"
+            "pathName": "leftStation to j"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "manipulator_l4"
+            "name": "l4_sequence"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "j to leftStation"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score_l4"
+            "name": "intake_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "leftStation to i"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "manipulator_retract"
+            "name": "l4_sequence"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "onchm autons",
   "choreoAuto": false
 }
