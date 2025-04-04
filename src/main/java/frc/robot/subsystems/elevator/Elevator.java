@@ -70,8 +70,8 @@ public class Elevator extends SubsystemBase implements ElevatorIO {
    */
   public void configMotors() {
     motorConfig
-    .smartCurrentLimit(80)
-    .secondaryCurrentLimit(90)
+    .smartCurrentLimit(40)
+    .secondaryCurrentLimit(40)
     .idleMode(SparkBaseConfig.IdleMode.kBrake)
     .inverted(elevatorMotorInverted);
     motorConfig.softLimit

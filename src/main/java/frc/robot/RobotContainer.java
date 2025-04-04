@@ -220,38 +220,40 @@ public class RobotContainer {
     //   new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
     // );
 
+    Command mainCommand =         RobotCommands.lockedHeadingDriving(
+      drive,
+      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      RobotStateManager::getDesiredFieldPose
+    )
+    .until(() -> { // proceed to scoring when desired tag is detected
+      if(!RobotStateManager.getDesiredFieldPose().isOrientationOnly()) {
+        for (int tagId : vision.getTagIds(0)) {
+          if (tagId == RobotStateManager.getDesiredFieldPose().getTagId()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    })
+    .andThen(
+      RobotCommands.scoreCoral(
+        drive,
+        vision,
+        candle,
+        elevator,
+        pivot,
+        intake,
+        RobotStateManager::getReefHeight,
+        RobotStateManager::getDesiredFieldPose
+      )
+    );
+
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(
-        RobotCommands.lockedHeadingDriving(
-          drive,
-          () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-          () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-          RobotStateManager::getDesiredFieldPose
-        )
-        .until(() -> { // proceed to scoring when desired tag is detected
-          if(!RobotStateManager.getDesiredFieldPose().isOrientationOnly()) {
-            for (int tagId : vision.getTagIds(0)) {
-              if (tagId == RobotStateManager.getDesiredFieldPose().getTagId()) {
-                return true;
-              }
-            }
-          }
-          return false;
-        })
-        .andThen(
-          RobotCommands.scoreCoral(
-            drive,
-            vision,
-            candle,
-            elevator,
-            pivot,
-            intake,
-            RobotStateManager::getReefHeight,
-            RobotStateManager::getDesiredFieldPose
-          )
-        )
+        new ConditionalCommand(RobotCommands.dealgefy(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getDesiredFieldPose), mainCommand, RobotStateManager::isAlignForAlgaePickup)
       ).onFalse(
-        new RetractManipulator(elevator, pivot, () -> false)
+        new RetractManipulator(elevator, pivot, RobotStateManager::isAlignForAlgaePickup)
       );
 
     // Switch to X pattern when X button is pressed

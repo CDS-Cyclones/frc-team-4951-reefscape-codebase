@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.derive;
 import static frc.robot.Constants.DriveConstants.angleController;
 import static frc.robot.Constants.DriveConstants.anglePIDCMaxSpeed;
 import static frc.robot.Constants.DriveConstants.translationXController;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -37,6 +39,7 @@ import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
+import frc.robot.commands.drive.JoystickDriveCommand;;
 
 public class RobotCommands {
   /**
@@ -295,13 +298,7 @@ public class RobotCommands {
         runLedsForDuration(candle, CandleState.SCORED, 1),
         rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
       )
-    ).finallyDo(() -> {
-      Commands.parallel(
-        retractManipulator(elevator, pivot),
-        Commands.runOnce(intake::stop),
-        Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
-      );
-    });
+    );
   }
 
     /**
@@ -354,5 +351,34 @@ public class RobotCommands {
             Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
           );
         });
+    }
+
+    public static Command dealgefy(
+      Drive drive,
+      Vision vision,
+      Candle candle,
+      Elevator elevator,
+      Pivot pivot,
+      Intake intake,
+      Supplier<FieldPose> reefPoseSupplier
+    ) {
+      return Commands.sequence(
+        assureElevatorIsPivotClear(elevator, pivot),
+        Commands.parallel(
+          elevator.moveToPosition(pivot, RobotStateManager::getDesiredElevatorPosition),
+          pivot.moveToPosition(RobotStateManager::getDesiredPivotPosition)
+        ),
+        driveToPose(drive, vision, reefPoseSupplier),
+        Commands.parallel(
+          new IntakeActionCommand(intake, candle, () -> IntakeAction.INTAKE_REEF_ALGA, true),
+          new JoystickDriveCommand(
+            drive,
+            () -> -OI.m_driverController.getLeftY() * 0.6,
+            () -> 0,
+            () -> 0,
+            () -> true
+          )
+        )
+      );
     }
 }

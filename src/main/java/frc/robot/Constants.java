@@ -385,9 +385,9 @@ public final class Constants {
       L1(0.0),
       L2(1.79),
       L3(1.79),
-      L4(1.8),
-      REEF_ALGA_L2(-.91),
-      REEF_ALGA_L3(-.91),
+      L4(1.86),
+      REEF_ALGA_L2(-.5),
+      REEF_ALGA_L3(-.5),
       BARGE(0.0),      // TODO
       PROCESSOR(-0.87),
       TUNABLE(Double.NaN);  // Special value for tunable position
@@ -414,11 +414,11 @@ public final class Constants {
     public static enum ElevatorPosition {
       DOWN(0.0),
       L1(0.0),
-      L2(0.34),
+      L2(0.38),
       L3(0.82),
       L4(1.58),
       REEF_ALGA_L2(0.6),
-      REEF_ALGA_L3(1.05),
+      REEF_ALGA_L3(1.12),
       BARGE(0.0),      // TODO
       PROCESSOR(0.0),
       TUNABLE(Double.NaN);  // Special value for tunable position
