@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "barge to b"
+            "pathName": null
           }
         },
         {
@@ -20,6 +20,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "onchm autons",
+  "folder": null,
   "choreoAuto": false
 }

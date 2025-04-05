@@ -5,33 +5,39 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "small barge to k"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "score_l4_K"
+            "waitTime": 3.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "K_to_leftStation"
+            "pathName": "New New Path"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "intake_coral"
+            "name": "align_A"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score_l4_J"
+            "name": "manipulator_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_l4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "manipulator_retract"
           }
         }
       ]

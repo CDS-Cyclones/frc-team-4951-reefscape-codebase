@@ -6,14 +6,11 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.util.concurrent.Event;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -56,8 +52,10 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.subsystems.wolverine.Wolverine;
 import frc.robot.utils.TunableValues;
 import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
+
 import static frc.robot.Constants.RobotStateConstants;
 
 import org.ironmaple.simulation.SimulatedArena;
@@ -73,68 +71,61 @@ public class RobotContainer {
   private final Pivot pivot;
   private final Intake intake;
   private final Candle candle;
+  private final Wolverine wolverine;
 
   private SwerveDriveSimulation driveSimulation = null;
 
   private byte sysIdRoutineId = 1;
 
   // Autonomous command chooser
-  private final LoggedDashboardChooser<Command> autoChooser;
-
-  private final PathPlannerPath rightAuton;
+  private final LoggedDashboardChooser < Command > autoChooser;
 
   public RobotContainer() {
-    try {
-      rightAuton = PathPlannerPath.fromChoreoTrajectory("Test1");
-    } catch(Exception e) {
-      throw new RuntimeException("Failed to load RightAuton path", e);
-    }
-
     switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
-        vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation));
-        elevator = new Elevator();
-        break;
+    case REAL:
+      // Real robot, instantiate hardware IO implementations
+      drive = new Drive(new GyroIOPigeon2(), new ModuleIOSpark(0), new ModuleIOSpark(1), new ModuleIOSpark(2), new ModuleIOSpark(3), (pose) -> {});
+      vision = new Vision(drive, new VisionIOLimelight(VisionConstants.limelightFrontName, drive::getRotation));
+      elevator = new Elevator();
+      break;
 
-      case SIM:
-        // create a maple-sim swerve drive simulation instance
-        driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+    case SIM:
+      // create a maple-sim swerve drive simulation instance
+      driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
 
-        // add the simulated drivetrain to the simulation field
-        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+      // add the simulated drivetrain to the simulation field
+      SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 
-        // Sim robot, instantiate physics sim IO implementations
-        drive = new Drive(
-          new GyroIOSim(driveSimulation.getGyroSimulation()),
-          new ModuleIOSim(driveSimulation.getModules()[0]),
-          new ModuleIOSim(driveSimulation.getModules()[1]),
-          new ModuleIOSim(driveSimulation.getModules()[2]),
-          new ModuleIOSim(driveSimulation.getModules()[3]),
-          driveSimulation::setSimulationWorldPose
-        );
-        vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, driveSimulation::getSimulatedDriveTrainPose));
-        elevator = new ElevatorSim();
-        break;
+      // Sim robot, instantiate physics sim IO implementations
+      drive = new Drive(
+        new GyroIOSim(driveSimulation.getGyroSimulation()),
+        new ModuleIOSim(driveSimulation.getModules()[0]),
+        new ModuleIOSim(driveSimulation.getModules()[1]),
+        new ModuleIOSim(driveSimulation.getModules()[2]),
+        new ModuleIOSim(driveSimulation.getModules()[3]),
+        driveSimulation::setSimulationWorldPose
+      );
+      vision = new Vision(drive, new VisionIOPhotonVisionSim(VisionConstants.cameraNameSim, VisionConstants.botToCamTransformSim, driveSimulation::getSimulatedDriveTrainPose));
+      elevator = new ElevatorSim();
+      break;
 
-      default:
-        // Replayed robot, disable IO implementations
-        drive = new Drive(new GyroIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, new ModuleIO(){}, (pose) -> {});
-        vision = new Vision(drive, new VisionIO() {});
-        elevator = new Elevator();
-        break;
+    default:
+      // Replayed robot, disable IO implementations
+      drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, (pose) -> {});
+      vision = new Vision(drive, new VisionIO() {});
+      elevator = new Elevator();
+      break;
     }
 
     // Instantiate other subsystems
     pivot = new Pivot();
     intake = new Intake();
     candle = new Candle();
+    wolverine = new Wolverine();
 
     registerNamedCommands();
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser.addOption("Test", AutoBuilder.followPath(rightAuton));
+    autoChooser = new LoggedDashboardChooser < > ("Auto Choices", AutoBuilder.buildAutoChooser());
     setupSysIdRoutines();
     configureBindings();
     configureAutonEvents();
@@ -194,72 +185,35 @@ public class RobotContainer {
     );
     ////////////////////////////////////////////////////////////////////////////////////////
 
-
     ////////////////////////////////// DRIVER CONTROLLER //////////////////////////////////
-    // Locks robot's orientation to desired angle and vision aims whenever desired tag is detected
-    // new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
-    //   .whileTrue(new VisionAssistedDriveToPoseCommand(
-    //     drive,
-    //     vision,
-    //     elevator,
-    //     candle,
-    //     () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-    //     () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-    //     RobotStateManager::getDesiredFieldPose
-    //   ));
-
-    // // Scoring sequence
-    // final Command scoringSequence = Commands.sequence(
-    //   new PositionManipulator(
-    //     elevator,
-    //     pivot,
-    //     RobotStateManager::getDesiredElevatorPosition,
-    //     RobotStateManager::getDesiredPivotPosition
-    //   ),
-    //   Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5 && RobotStateManager.getDesiredIntakeAction() != IntakeAction.OCCUPIED),
-    //   new IntakeActionCommand(intake, candle, RobotStateManager::getDesiredIntakeAction, true)
-    // );
-
-    Command mainCommand =         RobotCommands.lockedHeadingDriving(
-      drive,
-      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
-      RobotStateManager::getDesiredFieldPose
-    )
-    .until(() -> { // proceed to scoring when desired tag is detected
-      if(!RobotStateManager.getDesiredFieldPose().isOrientationOnly()) {
-        for (int tagId : vision.getTagIds(0)) {
-          if (tagId == RobotStateManager.getDesiredFieldPose().getTagId()) {
-            return true;
-          }
-        }
-      }
-      return false;
-    })
-    .andThen(
-      RobotCommands.scoreCoral(
-        drive,
-        vision,
-        candle,
-        elevator,
-        pivot,
-        intake,
-        RobotStateManager::getReefHeight,
-        RobotStateManager::getDesiredFieldPose
-      )
-    );
-
     new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
       .whileTrue(
-        new ConditionalCommand(RobotCommands.dealgefy(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getDesiredFieldPose), mainCommand, RobotStateManager::isAlignForAlgaePickup)
+        new ConditionalCommand(
+          new ConditionalCommand(
+            RobotCommands.scoreBarge(elevator, pivot, intake, candle),
+            new ConditionalCommand(
+              RobotCommands.processAlgae(drive, vision, candle, elevator, pivot, intake),
+              RobotCommands.dealgefy(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getDesiredFieldPose),
+              () -> RobotStateManager.getDesiredFieldPose() == FieldPose.PROCESSOR
+            ),
+            () -> RobotStateManager.getDesiredFieldPose() == FieldPose.BARGE_LEFT
+          ),
+          RobotCommands.reefScoringCommand(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getReefHeight, RobotStateManager::getDesiredFieldPose),
+          RobotStateManager::isAlignForAlgaePickup
+        )
       ).onFalse(
-        new RetractManipulator(elevator, pivot, RobotStateManager::isAlignForAlgaePickup)
+        new ConditionalCommand(
+          RobotCommands.retractManipulatorWithAlgae(elevator, pivot),
+          RobotCommands.retractManipulator(elevator, pivot),
+          RobotStateManager::isAlignForAlgaePickup
+        )
       );
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_driverController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    new JoystickButton(OI.m_driverController, Button.kA.value).onTrue(Commands.runOnce(wolverine::invertValue, wolverine));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////// OPERATOR BOARD CONTROLLER //////////////////////////////////
     // OPBoard - Reef poses
@@ -337,10 +291,11 @@ public class RobotContainer {
     new JoystickButton(OI.m_operatorBoard, 16).onTrue(Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_BARGE_LEFT)));
     new JoystickButton(OI.m_operatorBoard, 17).onTrue(Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.SCORE_PROCESSOR)));
     new JoystickButton(OI.m_operatorBoard, 18).onTrue(Commands.runOnce(
-        Constants.currentMode == Constants.Mode.SIM
-        ? () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
-        : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-    drive).ignoringDisable(true));
+      Constants.currentMode == Constants.Mode.SIM ?
+      () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
+      :
+      () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+      drive).ignoringDisable(true));
 
     // Switch whether score coral or intake alga
     new JoystickButton(OI.m_operatorBoard, 29).onTrue(
@@ -355,8 +310,11 @@ public class RobotContainer {
         new RetractManipulator(elevator, pivot, () -> false)
       )
     );
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    new JoystickButton(OI.m_operatorBoard, 30).onTrue(
+      RobotCommands.climb(elevator, pivot, wolverine)
+    );
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////// MANUAL MANIPULATOR CONTROLLER //////////////////////////////////
     new JoystickButton(OI.m_mainpulatorControllerManual, Button.kY.value)
@@ -492,7 +450,7 @@ public class RobotContainer {
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
     ));
-    NamedCommands .registerCommand("manipulator_l3", Commands.sequence(
+    NamedCommands.registerCommand("manipulator_l3", Commands.sequence(
       Commands.runOnce(() -> RobotStateManager.setRobotAction(RobotAction.REEF_ACTION)),
       Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)),
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L3, () -> PivotPosition.L3)
@@ -503,7 +461,7 @@ public class RobotContainer {
       new PositionManipulator(elevator, pivot, () -> ElevatorPosition.L2, () -> PivotPosition.L2)
     ));
 
-    for (FieldPose pose : FieldPose.values()) {
+    for (FieldPose pose: FieldPose.values()) {
       if (pose.ordinal() >= 12) break; // make sure only reef coral scoring poses are registered
 
       String commandName = "align_" + pose.name();
@@ -511,14 +469,16 @@ public class RobotContainer {
         Commands.runOnce(() -> RobotStateManager.setCoralScoringPose(pose)),
         RobotCommands.driveToPose(drive, vision, () -> pose)
       ));
+
+      String name = "score_l4_" + pose.name();
+      NamedCommands.registerCommand(name, RobotCommands.reefScoringCommand(drive, vision, candle, elevator, pivot, intake, () -> ReefHeight.L4, () -> pose));
     }
   }
-
 
   private void configureAutonEvents() {
     new EventTrigger("extend_manipulator_l4")
       .onTrue(
-        RobotCommands.extendManipulators(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
+        RobotCommands.extendManipulator(elevator, pivot, () -> ElevatorPosition.L4, () -> PivotPosition.L4)
       );
 
     new EventTrigger("score_l4")
@@ -545,7 +505,7 @@ public class RobotContainer {
 
     drive.resetOdometry(new Pose2d(3, 3, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
-    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2,2)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(2, 2)));
   }
 
   /**

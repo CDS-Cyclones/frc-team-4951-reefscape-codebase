@@ -115,7 +115,7 @@ public class RobotStateManager {
 
         case SCORE_BARGE_LEFT: {
           elevatorPosition = ElevatorPosition.BARGE;
-          pivotPosition = PivotPosition.BARGE;
+          pivotPosition = PivotPosition.BARGE_START;
           fieldPose = FieldPose.BARGE_LEFT;
           intakeAction = IntakeAction.SCORE_BARGE;
           break;
@@ -123,7 +123,7 @@ public class RobotStateManager {
 
         case SCORE_BARGE_RIGHT: {
           elevatorPosition = ElevatorPosition.BARGE;
-          pivotPosition = PivotPosition.BARGE;
+          pivotPosition = PivotPosition.BARGE_START;
           fieldPose = FieldPose.BARGE_RIGHT;
           intakeAction = IntakeAction.SCORE_BARGE;
           break;

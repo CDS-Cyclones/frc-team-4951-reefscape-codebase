@@ -138,10 +138,10 @@ public final class Constants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // PID controllers
-    public static final TunableNum anglePIDCKp = new TunableNum("Drive/controllers/angle/P", 3);
+    public static final TunableNum anglePIDCKp = new TunableNum("Drive/controllers/angle/P", 3.2);
     public static final TunableNum anglePIDCKi = new TunableNum("Drive/controllers/angle/I", 0);
     public static final TunableNum anglePIDCKd = new TunableNum("Drive/controllers/angle/D", 0);
-    public static final TunableNum anglePIDCTolerance = new TunableNum("Drive/controllers/angle/tolerance", 0.05);
+    public static final TunableNum anglePIDCTolerance = new TunableNum("Drive/controllers/angle/tolerance", 0.02);
     public static final TunableNum anglePIDCMaxSpeed = new TunableNum("Drive/controllers/angle/maxSpeed", 6);  // in radians per second
 
     public static final TunableNum translationXPIDCKp = new TunableNum("Drive/controllers/translation/x/P", 3);
@@ -334,8 +334,8 @@ public final class Constants {
   public static final class RobotStateConstants {
     // Constants for field poses
     private static final double inFrontOfTag = Units.inchesToMeters(23);
-    private static final double rightOfTag = Units.inchesToMeters(7);
-    private static final double leftOfTag = -rightOfTag;
+    private static final double rightOfTag = Units.inchesToMeters(6.6);
+    private static final double leftOfTag = -Units.inchesToMeters(7.15);
 
     private static final double inFrontOfTagSim = 0.4;
 
@@ -388,8 +388,10 @@ public final class Constants {
       L4(1.86),
       REEF_ALGA_L2(-.5),
       REEF_ALGA_L3(-.5),
-      BARGE(0.0),      // TODO
+      BARGE_START(0.95),
+      BARGE_END(1.43),
       PROCESSOR(-0.87),
+      FULLY_OUT(-1),
       TUNABLE(Double.NaN);  // Special value for tunable position
 
       private final double position;
@@ -414,12 +416,12 @@ public final class Constants {
     public static enum ElevatorPosition {
       DOWN(0.0),
       L1(0.0),
-      L2(0.38),
+      L2(0.31),
       L3(0.82),
       L4(1.58),
       REEF_ALGA_L2(0.6),
-      REEF_ALGA_L3(1.12),
-      BARGE(0.0),      // TODO
+      REEF_ALGA_L3(0.95),
+      BARGE(1.79),
       PROCESSOR(0.0),
       TUNABLE(Double.NaN);  // Special value for tunable position
 
@@ -608,14 +610,15 @@ public final class Constants {
     public static enum IntakeAction {
       NONE(0.0, 0.0),
       OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
-      SCORE_L1(0.2, 3.0),  // TODO tune
+      SCORE_L1(0.2, 3.0),
       SCORE_L2(1.0, 1.1),
       SCORE_L3(1.0, 1.1),
       SCORE_L4(1.0, 1.2),
-      SCORE_BARGE(1.0, 2.0),  // TODO tune
-      SCORE_PROCESSOR(1.0, 2.0),  // TODO tune
-      INTAKE_REEF_ALGA(-0.9, 1.5),  // TODO tune
-      INTAKE_CORAL(0.56, 1.2),  // Time is redundant; uses Canrange sensor  // TODO tune
+      SCORE_BARGE(1.0, 2.0),
+      SCORE_PROCESSOR(1.0, 2.0),
+      INTAKE_REEF_ALGA(-0.9, 1.5),
+      OUTTAKE_REEF_ALGAE(1, 1.0),
+      INTAKE_CORAL(0.56, 1.2),  // Time is redundant; uses Canrange sensor
       TUNABLE(Double.NaN, Double.NaN); // Special values for tunable speed and duration
 
       private final double speed;

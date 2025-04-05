@@ -1,8 +1,8 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.derive;
 import static frc.robot.Constants.DriveConstants.angleController;
 import static frc.robot.Constants.DriveConstants.anglePIDCMaxSpeed;
+import static frc.robot.Constants.DriveConstants.fineTuneSpeedMultiplier;
 import static frc.robot.Constants.DriveConstants.translationXController;
 import static frc.robot.Constants.DriveConstants.translationXPIDCMaxSpeed;
 import static frc.robot.Constants.DriveConstants.translationYController;
@@ -37,6 +37,7 @@ import frc.robot.subsystems.leds.Candle;
 import frc.robot.subsystems.oi.OI;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.wolverine.Wolverine;
 import frc.robot.utils.OIUtil;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
 import frc.robot.commands.drive.JoystickDriveCommand;;
@@ -93,7 +94,7 @@ public class RobotCommands {
     Drive drive,
     DoubleSupplier xSupplier,
     DoubleSupplier ySupplier,
-    Supplier<FieldPose> fieldPoseToLockHeadingToSupplier
+    Supplier < FieldPose > fieldPoseToLockHeadingToSupplier
   ) {
     return new FunctionalCommand(
       () -> {
@@ -101,7 +102,7 @@ public class RobotCommands {
         angleController.reset();
       },
       () -> {
-        boolean isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+        boolean isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
         double desiredHeadingRadians = fieldPoseToLockHeadingToSupplier.get().getDesiredPose().getRotation().toRotation2d().getRadians();
         double omega = angleController.calculate(drive.getRotation().getRadians(), desiredHeadingRadians);
         Translation2d linearVelocity = OIUtil.getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -113,11 +114,9 @@ public class RobotCommands {
 
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
       },
-      interrupted -> {},
+      interrupted -> drive.stopWithX(),
       () -> false,
       drive
-    ).handleInterrupt(
-      drive::stopWithX
     );
   }
 
@@ -132,7 +131,7 @@ public class RobotCommands {
   public static Command driveToPose(
     Drive drive,
     Vision vision,
-    Supplier<FieldPose> desiredFieldPoseSupplier
+    Supplier < FieldPose > desiredFieldPoseSupplier
   ) {
     return new FunctionalCommand(
       () -> {
@@ -142,7 +141,7 @@ public class RobotCommands {
         translationYController.reset();
       },
       () -> {
-        boolean isFlipped =  DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+        boolean isFlipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
         Pose3d pose = desiredFieldPoseSupplier.get().getDesiredPose();
         double omega = angleController.calculate(drive.getRotation().getRadians(), desiredFieldPoseSupplier.get().getDesiredRotation2d().getRadians());
         double velocityX = translationXController.calculate(drive.getPose().getTranslation().getX(), pose.getTranslation().getX());
@@ -157,7 +156,7 @@ public class RobotCommands {
         velocityY = MathUtil.clamp(velocityY, -translationYPIDCMaxSpeed.getAsDouble(), translationYPIDCMaxSpeed.getAsDouble());
         omega = MathUtil.clamp(omega, -anglePIDCMaxSpeed.getAsDouble(), anglePIDCMaxSpeed.getAsDouble());
 
-        ChassisSpeeds speeds =  new ChassisSpeeds(
+        ChassisSpeeds speeds = new ChassisSpeeds(
           isFlipped ? -velocityX : velocityX,
           isFlipped ? -velocityY : velocityY,
           omega
@@ -165,9 +164,7 @@ public class RobotCommands {
 
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
       },
-      interrupted -> {
-        drive.stopWithX();
-      },
+      interrupted -> drive.stopWithX(),
       () -> angleController.atSetpoint() && translationXController.atSetpoint() && translationYController.atSetpoint(),
       drive, vision
     );
@@ -196,17 +193,17 @@ public class RobotCommands {
   }
 
   /**
-   * Command to extend the manipulators
+   * Command to extend the manipulator.
    *
    * @param elevator
    * @param pivot
    * @return Command
    */
-  public static Command extendManipulators(
+  public static Command extendManipulator(
     Elevator elevator,
     Pivot pivot,
-    Supplier<ElevatorPosition> elevatorPositionSupplier,
-    Supplier<PivotPosition> pivotPositionSupplier
+    Supplier < ElevatorPosition > elevatorPositionSupplier,
+    Supplier < PivotPosition > pivotPositionSupplier
   ) {
     return
     Commands.sequence(
@@ -219,7 +216,7 @@ public class RobotCommands {
   }
 
   /**
-   * Command to retract the manipulators.
+   * Command to retract the manipulator.
    *
    * @param elevator
    * @param pivot
@@ -232,13 +229,33 @@ public class RobotCommands {
     return
     Commands.sequence(
       assureElevatorIsPivotClear(elevator, pivot),
+      elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
+      pivot.moveToPosition(() -> PivotPosition.INTAKE_READY)
+    );
+  }
+
+  /**
+   * Retratc manipulator when it has algae.
+   * 
+   * @param elevator
+   * @param pivot
+   * @return Command
+   */
+  public static Command retractManipulatorWithAlgae(
+    Elevator elevator,
+    Pivot pivot
+  ) {
+    return
+    Commands.sequence(
+      assureElevatorIsPivotClear(elevator, pivot),
       Commands.parallel(
         elevator.moveToPosition(pivot, () -> ElevatorPosition.DOWN),
-        pivot.moveToPosition(() -> PivotPosition.INTAKE_READY)
+        pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR_WITH_ALGA)
       )
     );
   }
 
+  // TODO do i need this?
   public static Command scoreL4InPlace(
     Drive drive,
     Candle candle,
@@ -256,9 +273,11 @@ public class RobotCommands {
   }
 
   /**
-   * Drive up and score the coral to the desired reef height.
-   * Works for L4, L3, and L2.
-   * Retracts and stops on interrupt.
+   * Command to score on the reef.
+   * Locks the heading of the robot to the desired field pose.
+   * When the desired tag is detected, it will drive to the desired pose.
+   * Then score the coral.
+   * Works for L2, L3, and L4.
    *
    * @param drive
    * @param vision
@@ -270,115 +289,138 @@ public class RobotCommands {
    * @param reefPoseSupplier
    * @return Command
    */
-  public static Command scoreCoral(
+  public static Command reefScoringCommand(
     Drive drive,
     Vision vision,
     Candle candle,
     Elevator elevator,
     Pivot pivot,
     Intake intake,
-    Supplier<ReefHeight> reefHeightSupplier,
-    Supplier<FieldPose> reefPoseSupplier
+    Supplier < ReefHeight > reefHeightSupplier,
+    Supplier < FieldPose > reefPoseSupplier
   ) {
-    return Commands.sequence(
-      Commands.runOnce(() -> candle.setLEDs(CandleState.SCORING), candle),
-      Commands.parallel(
-        rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
-        driveToPose(drive, vision, reefPoseSupplier),
-        Commands.sequence(
-          assureElevatorIsPivotClear(elevator, pivot),
-          Commands.parallel(
-            elevator.moveToPosition(pivot, () -> RobotStateManager.getElevatorPositionForSpecificReefHeight(reefHeightSupplier)),
-            pivot.moveToPosition(() -> RobotStateManager.getPivotPositionForSpecificReefHeight(reefHeightSupplier))
+    return RobotCommands.lockedHeadingDriving(
+      drive,
+      () -> -OI.m_driverController.getLeftY() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      () -> -OI.m_driverController.getLeftX() * (OI.m_driverController.getRawButton(Button.kB.value) ? fineTuneSpeedMultiplier : 1),
+      RobotStateManager::getDesiredFieldPose
+    ).until(() -> { // proceed to scoring when desired tag is detected
+      if (!RobotStateManager.getDesiredFieldPose().isOrientationOnly()) {
+        for (int tagId: vision.getTagIds(0)) {
+          if (tagId == RobotStateManager.getDesiredFieldPose().getTagId()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }).andThen(
+      Commands.sequence(
+        Commands.runOnce(() -> candle.setLEDs(CandleState.SCORING), candle),
+        Commands.parallel(
+          rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
+          driveToPose(drive, vision, reefPoseSupplier),
+          Commands.sequence(
+            assureElevatorIsPivotClear(elevator, pivot),
+            Commands.parallel(
+              elevator.moveToPosition(pivot, () -> RobotStateManager.getElevatorPositionForSpecificReefHeight(reefHeightSupplier)),
+              pivot.moveToPosition(() -> RobotStateManager.getPivotPositionForSpecificReefHeight(reefHeightSupplier))
+            )
           )
+        ),
+        new IntakeActionCommand(intake, candle, () -> RobotStateManager.getIntakeActionForSpecificReefHeight(reefHeightSupplier), false),
+        Commands.parallel(
+          runLedsForDuration(candle, CandleState.SCORED, 1),
+          rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
         )
-      ),
-      new IntakeActionCommand(intake, candle, () -> RobotStateManager.getIntakeActionForSpecificReefHeight(reefHeightSupplier), false),
-      Commands.parallel(
-        runLedsForDuration(candle, CandleState.SCORED, 1),
-        rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
       )
     );
   }
 
-    /**
-     * Drive up to reef, knock down the algae on the way up and then score L4.
-     * Works for L4 only.
-     * Does retract manipulator.
-     *
-     * @param drive
-     * @param vision
-     * @param candle
-     * @param elevator
-     * @param pivot
-     * @param intake
-     * @param xSupplier
-     * @param ySupplier
-     * @param reefPoseSupplier pose for scoring the coral
-     * @return Command
-     */
-    public static Command dealgaefyThenScoreL4(
-      Drive drive,
-      Vision vision,
-      Candle candle,
-      Elevator elevator,
-      Pivot pivot,
-      Intake intake,
-      Supplier<FieldPose> reefPoseSupplier
-    ) {
-      return Commands.sequence(
-        Commands.runOnce(() -> candle.setLEDs(CandleState.SCORING), candle),
-          Commands.parallel(
-            rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
-            driveToPose(drive, vision, () -> RobotStateManager.RobotState.getCorrespondingPose(reefPoseSupplier.get()))
-          ),
-          assureElevatorIsPivotClear(elevator, pivot),
-          pivot.moveToPosition(() -> PivotPosition.DEALGAEFY),
-          elevator.moveToPosition(pivot, () -> ElevatorPosition.L4),
-          pivot.moveToPosition(() -> PivotPosition.ELEVATOR_CLEAR),
-          driveToPose(drive, vision, reefPoseSupplier),
-          pivot.moveToPosition(() -> PivotPosition.L4),
-          new IntakeActionCommand(intake, candle, () -> RobotStateManager.getIntakeActionForSpecificReefHeight(() -> ReefHeight.L4), true),
-          Commands.parallel(
-            runLedsForDuration(candle, CandleState.SCORED, 1),
-            rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
-          )
-        ).handleInterrupt(() -> {
-          Commands.parallel(
-            Commands.runOnce(drive::stopWithX, drive),
-            retractManipulator(elevator, pivot),
-            Commands.runOnce(intake::stop),
-            Commands.runOnce(() -> candle.setLEDs(CandleState.OFF), candle)
-          );
-        });
-    }
+  public static Command dealgefy(
+    Drive drive,
+    Vision vision,
+    Candle candle,
+    Elevator elevator,
+    Pivot pivot,
+    Intake intake,
+    Supplier < FieldPose > reefPoseSupplier
+  ) {
+    return Commands.sequence(
+      assureElevatorIsPivotClear(elevator, pivot),
+      Commands.parallel(
+        elevator.moveToPosition(pivot, RobotStateManager::getDesiredElevatorPosition),
+        pivot.moveToPosition(RobotStateManager::getDesiredPivotPosition)
+      ),
+      driveToPose(drive, vision, reefPoseSupplier),
+      Commands.parallel(
+        new IntakeActionCommand(intake, candle, () -> IntakeAction.INTAKE_REEF_ALGA, true),
+        new JoystickDriveCommand(
+          drive,
+          () -> -OI.m_driverController.getLeftY() * 0.6,
+          () -> 0,
+          () -> 0,
+          () -> true
+        )
+      ).until(() -> OI.m_driverController.getRightTriggerAxis() > 0.5),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.OUTTAKE_REEF_ALGAE, false)
+    );
+  }
 
-    public static Command dealgefy(
-      Drive drive,
-      Vision vision,
-      Candle candle,
-      Elevator elevator,
-      Pivot pivot,
-      Intake intake,
-      Supplier<FieldPose> reefPoseSupplier
-    ) {
-      return Commands.sequence(
-        assureElevatorIsPivotClear(elevator, pivot),
-        Commands.parallel(
-          elevator.moveToPosition(pivot, RobotStateManager::getDesiredElevatorPosition),
-          pivot.moveToPosition(RobotStateManager::getDesiredPivotPosition)
-        ),
-        driveToPose(drive, vision, reefPoseSupplier),
-        Commands.parallel(
-          new IntakeActionCommand(intake, candle, () -> IntakeAction.INTAKE_REEF_ALGA, true),
-          new JoystickDriveCommand(
-            drive,
-            () -> -OI.m_driverController.getLeftY() * 0.6,
-            () -> 0,
-            () -> 0,
-            () -> true
+  public static Command processAlgae(
+    Drive drive,
+    Vision vision,
+    Candle candle,
+    Elevator elevator,
+    Pivot pivot,
+    Intake intake
+  ) {
+    return Commands.sequence(
+      Commands.parallel(
+        lockedHeadingDriving(drive, translationXPIDCMaxSpeed, translationYPIDCMaxSpeed, () -> FieldPose.PROCESSOR),
+        Commands.sequence(
+          assureElevatorIsPivotClear(elevator, pivot),
+          Commands.parallel(
+            elevator.moveToPosition(pivot, () -> ElevatorPosition.PROCESSOR),
+            pivot.moveToPosition(() -> PivotPosition.PROCESSOR)  
           )
         )
-      );
-    }
+      )
+    );
+  }
+
+  public static Command climb(
+    Elevator elevator,
+    Pivot pivot,
+    Wolverine wolverine
+  ) {
+    return Commands.sequence(
+      retractManipulator(elevator, pivot),
+      pivot.moveToPosition(
+        () -> PivotPosition.FULLY_OUT
+      ),
+      wolverine.invertWolverine(pivot),
+      Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5),
+      wolverine.invertWolverine(pivot)
+    );
+  }
+
+  public static Command scoreBarge(
+    Elevator elevator,
+    Pivot pivot,
+    Intake intake,
+    Candle candle
+  ) {
+    return Commands.sequence(
+      assureElevatorIsPivotClear(elevator, pivot),
+      Commands.parallel(
+        elevator.moveToPosition(pivot, () -> ElevatorPosition.BARGE),
+        pivot.moveToPosition(() -> PivotPosition.BARGE_START)
+      ),
+      Commands.waitUntil(() -> OI.m_driverController.getRightTriggerAxis() > 0.5),
+      Commands.parallel(
+        new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_BARGE, true),
+        pivot.moveToPosition(() -> PivotPosition.BARGE_END)
+      )
+    );
+  }
 }
