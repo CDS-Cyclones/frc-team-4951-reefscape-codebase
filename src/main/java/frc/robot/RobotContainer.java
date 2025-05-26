@@ -187,31 +187,10 @@ public class RobotContainer {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////// DRIVER CONTROLLER //////////////////////////////////
-    // new JoystickButton(OI.m_driverController, Button.kLeftBumper.value)
-    //   .whileTrue(
-    //     new ConditionalCommand(
-    //       new ConditionalCommand(
-    //         RobotCommands.scoreBarge(elevator, pivot, intake, candle),
-    //         new ConditionalCommand(
-    //           RobotCommands.processAlgae(drive, vision, candle, elevator, pivot, intake),
-    //           RobotCommands.dealgefy(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getDesiredFieldPose),
-    //           () -> RobotStateManager.getDesiredFieldPose() == FieldPose.PROCESSOR
-    //         ),
-    //         () -> RobotStateManager.getDesiredFieldPose() == FieldPose.BARGE_LEFT
-    //       ),
-    //       RobotCommands.reefScoringCommand(drive, vision, candle, elevator, pivot, intake, RobotStateManager::getReefHeight, RobotStateManager::getDesiredFieldPose),
-    //       RobotStateManager::isAlignForAlgaePickup
-    //     )
-    //   ).onFalse(
-    //     new ConditionalCommand(
-    //       RobotCommands.retractManipulatorWithAlgae(elevator, pivot),
-    //       RobotCommands.retractManipulator(elevator, pivot),
-    //       RobotStateManager::isAlignForAlgaePickup
-    //     )
-    //  );
     new JoystickButton(OI.m_singleController, Button.kLeftBumper.value)
       .whileTrue(
-        RobotCommands.scoreReef(
+        new ConditionalCommand(
+          RobotCommands.scoreReef(
           drive,
           vision,
           candle,
@@ -222,7 +201,10 @@ public class RobotContainer {
           () -> RobotStateManager.getReefPoseByTagId(
             RobotStateManager.getReefTagId(),
             true)
-        ).onlyIf(() -> (RobotStateManager.isReadyToScoreReef() && RobotStateManager.getReefHeight() != ReefHeight.NONE))
+        ).onlyIf(() -> (RobotStateManager.isReadyToScoreReef() && RobotStateManager.getReefHeight() != ReefHeight.NONE)),
+        new IntakeCoralCommand(intake, candle),
+        intake::isIntakeContainsCoral
+        )
       )
       .onFalse(
       new ConditionalCommand(
