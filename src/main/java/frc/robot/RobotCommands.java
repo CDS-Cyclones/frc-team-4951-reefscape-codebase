@@ -423,4 +423,34 @@ public class RobotCommands {
       )
     );
   }
+
+  public static Command scoreReef(
+    Drive drive,
+    Vision vision,
+    Candle candle,
+    Elevator elevator,
+    Pivot pivot,
+    Intake intake,
+    Supplier < ReefHeight > reefHeightSupplier,
+    Supplier < FieldPose > reefPoseSupplier
+  ) {
+    return Commands.sequence(
+      Commands.parallel(
+        rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
+        driveToPose(drive, vision, reefPoseSupplier),
+        Commands.sequence(
+          assureElevatorIsPivotClear(elevator, pivot),
+          Commands.parallel(
+            elevator.moveToPosition(pivot, () -> RobotStateManager.getElevatorPositionForSpecificReefHeight(reefHeightSupplier)),
+            pivot.moveToPosition(() -> RobotStateManager.getPivotPositionForSpecificReefHeight(reefHeightSupplier))
+          )
+        )
+      ),
+      new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_CORAL, false),
+      Commands.parallel(
+        runLedsForDuration(candle, CandleState.SCORED, 1),
+        rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
+      )
+    );
+  }
 }

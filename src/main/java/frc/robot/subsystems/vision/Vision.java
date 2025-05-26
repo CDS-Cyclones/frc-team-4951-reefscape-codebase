@@ -13,6 +13,8 @@
 
 package frc.robot.subsystems.vision;
 
+import static frc.robot.Constants.blueReefTagIds;
+import static frc.robot.Constants.redReefTagIds;
 import static frc.robot.Constants.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
@@ -24,7 +26,12 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.RobotStateManager;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
 import java.util.List;
@@ -188,6 +195,44 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput("Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(
             new Pose3d[allRobotPosesRejected.size()]));
+
+    int[] tags = getTagIds(0);
+    if(tags.length != 1) {
+      RobotStateManager.setReadyToScoreReef(false);
+    } else {
+      // check for the tag id that we are looking for
+      int tagId = tags[0];
+
+      boolean isReefTag = false;
+      boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+      if (isRedAlliance) {
+        for(int redReefTagId : redReefTagIds) {
+          if(tagId == redReefTagId) {
+            isReefTag = true;
+            break;
+          }
+        }
+      } else {
+        for(int blueReefTagId : blueReefTagIds) {
+          if(tagId == blueReefTagId) {
+            isReefTag = true;
+            break;
+          }
+        }
+      }
+
+      if (isReefTag) {
+        RobotStateManager.setReadyToScoreReef(true);
+        RobotStateManager.setReefTagId(tagId);
+      } else {
+        RobotStateManager.setReadyToScoreReef(false);
+      }
+    }
+
+    try {
+      SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
+      SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());
+    } catch (Exception e) {}
   }
 
   @FunctionalInterface

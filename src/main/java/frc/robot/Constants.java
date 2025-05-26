@@ -48,6 +48,9 @@ public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
+  public static final int[] blueReefTagIds = new int[] {17, 18, 19, 20, 21, 22};
+  public static final int[] redReefTagIds = new int[] {8, 9, 10, 11, 12, 13};
+
   public static enum Mode {
     /** Running on a real robot. */
     REAL,
@@ -254,6 +257,7 @@ public final class Constants {
     public static final int kOperatorControllerPort = 2;
     public static final int kOperatorControllerManualPort = 3;
     public static final int kSysIDRoutinesControllerPort = 4;
+    public static final int kSingleControllerPort = 5;
 
     // Joystick axis deadband
     public static final double kJoystickAxisDeadband = 0.1;
@@ -370,7 +374,8 @@ public final class Constants {
       L1,
       L2,
       L3,
-      L4
+      L4,
+      NONE  // Special value for no height specified
     }
 
     /**
@@ -468,7 +473,8 @@ public final class Constants {
       STATION_RIGHT(12, 2, 0, 0, 0, true),
       BARGE_LEFT(14, 5, 0, 0, Math.PI, true),
       BARGE_RIGHT(15, 4, 0, 0, Math.PI, true),
-      PROCESSOR(16, 3, 0, 0, Math.PI, true);
+      PROCESSOR(16, 3, 0, 0, Math.PI, true),
+      NONE(-1, -1, 0, 0, 0, false);  // Special value for no pose specified
 
       private final int tagBlueId;
       private final int tagRedId;
@@ -610,6 +616,7 @@ public final class Constants {
     public static enum IntakeAction {
       NONE(0.0, 0.0),
       OCCUPIED(0.0, 0.0),  // Special value for when the intake is occupied by another command
+      SCORE_CORAL(1.0, 1.5),  // Score a coral
       SCORE_L1(0.2, 3.0),
       SCORE_L2(1.0, 1.1),
       SCORE_L3(1.0, 1.1),

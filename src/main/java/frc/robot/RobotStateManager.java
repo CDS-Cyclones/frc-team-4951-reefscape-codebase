@@ -15,10 +15,34 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RobotStateManager {
   @Getter @Setter private static RobotAction robotAction;
-  @Getter @Setter private static ReefHeight reefHeight;
   @Getter @Setter private static boolean alignForAlgaePickup;
   @Getter @Setter private static FieldPose coralScoringPose;
   @Getter @Setter private static boolean intakeOccupied; // if intake is currrently occupied by some other command
+
+  @Getter @Setter private static ReefHeight reefHeight;
+  @Getter @Setter private static boolean readyToScoreReef = false;
+  @Getter @Setter private static int reefTagId = -1; // the tag ID of the reef spike that we are currently scoring on
+
+  public static FieldPose getReefPoseByTagId(int tagId, boolean left) {
+    switch (tagId) {
+        case 21: case 10: // Blue 21, Red 10
+            return left ? FieldPose.B : FieldPose.A;
+        case 22: case 9:  // Blue 22, Red 9
+            return left ? FieldPose.D : FieldPose.C;
+        case 17: case 8:  // Blue 17, Red 8
+            return left ? FieldPose.F : FieldPose.E;
+        case 18: case 7:  // Blue 18, Red 7
+            return left ? FieldPose.H : FieldPose.G;
+        case 19: case 6:  // Blue 19, Red 6
+            return left ? FieldPose.J : FieldPose.I;
+        case 20: case 11: // Blue 20, Red 11
+            return left ? FieldPose.L : FieldPose.K;
+        default:
+            return FieldPose.NONE; // No matching tag found
+    }
+}
+
+  
 
   public static RobotState getRobotState() {
     return new RobotState(robotAction, reefHeight, alignForAlgaePickup, coralScoringPose);
