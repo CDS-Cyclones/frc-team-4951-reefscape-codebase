@@ -30,9 +30,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotStateManager;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -67,7 +71,7 @@ public class Vision extends SubsystemBase {
    * servoing with vision.
    *
    * @param cameraIndex The index of the camera to use.
-   * 
+   *
    * @return The X angle to the best target.
    */
   public Rotation2d getTargetX(int cameraIndex) {
@@ -197,38 +201,45 @@ public class Vision extends SubsystemBase {
             new Pose3d[allRobotPosesRejected.size()]));
 
     int[] tags = getTagIds(0);
-    if(tags.length != 1) {
+    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+    List<Integer> reefTags = new ArrayList<>();
+
+    if(tags.length == 0 ) {
       RobotStateManager.setReadyToScoreReef(false);
     } else {
-      // check for the tag id that we are looking for
-      int tagId = tags[0];
+      for (int tagId : tags) {
+        boolean isReefTag = isRedAlliance
+                ? Arrays.stream(redReefTagIds).anyMatch(id -> id == tagId)
+                : Arrays.stream(blueReefTagIds).anyMatch(id -> id == tagId);
 
-      boolean isReefTag = false;
-      boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-      if (isRedAlliance) {
-        for(int redReefTagId : redReefTagIds) {
-          if(tagId == redReefTagId) {
-            isReefTag = true;
-            break;
-          }
-        }
-      } else {
-        for(int blueReefTagId : blueReefTagIds) {
-          if(tagId == blueReefTagId) {
-            isReefTag = true;
-            break;
-          }
+        if (isReefTag) {
+          reefTags.add(tagId);
         }
       }
 
-      if (isReefTag) {
-        RobotStateManager.setReadyToScoreReef(true);
-        RobotStateManager.setReefTagId(tagId);
-      } else {
-        RobotStateManager.setReadyToScoreReef(false);
-      }
+        if (reefTags.size() == 0) {
+          RobotStateManager.setReadyToScoreReef(false);
+        } else {
+            int closestTagId = reefTags.get(0);
+            double closestDistance = Double.MAX_VALUE;
+            for (int tagId : reefTags) {
+              double distance = aprilTagLayout.getTagPose(tagId)
+                  .map(pose -> pose.getTranslation().getNorm())
+                  .orElse(Double.MAX_VALUE);
+              if (distance < closestDistance) {
+                closestDistance = distance;
+                closestTagId = tagId;
+              }
+            }
+
+            if(closestDistance < maxTagDistance) {
+              RobotStateManager.setReadyToScoreReef(true);
+              RobotStateManager.setReefTagId(closestTagId);
+            } else {
+              RobotStateManager.setReadyToScoreReef(false);
+            }
+        }
     }
-
     try {
       SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
       SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());

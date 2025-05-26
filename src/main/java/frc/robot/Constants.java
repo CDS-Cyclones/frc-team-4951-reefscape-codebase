@@ -248,6 +248,8 @@ public final class Constants {
     // Multipliers to apply for MegaTag 2 observations
     public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
     public static double angularStdDevMegatag2Factor = Double.POSITIVE_INFINITY; // No rotation data available
+
+    public static double maxTagDistance = 5.0; // Meters, maximum distance to tag to use for auto-aligning
   }
 
   public static final class OIConstants {
