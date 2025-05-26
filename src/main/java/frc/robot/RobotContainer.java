@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -29,7 +28,6 @@ import frc.robot.commands.drive.JoystickDriveCommand;
 import frc.robot.commands.intake.CoralGuardianCommand;
 import frc.robot.commands.intake.IntakeActionCommand;
 import frc.robot.commands.intake.IntakeCoralCommand;
-import frc.robot.commands.intake.ManualIntakeCommand;
 import frc.robot.Constants.RobotStateConstants.ElevatorPosition;
 import frc.robot.Constants.RobotStateConstants.FieldPose;
 import frc.robot.Constants.RobotStateConstants.IntakeAction;
@@ -249,7 +247,7 @@ public class RobotContainer {
       .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
 
     // Switch to X pattern when X button is pressed
-    new JoystickButton(OI.m_singleController, Button.kLeftStick.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
+    new JoystickButton(OI.m_singleController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////// MANUAL MANIPULATOR CONTROLLER //////////////////////////////////
