@@ -140,6 +140,7 @@ public class RobotContainer {
     RobotStateManager.setCoralScoringPose(FieldPose.E);
     RobotStateManager.setIntakeOccupied(false);
     SmartDashboard.putNumber("Reef Level", 0);
+    SmartDashboard.putBoolean("Currently Scoring", false);
 
     // Call these to make sure the tunable values are loaded
     RobotStateConstants.tunableElevatorPosition.get();

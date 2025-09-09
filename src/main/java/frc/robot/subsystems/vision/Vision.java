@@ -34,7 +34,6 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotStateManager;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -46,6 +45,7 @@ public class Vision extends SubsystemBase {
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+
 
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
@@ -228,6 +228,7 @@ public class Vision extends SubsystemBase {
                   .orElse(Double.MAX_VALUE);
               if (distance < closestDistance) {
                 closestDistance = distance;
+                System.out.println("Closest tag ID: " + tagId + " at distance " + distance);
                 closestTagId = tagId;
               }
             }

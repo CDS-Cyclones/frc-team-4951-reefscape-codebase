@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -436,20 +437,22 @@ public class RobotCommands {
   ) {
     return Commands.sequence(
       Commands.parallel(
-        rumbleControllerForDuration(OI.m_driverController, 0.5, 1),
+        Commands.run(() -> SmartDashboard.putBoolean("Currently Scoring", true)),
+        rumbleControllerForDuration(OI.m_singleController, 0.5, 1),
         driveToPose(drive, vision, reefPoseSupplier),
         Commands.sequence(
           assureElevatorIsPivotClear(elevator, pivot),
           Commands.parallel(
             elevator.moveToPosition(pivot, () -> RobotStateManager.getElevatorPositionForSpecificReefHeight(reefHeightSupplier)),
-            pivot.moveToPosition(() -> RobotStateManager.getPivotPositionForSpecificReefHeight(reefHeightSupplier))
+            pivot.moveToPosition(() -> RobotStateManager.getPivotPositionForSpecificReefHeight(reefHeightSupplier)),
+            Commands.run(() -> SmartDashboard.putBoolean("Currently Scoring", false))
           )
         )
       ),
       new IntakeActionCommand(intake, candle, () -> IntakeAction.SCORE_CORAL, false),
       Commands.parallel(
         runLedsForDuration(candle, CandleState.SCORED, 1),
-        rumbleControllerForDuration(OI.m_driverController, 0.5, 1)
+        rumbleControllerForDuration(OI.m_singleController, 0.5, 1)
       )
     );
   }
