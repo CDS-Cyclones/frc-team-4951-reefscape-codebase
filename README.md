@@ -13,3 +13,5 @@ B → Level 3 (L3)
 A → Level 2 (L2)
 
 X → X-Wheels
+
+Start → Reset Gyro
