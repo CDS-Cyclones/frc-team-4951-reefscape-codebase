@@ -122,6 +122,7 @@ public class RobotContainer {
     candle = new Candle();
     wolverine = new Wolverine();
 
+
     registerNamedCommands();
 
     autoChooser = new LoggedDashboardChooser < > ("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -137,6 +138,7 @@ public class RobotContainer {
     RobotStateManager.setAlignForAlgaePickup(false);
     RobotStateManager.setCoralScoringPose(FieldPose.E);
     RobotStateManager.setIntakeOccupied(false);
+    SmartDashboard.putNumber("REEFLEVEL", 0);
 
     // Call these to make sure the tunable values are loaded
     RobotStateConstants.tunableElevatorPosition.get();
@@ -235,16 +237,19 @@ public class RobotContainer {
       )
     );
 
-    // Set reef height
-    new JoystickButton(OI.m_driverController, Button.kY.value)
+    // Set reef height & Push value to NT
+    new JoystickButton(OI.m_singleController, Button.kY.value)
       .whileTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L4)))
-      .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
-    new JoystickButton(OI.m_driverController, Button.kB.value)
+      .onTrue(Commands.runOnce (() -> SmartDashboard.putNumber("Reef Level", 4)));
+      // .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
+    new JoystickButton(OI.m_singleController, Button.kB.value)
       .whileTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L3)))
-      .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
-    new JoystickButton(OI.m_driverController, Button.kA.value)
+      .onTrue(Commands.runOnce (() -> SmartDashboard.putNumber("Reef Level", 3)));
+      // .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
+    new JoystickButton(OI.m_singleController, Button.kA.value)
       .whileTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)))
-      .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)));
+      .onTrue(Commands.runOnce (() -> SmartDashboard.putNumber("Reef Level", 2)));
+      // .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)))
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_singleController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));

@@ -3,6 +3,7 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.SparkUtil;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 
@@ -22,5 +23,6 @@ public class GyroIOSim implements GyroIO {
 
     inputs.odometryYawTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
     inputs.odometryYawPositions = gyroSimulation.getCachedGyroReadings();
+    SmartDashboard.putNumber("Gyro Yaw Degrees",inputs.yawPosition.getDegrees());
   }
 }
