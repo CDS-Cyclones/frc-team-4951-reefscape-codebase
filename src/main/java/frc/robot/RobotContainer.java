@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.RobotStateConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.RobotStateConstants.ReefHeight;
 import frc.robot.Constants.RobotStateConstants.RobotAction;
@@ -250,6 +251,15 @@ public class RobotContainer {
       .whileTrue(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.L2)))
       .onTrue(Commands.runOnce (() -> SmartDashboard.putNumber("Reef Level", 2)));
       // .onFalse(Commands.runOnce(() -> RobotStateManager.setReefHeight(ReefHeight.NONE)))
+
+      // Reset Gyro button
+          new JoystickButton(OI.m_singleController, Button.kStart.value).onTrue(Commands.runOnce(
+      Constants.currentMode == Constants.Mode.SIM ?
+      () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
+      :
+      () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+      drive).ignoringDisable(true));
+
 
     // Switch to X pattern when X button is pressed
     new JoystickButton(OI.m_singleController, Button.kX.value).onTrue(Commands.runOnce(drive::stopWithX, drive));
