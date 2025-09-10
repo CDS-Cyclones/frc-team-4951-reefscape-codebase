@@ -223,9 +223,15 @@ public class Vision extends SubsystemBase {
             int closestTagId = reefTags.get(0);
             double closestDistance = Double.MAX_VALUE;
             for (int tagId : reefTags) {
-              double distance = aprilTagLayout.getTagPose(tagId)
-                  .map(pose -> pose.getTranslation().getNorm())
-                  .orElse(Double.MAX_VALUE);
+              // double distance = aprilTagLayout.getTagPose(tagId)
+              //     .map(pose -> pose.getTranslation().getNorm())
+              //     .orElse(Double.MAX_VALUE);
+              
+              // new way to calculate distance that accounts for camera position on robot
+              double distance = Arrays.stream(inputs[0].poseObservations)
+              .mapToDouble(obs -> obs.averageTagDistance())
+              .min()
+              .orElse(Double.MAX_VALUE);          
               if (distance < closestDistance) {
                 closestDistance = distance;
                 closestTagId = tagId;
@@ -234,6 +240,7 @@ public class Vision extends SubsystemBase {
 
             if(closestDistance < maxTagDistance) {
               RobotStateManager.setReadyToScoreReef(true);
+              System.out.println("TAGS IN RANGE. Closest tag ID: " + closestTagId + " at distance " + closestDistance);
               RobotStateManager.setReefTagId(closestTagId);
               SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
               SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());
