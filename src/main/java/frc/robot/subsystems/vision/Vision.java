@@ -228,7 +228,6 @@ public class Vision extends SubsystemBase {
                   .orElse(Double.MAX_VALUE);
               if (distance < closestDistance) {
                 closestDistance = distance;
-                System.out.println("Closest tag ID: " + tagId + " at distance " + distance);
                 closestTagId = tagId;
               }
             }
@@ -236,15 +235,17 @@ public class Vision extends SubsystemBase {
             if(closestDistance < maxTagDistance) {
               RobotStateManager.setReadyToScoreReef(true);
               RobotStateManager.setReefTagId(closestTagId);
+              SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
+              SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());
+
             } else {
               RobotStateManager.setReadyToScoreReef(false);
+              SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
+              SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());
+              System.out.println("NO TAGS IN RANGE. Closest tag ID: " + closestTagId + " at distance " + closestDistance);
             }
         }
     }
-    try {
-      SmartDashboard.putBoolean("Mutables/Ready to Score Reef", RobotStateManager.isReadyToScoreReef());
-      SmartDashboard.putNumber("Mutables/Reef Tag ID", RobotStateManager.getReefTagId());
-    } catch (Exception e) {}
   }
 
   @FunctionalInterface
